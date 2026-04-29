@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { join, dirname } from 'path';
 import { User, RefreshToken } from '@ged/database';
 
 @Module({
@@ -15,7 +16,9 @@ import { User, RefreshToken } from '@ged/database';
         synchronize: false,
         migrationsRun: true,
         logging: config.get<string>('NODE_ENV') === 'development',
-        migrations: [__dirname + '/../../database/migrations/*{.ts,.js}'],
+        migrations: [
+          join(dirname(require.resolve('@ged/database')), 'migrations', '*.js'),
+        ],
       }),
     }),
   ],

@@ -85,6 +85,39 @@ Estas regras são **inegociáveis** e se aplicam a todo arquivo `.ts` e `.tsx` d
 | Generics descritivos | `T` só quando o contexto é óbvio. Caso contrário: `TEntity`, `TResult`, `TFilter` |
 | Usar `satisfies` para objetos literais | `satisfies` valida o objeto contra um tipo sem widening — obrigatório em configs, mocks e constantes de domínio |
 
+## Estratégia de Testes
+
+> **Testes são obrigatórios.** Toda feature deve ser entregue com seus testes — nunca depois. Código sem teste não está pronto.
+
+### Pirâmide
+
+| Camada | Ferramenta | Localização |
+|---|---|---|
+| Unitários | Jest | `*.spec.ts` co-localizados ao lado do arquivo testado |
+| Integração | Jest + Supertest | `apps/api/test/integration/` |
+| E2E | Playwright | `apps/web/test/e2e/` |
+
+### Cobertura Mínima
+
+- 80% de branches nas camadas `service`, `repository`, `hooks/` e `lib/`
+- Toda lógica de negócio e todo hook de dados deve ter cobertura unitária
+
+### Regras Inegociáveis
+
+| Regra | Detalhe |
+|---|---|
+| Nomenclatura | `'should [comportamento] when [condição]'` |
+| Isolamento | Cada `it` independente — sem estado compartilhado entre testes |
+| Mocks | Mockar **todas** as dependências externas: banco, Redis, `fetch`, `next-auth/react` |
+| Asserções | Usar apenas `expect` — proibido `console.log` em testes |
+| Factories | Fixtures e factories em `test/factories/` |
+
+### Referência Completa
+
+Detalhes de setup, padrões de mock e exemplos: [`#file:.github/instructions/testing.instructions.md`](instructions/testing.instructions.md)
+
+---
+
 ## Documentação de Referência
 
 - Arquitetura completa: [`docs/ARCHITECTURE.md`](../docs/ARCHITECTURE.md)

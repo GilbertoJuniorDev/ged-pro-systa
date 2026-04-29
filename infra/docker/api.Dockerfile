@@ -17,11 +17,15 @@ FROM node:22-alpine AS builder
 RUN corepack enable && corepack prepare pnpm@9 --activate
 WORKDIR /app
 
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/apps/api/node_modules ./apps/api/node_modules
+# Copia toda a estrutura do stage deps (preserva symlinks do pnpm)
+COPY --from=deps /app ./
+# Sobrepõe com código-fonte (node_modules excluído via .dockerignore)
 COPY . .
 
-RUN pnpm --filter=api build
+RUN pnpm --filter=@ged/database build \
+ && pnpm --filter=@ged/types build \
+ && pnpm --filter=@ged/utils build \
+ && pnpm --filter=api build
 
 # ─── Stage 3: runner ─────────────────────────────────────────────────────────
 FROM node:22-alpine AS runner
@@ -33,7 +37,15 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nestjs
 
 COPY --from=builder /app/apps/api/dist ./dist
-COPY --from=builder /app/apps/api/node_modules ./node_modules
+# Pacotes compilados — necessários para os symlinks do pnpm funcionarem
+COPY --from=builder /app/packages/@ged/database/package.json ./packages/@ged/database/
+COPY --from=builder /app/packages/@ged/database/dist ./packages/@ged/database/dist
+COPY --from=builder /app/packages/@ged/types/package.json ./packages/@ged/types/
+COPY --from=builder /app/packages/@ged/types/dist ./packages/@ged/types/dist
+COPY --from=builder /app/packages/@ged/utils/package.json ./packages/@ged/utils/
+COPY --from=builder /app/packages/@ged/utils/dist ./packages/@ged/utils/dist
+# deps de runtime ficam no root node_modules do pnpm workspace
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/apps/api/package.json ./
 
 USER nestjs

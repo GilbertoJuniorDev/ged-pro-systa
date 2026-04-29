@@ -10,9 +10,10 @@
     "test": "turbo run test",
     "db:migrate": "pnpm --filter=@ged/database db:migrate",
     "db:migrate:revert": "pnpm --filter=@ged/database db:migrate:revert",
-    "docker:dev": "docker compose --profile dev up -d",
-    "docker:up": "docker compose up -d",
-    "docker:down": "docker compose down",
+    "docker:dev": "docker compose -f infra/docker-compose.dev.yml up --build",
+    "docker:dev:down": "docker compose -f infra/docker-compose.dev.yml down",
+    "docker:up": "docker compose -f infra/docker-compose.yml up -d --build",
+    "docker:down": "docker compose -f infra/docker-compose.yml down",
     "clean": "turbo run clean"
   },
   "devDependencies": {

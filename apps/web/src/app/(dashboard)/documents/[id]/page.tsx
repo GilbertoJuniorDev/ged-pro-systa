@@ -1,8 +1,9 @@
 // TODO: Implement document detail page
-export default function DocumentDetailPage({
+export default async function DocumentDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  return <div>Documento {params.id}</div>;
+  const { id } = await params;
+  return <div>Documento {id}</div>;
 }

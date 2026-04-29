@@ -1,0 +1,131 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: ged-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-ged_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-ged_password}
+      POSTGRES_DB: ${DB_NAME:-ged_systa}
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - ged-network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-ged_user} -d ${DB_NAME:-ged_systa}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: ged-redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    networks:
+      - ged-network
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ..
+      dockerfile: infra/docker/api.dev.Dockerfile
+    container_name: ged-api-dev
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      PORT: 3333
+      DATABASE_URL: postgresql://${DB_USER:-ged_user}:${DB_PASSWORD:-ged_password}@db:5432/${DB_NAME:-ged_systa}
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-a3dc35e30e0a16d01e2c5a65c448d634a5ee39fa3c0fb893c15ea0397cbda731}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-15m}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-e88480b0f138a0d6cba5c9b1c508c04c61d52911d2c4c513de7ab52228e850c4}
+      JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-7d}
+      STORAGE_DRIVER: ${STORAGE_DRIVER:-local}
+      STORAGE_LOCAL_PATH: /app/uploads
+      # Necessário no Windows: Docker Desktop não propaga eventos de FS nativos
+      CHOKIDAR_USEPOLLING: 'true'
+      CHOKIDAR_INTERVAL: '1000'
+    ports:
+      - '3333:3333'
+    volumes:
+      # Código-fonte — montado sobre o que foi copiado no Dockerfile
+      - ../apps/api/src:/app/apps/api/src
+      - ../apps/api/tsconfig.json:/app/apps/api/tsconfig.json:ro
+      - ../apps/api/tsconfig.build.json:/app/apps/api/tsconfig.build.json:ro
+      - ../apps/api/nest-cli.json:/app/apps/api/nest-cli.json:ro
+      # Pacotes compartilhados — mudanças aqui também disparam reload
+      - ../packages/@ged/types/src:/app/packages/@ged/types/src
+      - ../packages/@ged/utils/src:/app/packages/@ged/utils/src
+      - ../packages/@ged/database/src:/app/packages/@ged/database/src
+      # Volume nomeado para uploads (persiste entre restarts)
+      - uploads_data:/app/uploads
+    networks:
+      - ged-network
+
+  web:
+    build:
+      context: ..
+      dockerfile: infra/docker/web.dev.Dockerfile
+    container_name: ged-web-dev
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_API_URL: http://api:3333
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-dev_nextauth_secret_change_in_prod}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      # Necessário no Windows: Next.js usa watchpack para HMR
+      WATCHPACK_POLLING: 'true'
+    ports:
+      - '3000:3000'
+    volumes:
+      # Código-fonte — montado sobre o que foi copiado no Dockerfile
+      - ../apps/web/src:/app/apps/web/src
+      - ../apps/web/public:/app/apps/web/public
+      - ../apps/web/next.config.ts:/app/apps/web/next.config.ts:ro
+      - ../apps/web/tsconfig.json:/app/apps/web/tsconfig.json:ro
+      - ../apps/web/postcss.config.mjs:/app/apps/web/postcss.config.mjs:ro
+      # Pacotes compartilhados — mudanças aqui também disparam HMR
+      - ../packages/@ged/ui/src:/app/packages/@ged/ui/src
+      - ../packages/@ged/types/src:/app/packages/@ged/types/src
+      - ../packages/@ged/utils/src:/app/packages/@ged/utils/src
+    networks:
+      - ged-network
+
+  adminer:
+    image: adminer:latest
+    container_name: ged-adminer-dev
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - '8080:8080'
+    networks:
+      - ged-network
+
+volumes:
+  postgres_data:
+  redis_data:
+  uploads_data:
+
+networks:
+  ged-network:
+    driver: bridge

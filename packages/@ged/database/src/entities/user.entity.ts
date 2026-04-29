@@ -7,6 +7,7 @@ import {
   OneToMany,
 } from 'typeorm';
 
+
 export const ROLE = {
   ADMIN: 'ADMIN',
   MANAGER: 'MANAGER',
@@ -45,9 +46,6 @@ export class User {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
-
-  @OneToMany('Document', 'uploader')
-  documents!: unknown[];
 
   @OneToMany('RefreshToken', 'user')
   refreshTokens!: unknown[];
