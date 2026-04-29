@@ -1,0 +1,24 @@
+{
+  "name": "@ged/database",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "build": "tsc",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint \"src/**/*.ts\"",
+    "db:migrate": "ts-node ./src/migrations/run.ts",
+    "db:migrate:revert": "typeorm migration:revert",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "typeorm": "^0.3.20",
+    "pg": "^8.12.0",
+    "reflect-metadata": "^0.2.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "ts-node": "^10.9.0"
+  }
+}

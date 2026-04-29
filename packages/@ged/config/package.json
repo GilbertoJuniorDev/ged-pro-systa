@@ -1,0 +1,11 @@
+{
+  "name": "@ged/config",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "lint": "echo 'No lint for config package'"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  }
+}
