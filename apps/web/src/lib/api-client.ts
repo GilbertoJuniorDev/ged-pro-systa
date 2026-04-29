@@ -1,0 +1,83 @@
+import type { ApiError as ApiErrorType } from '@/types';
+
+export class ApiError extends Error {
+  readonly statusCode: number;
+  readonly code: string;
+
+  constructor(message: string, statusCode: number, code: string) {
+    super(message);
+    this.name = 'ApiError';
+    this.statusCode = statusCode;
+    this.code = code;
+  }
+}
+
+type RequestOptions = Omit<RequestInit, 'body'> & {
+  body?: unknown;
+  token?: string;
+};
+
+interface SuccessBody<T> {
+  success: true;
+  data: T;
+  message: string;
+  timestamp: string;
+}
+
+interface ErrorBody {
+  success: false;
+  error: Partial<ApiErrorType>;
+  timestamp: string;
+}
+
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+
+async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+  const { body, token, headers: extraHeaders, ...rest } = options;
+
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(extraHeaders as Record<string, string>),
+  };
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const response = await fetch(`${BASE_URL}${path}`, {
+    ...rest,
+    headers,
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+
+  if (!response.ok) {
+    const errorBody = (await response.json().catch(() => ({}))) as Partial<ErrorBody>;
+    const errorDetails = errorBody.error ?? {};
+    throw new ApiError(
+      errorDetails.message ?? response.statusText,
+      errorDetails.statusCode ?? response.status,
+      errorDetails.code ?? 'UNKNOWN_ERROR',
+    );
+  }
+
+  const json = (await response.json()) as SuccessBody<T>;
+  return json.data;
+}
+
+function get<T>(path: string, options?: Omit<RequestOptions, 'body'>): Promise<T> {
+  return request<T>(path, { ...options, method: 'GET' });
+}
+
+function post<T>(path: string, body?: unknown, options?: Omit<RequestOptions, 'body'>): Promise<T> {
+  return request<T>(path, { ...options, method: 'POST', body });
+}
+
+function put<T>(path: string, body?: unknown, options?: Omit<RequestOptions, 'body'>): Promise<T> {
+  return request<T>(path, { ...options, method: 'PUT', body });
+}
+
+function del<T>(path: string, options?: Omit<RequestOptions, 'body'>): Promise<T> {
+  return request<T>(path, { ...options, method: 'DELETE' });
+}
+
+export const apiClient = { request, get, post, put, delete: del };

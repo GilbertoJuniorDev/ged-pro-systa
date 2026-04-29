@@ -57,11 +57,11 @@ export class AuthService {
     const payload = { sub: user.id, email: user.email, role: user.role };
 
     const jwtSecret = this.config.getOrThrow<string>('JWT_SECRET');
-    const jwtExpiry = this.config.get<string>('JWT_EXPIRY') ?? '15m';
+    const jwtExpiry = this.config.get<string>('JWT_EXPIRES_IN') ?? '15m';
     const jwtRefreshSecret =
       this.config.getOrThrow<string>('JWT_REFRESH_SECRET');
     const jwtRefreshExpiry =
-      this.config.get<string>('JWT_REFRESH_EXPIRY') ?? '7d';
+      this.config.get<string>('JWT_REFRESH_EXPIRES_IN') ?? '7d';
 
     const accessExpiresIn = parseDurationToSeconds(jwtExpiry);
     const refreshExpiresIn = parseDurationToSeconds(jwtRefreshExpiry);
@@ -86,7 +86,7 @@ export class AuthService {
     });
     await this.refreshTokenRepo.save(rt);
 
-    return { accessToken, refreshToken, expiresIn: accessExpiresIn };
+    return { accessToken, refreshToken, expiresIn: accessExpiresIn, user: { id: user.id, email: user.email, name: user.name, role: user.role } };
   }
 
   async refreshTokens(

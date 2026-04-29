@@ -56,7 +56,7 @@ async function fillLoginForm(
 // ─── Jornada A: login com credenciais válidas ─────────────────────────────────
 
 test.describe('Autenticação — jornadas E2E', () => {
-  test.fixme(
+  test(
     'Jornada A — login válido redireciona para /dashboard',
     async ({ page }) => {
       await page.goto('/login');
@@ -70,7 +70,7 @@ test.describe('Autenticação — jornadas E2E', () => {
 
   // ─── Jornada B: login com credenciais inválidas ──────────────────────────
 
-  test.fixme(
+  test(
     'Jornada B — credenciais inválidas exibem mensagem de erro',
     async ({ page }) => {
       await page.goto('/login');
@@ -85,7 +85,7 @@ test.describe('Autenticação — jornadas E2E', () => {
 
   // ─── Jornada C: acesso direto a rota protegida sem autenticação ──────────
 
-  test.fixme(
+  test(
     'Jornada C — acesso a /dashboard sem login redireciona para /login',
     async ({ page }) => {
       // Acessa diretamente o dashboard sem estar autenticado

@@ -10,6 +10,7 @@ COPY packages/@ged/ui/package.json ./packages/@ged/ui/
 COPY packages/@ged/types/package.json ./packages/@ged/types/
 COPY packages/@ged/utils/package.json ./packages/@ged/utils/
 COPY packages/@ged/config/package.json ./packages/@ged/config/
+COPY packages/@ged/database/package.json ./packages/@ged/database/
 
 RUN pnpm install --frozen-lockfile --filter=web...
 
@@ -22,7 +23,17 @@ COPY apps/web/postcss.config.mjs ./apps/web/
 
 COPY packages/@ged/ui/src ./packages/@ged/ui/src
 COPY packages/@ged/types/src ./packages/@ged/types/src
+COPY packages/@ged/types/tsconfig.json ./packages/@ged/types/
 COPY packages/@ged/utils/src ./packages/@ged/utils/src
+COPY packages/@ged/utils/tsconfig.json ./packages/@ged/utils/
 COPY packages/@ged/config ./packages/@ged/config
+COPY packages/@ged/database/src ./packages/@ged/database/src
+COPY packages/@ged/database/tsconfig.json ./packages/@ged/database/
+
+# Compila os pacotes de tipos compartilhados (main/types apontam para dist/)
+# @ged/database precisa ser compilado primeiro pois @ged/types depende dele
+RUN pnpm --filter=@ged/database build \
+ && pnpm --filter=@ged/types build \
+ && pnpm --filter=@ged/utils build
 
 CMD ["pnpm", "--filter=web", "dev"]

@@ -1,4 +1,5 @@
-// TODO: Implement login page
+import { LoginPageClient } from './_components/login-page-client';
+
 export default function LoginPage() {
-  return <div>Login</div>;
+  return <LoginPageClient />;
 }
