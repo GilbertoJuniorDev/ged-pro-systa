@@ -66,6 +66,25 @@ refactor(storage): extrai adapter S3 do StorageService
 - **Observer / Domain Events** — `EventEmitter2` para eventos como `document.uploaded`
 - **Module Pattern** — Cada feature NestJS é um módulo auto-suficiente
 
+## Regras de TypeScript
+
+Estas regras são **inegociáveis** e se aplicam a todo arquivo `.ts` e `.tsx` do projeto.
+
+| Regra | Obrigação |
+|---|---|
+| `strict: true` em todo `tsconfig.json` | NUNCA desabilitar flags individualmente; `strict` habilita todas de uma vez |
+| Proibido `any` | Usar `unknown` + type narrowing (`typeof`, `instanceof`, type guards). Se inevitável, adicionar `// eslint-disable-next-line @typescript-eslint/no-explicit-any` com justificativa |
+| Proibido `as T` sem prova | Type assertion só quando o compilador não consegue inferir e o tipo é provadamente correto. Preferir type guards |
+| Proibido `enum` nativo | Usar `const object + as const + typeof`: `const ROLE = { ADMIN: 'ADMIN' } as const; type Role = typeof ROLE[keyof typeof ROLE]` |
+| `interface` vs `type` | `interface` para shapes de objetos e contratos (DTOs, entidades, props de componentes). `type` para unions, intersections e aliases primitivos |
+| `readonly` em imutáveis | Props de DTOs de entrada, configs e constantes de domínio devem ser `readonly` |
+| Sem `Function`, `Object`, `{}` | Usar assinaturas explícitas: `(id: string) => Promise<void>`. Usar `Record<K, V>` para mapas genéricos |
+| `import type` para tipos | `import type { User } from '...'` — NUNCA importar apenas tipos com `import` comum |
+| Sem `!` non-null assertion | Usar `??`, `?.` ou validar explicitamente. `!` permitido apenas em setup de testes (`beforeEach`) com comentário explicativo |
+| `??` no lugar de `\|\|` para null/undefined | `||` avalia falsy (inclui `0`, `''`). Usar `??` quando só quer cobrir `null`/`undefined` |
+| Generics descritivos | `T` só quando o contexto é óbvio. Caso contrário: `TEntity`, `TResult`, `TFilter` |
+| Usar `satisfies` para objetos literais | `satisfies` valida o objeto contra um tipo sem widening — obrigatório em configs, mocks e constantes de domínio |
+
 ## Documentação de Referência
 
 - Arquitetura completa: [`docs/ARCHITECTURE.md`](../docs/ARCHITECTURE.md)

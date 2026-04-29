@@ -5,5 +5,12 @@
   "testRegex": ".e2e-spec.ts$",
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
+  },
+  "moduleNameMapper": {
+    "^@ged/database$": "<rootDir>/../../../packages/@ged/database/src/index.ts",
+    "^@ged/types$": "<rootDir>/../../../packages/@ged/types/src/index.ts",
+    "^@ged/utils$": "<rootDir>/../../../packages/@ged/utils/src/index.ts",
+    "^@ged/ui$": "<rootDir>/../../../packages/@ged/ui/src/index.ts",
+    "^@/(.*)$": "<rootDir>/../src/$1"
   }
 }

@@ -15,113 +15,45 @@ packages/@ged/database/src/entities/
 └── document.entity.ts
 ```
 
-## Convenções Obrigatórias
+## Convenções de Nomenclatura
 
-- Colunas: `snake_case` via `@Column({ name: 'snake_case_name' })` — TypeScript usa `camelCase`
-- Tabelas: `snake_case` plural via `@Entity('table_name')`
-- PKs: sempre `uuid` via `@PrimaryGeneratedColumn('uuid')`
-- Datas: sempre `@CreateDateColumn` e `@UpdateDateColumn` com `name: 'created_at'` / `name: 'updated_at'`
-- Relacionamentos: `onDelete: 'CASCADE'` em FKs quando a entidade filha não faz sentido sem a pai
+- Tabelas: `snake_case` plural no `@Entity()` — o nome da classe em TypeScript é `PascalCase` singular
+- Colunas: propriedades em `camelCase` no TypeScript, mas sempre com `name: 'snake_case'` explícito no decorator `@Column()`
+- PKs: sempre `uuid` — nunca `int` auto-increment
+- FKs: sempre declarar a coluna da FK explicitamente (ex: `categoryId`) além do relacionamento (`category`), para facilitar queries sem join
+- Datas de auditoria: toda entidade deve ter `createdAt` e `updatedAt` usando os decorators específicos do TypeORM, com o nome da coluna em `snake_case`
 
-## Entidade User
+## Boas Práticas para Entidades
 
-```typescript
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+- **Enum nativo do banco vs `const object`**: para colunas `enum` no PostgreSQL, use a feature nativa do TypeORM — garante validação no nível do banco. Fora da entidade, exporte um `const object + as const` para o restante da aplicação consumir (nunca o `enum` TypeScript diretamente)
+- **Campos nullable**: apenas declare `nullable: true` quando o campo **realmente** for opcional no domínio. Não usar nullable como atalho para campos não implementados ainda
+- **Defaults**: preferir defaults na entidade (`default: value`) em vez de apenas no banco via migration, para que o TypeScript conheça o valor padrão sem precisar buscá-lo
+- **`select: false`**: use em colunas sensíveis (ex: `passwordHash`) para evitar retorno acidental em queries sem `addSelect` explícito
+- **Relacionamentos lazy vs eager**: nunca usar `eager: true` — carregar relacionamentos explicitamente com `relations: []` no Repository para evitar N+1 queries acidentais
+- **`cascade`**: evitar `cascade: true` em relacionamentos — prefira operações explícitas. Reserve `onDelete: 'CASCADE'` apenas para entidades sem significado sem a entidade pai (ex: `RefreshToken` sem `User`)
 
-export enum Role {
-  ADMIN = 'ADMIN',
-  MANAGER = 'MANAGER',
-  VIEWER = 'VIEWER',
-}
+## Boas Práticas para Migrations
 
-@Entity('users')
-export class User {
-  @PrimaryGeneratedColumn('uuid') id: string;
-  @Column() name: string;
-  @Column({ unique: true }) email: string;
-  @Column({ name: 'password_hash' }) passwordHash: string;
-  @Column({ type: 'enum', enum: Role, default: Role.VIEWER }) role: Role;
-  @Column({ name: 'is_active', default: true }) isActive: boolean;
-  @CreateDateColumn({ name: 'created_at' }) createdAt: Date;
-  @UpdateDateColumn({ name: 'updated_at' }) updatedAt: Date;
-  @OneToMany(() => Document, (doc) => doc.uploader) documents: Document[];
-  @OneToMany(() => RefreshToken, (rt) => rt.user) refreshTokens: RefreshToken[];
-}
-```
+- Sempre implementar o método `down()` — migration sem rollback não é migration, é bomba-relógio
+- Nunca dropar ou renomear uma coluna na mesma release que remove o código que a usa — deploys são progressivos
+- Nunca usar `synchronize: true` fora de ambiente de teste isolado — em dev e prod, sempre migrations explícitas
+- Nomear a migration de forma descritiva: `CreateUsersTable`, `AddIsActiveToUsers`, `AddCategoryIdToDocuments`
+- Testar o rollback (`pnpm db:migrate:revert`) localmente antes de abrir PR
+- Uma migration por mudança lógica — não agrupar alterações não relacionadas na mesma migration
 
-## Entidade RefreshToken
+## Relacionamentos — Decisão
 
-```typescript
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
-import { User } from './user.entity';
+| Situação | Decorator correto |
+|---|---|
+| Um usuário tem muitos documentos | `@OneToMany` no User + `@ManyToOne` no Document |
+| Documento pertence a uma categoria | `@ManyToOne` no Document + `@OneToMany` na Category |
+| Entidade filha não existe sem a pai | `onDelete: 'CASCADE'` na FK |
+| Entidade filha pode existir sem a pai | `onDelete: 'SET NULL'` + coluna nullable |
 
-@Entity('refresh_tokens')
-export class RefreshToken {
-  @PrimaryGeneratedColumn('uuid') id: string;
-  @Column({ unique: true }) token: string;
-  @Column({ name: 'user_id' }) userId: string;
-  @Column({ name: 'expires_at' }) expiresAt: Date;
-  @CreateDateColumn({ name: 'created_at' }) createdAt: Date;
-  @ManyToOne(() => User, (user) => user.refreshTokens, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'user_id' })
-  user: User;
-}
-```
+## O que verificar antes de criar uma entidade
 
-## Entidade Category
-
-```typescript
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
-import { Document } from './document.entity';
-
-@Entity('categories')
-export class Category {
-  @PrimaryGeneratedColumn('uuid') id: string;
-  @Column({ unique: true }) name: string;
-  @Column({ nullable: true }) description?: string;
-  @CreateDateColumn({ name: 'created_at' }) createdAt: Date;
-  @UpdateDateColumn({ name: 'updated_at' }) updatedAt: Date;
-  @OneToMany(() => Document, (doc) => doc.category) documents: Document[];
-}
-```
-
-## Entidade Document
-
-```typescript
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
-import { Category } from './category.entity';
-import { User } from './user.entity';
-
-export enum DocumentStatus {
-  ACTIVE = 'ACTIVE',
-  ARCHIVED = 'ARCHIVED',
-  DELETED = 'DELETED',
-}
-
-@Entity('documents')
-export class Document {
-  @PrimaryGeneratedColumn('uuid') id: string;
-  @Column() title: string;
-  @Column({ nullable: true }) description?: string;
-  @Column({ name: 'file_name' }) fileName: string;
-  @Column({ name: 'file_path' }) filePath: string;
-  @Column({ name: 'mime_type' }) mimeType: string;
-  @Column({ name: 'file_size' }) fileSize: number;
-  @Column({ default: 1 }) version: number;
-  @Column({ type: 'enum', enum: DocumentStatus, default: DocumentStatus.ACTIVE }) status: DocumentStatus;
-  @Column({ type: 'text', array: true, default: '{}' }) tags: string[];
-  @Column({ name: 'category_id' }) categoryId: string;
-  @Column({ name: 'uploaded_by' }) uploadedBy: string;
-  @CreateDateColumn({ name: 'created_at' }) createdAt: Date;
-  @UpdateDateColumn({ name: 'updated_at' }) updatedAt: Date;
-  @ManyToOne(() => Category, (cat) => cat.documents) @JoinColumn({ name: 'category_id' }) category: Category;
-  @ManyToOne(() => User, (user) => user.documents) @JoinColumn({ name: 'uploaded_by' }) uploader: User;
-}
-```
-
-## Migrations
-
-- Sempre criar migrations reversíveis (método `down` obrigatório)
-- Nunca dropar colunas na mesma release que remove o código que as usa
-- Rodar via `pnpm db:migrate` — nunca `synchronize: true` em produção
-- Testar rollback (`pnpm db:migrate:revert`) antes de abrir PR
+1. A tabela já existe? Verificar `src/entities/` antes de criar uma nova
+2. Precisa de soft delete? Considerar `@DeleteDateColumn` no lugar de um campo `status = 'DELETED'`
+3. Os campos de auditoria estão presentes? (`createdAt`, `updatedAt` são obrigatórios em toda entidade)
+4. As FKs estão declaradas como coluna + relacionamento? (ex: `categoryId` + `category`)
+5. A entidade está exportada no `index.ts` do package?
