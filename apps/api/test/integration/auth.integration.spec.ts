@@ -7,11 +7,12 @@ import { ConfigModule } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { Reflector } from '@nestjs/core';
 import * as bcrypt from 'bcrypt';
-import { RefreshToken } from '@ged/database';
+import { RefreshToken, PasswordResetToken } from '@ged/database';
 import { AuthService } from '@/modules/auth/auth.service';
 import { AuthController } from '@/modules/auth/auth.controller';
 import { JwtStrategy } from '@/modules/auth/strategies/jwt.strategy';
 import { UsersService, USER_REPOSITORY } from '@/modules/users/users.service';
+import { MailService } from '@/modules/mail/mail.service';
 import { TransformInterceptor } from '@/common/interceptors/transform.interceptor';
 import { HttpExceptionFilter } from '@/common/filters/http-exception.filter';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
@@ -38,13 +39,20 @@ function makeUser(overrides: Partial<User> = {}): User {
 
 describe('AuthController (integration)', () => {
   let app: INestApplication;
-  let mockUsersService: jest.Mocked<Pick<UsersService, 'findByEmail' | 'findById' | 'create'>>;
+  let mockUsersService: jest.Mocked<Pick<UsersService, 'findByEmail' | 'findById' | 'create' | 'updatePassword'>>;
   let mockRefreshTokenRepo: {
     find: jest.Mock;
     create: jest.Mock;
     save: jest.Mock;
     delete: jest.Mock;
   };
+  let mockPasswordResetTokenRepo: {
+    findOne: jest.Mock;
+    create: jest.Mock;
+    save: jest.Mock;
+    delete: jest.Mock;
+  };
+  let mockMailService: jest.Mocked<Pick<MailService, 'sendPasswordReset'>>;
   let jwtService: JwtService;
 
   beforeAll(async () => {
@@ -52,6 +60,7 @@ describe('AuthController (integration)', () => {
       findByEmail: jest.fn(),
       findById: jest.fn(),
       create: jest.fn(),
+      updatePassword: jest.fn(),
     };
 
     mockRefreshTokenRepo = {
@@ -59,6 +68,17 @@ describe('AuthController (integration)', () => {
       create: jest.fn().mockImplementation((data) => data),
       save: jest.fn().mockResolvedValue({}),
       delete: jest.fn().mockResolvedValue({}),
+    };
+
+    mockPasswordResetTokenRepo = {
+      findOne: jest.fn(),
+      create: jest.fn().mockImplementation((data) => data),
+      save: jest.fn().mockResolvedValue({}),
+      delete: jest.fn().mockResolvedValue({}),
+    };
+
+    mockMailService = {
+      sendPasswordReset: jest.fn().mockResolvedValue(undefined),
     };
 
     const moduleRef: TestingModule = await Test.createTestingModule({
@@ -85,6 +105,8 @@ describe('AuthController (integration)', () => {
         { provide: UsersService, useValue: mockUsersService },
         { provide: USER_REPOSITORY, useValue: {} },
         { provide: getRepositoryToken(RefreshToken), useValue: mockRefreshTokenRepo },
+        { provide: getRepositoryToken(PasswordResetToken), useValue: mockPasswordResetTokenRepo },
+        { provide: MailService, useValue: mockMailService },
         { provide: APP_GUARD, useClass: JwtAuthGuard },
         Reflector,
       ],
@@ -236,6 +258,117 @@ describe('AuthController (integration)', () => {
         .set('Authorization', `Bearer ${accessToken}`)
         .send({ refreshToken })
         .expect(204);
+    });
+  });
+
+  describe('POST /auth/forgot-password', () => {
+    it('should return 200 with generic message even when email does not exist', async () => {
+      mockUsersService.findByEmail.mockResolvedValue(null);
+
+      const { body } = await request(app.getHttpServer())
+        .post('/auth/forgot-password')
+        .send({ email: 'nobody@ged.local' })
+        .expect(200);
+
+      expect(body.success).toBe(true);
+      expect(body.data.message).toContain('instruções');
+      expect(mockMailService.sendPasswordReset).not.toHaveBeenCalled();
+    });
+
+    it('should return 200 and send email when user exists', async () => {
+      const user = makeUser();
+      mockUsersService.findByEmail.mockResolvedValue(user);
+
+      const { body } = await request(app.getHttpServer())
+        .post('/auth/forgot-password')
+        .send({ email: user.email })
+        .expect(200);
+
+      expect(body.success).toBe(true);
+      expect(mockMailService.sendPasswordReset).toHaveBeenCalledWith(
+        user.email,
+        expect.stringContaining('/reset-password?token='),
+        user.name,
+      );
+    });
+
+    it('should return 400 when email is not valid', async () => {
+      const { body } = await request(app.getHttpServer())
+        .post('/auth/forgot-password')
+        .send({ email: 'not-valid' })
+        .expect(400);
+
+      expect(body.success).toBe(false);
+    });
+  });
+
+  describe('POST /auth/reset-password', () => {
+    it('should return 400 when token is invalid (not found)', async () => {
+      mockPasswordResetTokenRepo.findOne.mockResolvedValue(null);
+
+      const { body } = await request(app.getHttpServer())
+        .post('/auth/reset-password')
+        .send({ token: 'a'.repeat(64), newPassword: 'NewP@ssw0rd' })
+        .expect(400);
+
+      expect(body.success).toBe(false);
+      expect(body.error.statusCode).toBe(400);
+    });
+
+    it('should return 400 when token is expired', async () => {
+      mockPasswordResetTokenRepo.findOne.mockResolvedValue({
+        id: 'prt-1',
+        tokenHash: 'hash',
+        userId: 'user-uuid-1',
+        expiresAt: new Date(Date.now() - 1000),
+      });
+
+      const { body } = await request(app.getHttpServer())
+        .post('/auth/reset-password')
+        .send({ token: 'a'.repeat(64), newPassword: 'NewP@ssw0rd' })
+        .expect(400);
+
+      expect(body.success).toBe(false);
+    });
+
+    it('should return 400 when token is shorter than 64 chars', async () => {
+      const { body } = await request(app.getHttpServer())
+        .post('/auth/reset-password')
+        .send({ token: 'short', newPassword: 'NewP@ssw0rd' })
+        .expect(400);
+
+      expect(body.success).toBe(false);
+    });
+
+    it('should return 400 when password does not meet complexity requirements', async () => {
+      const { body } = await request(app.getHttpServer())
+        .post('/auth/reset-password')
+        .send({ token: 'a'.repeat(64), newPassword: 'alllowercase1' })
+        .expect(400);
+
+      expect(body.success).toBe(false);
+    });
+
+    it('should return 200 and update password when token is valid', async () => {
+      const user = makeUser();
+      mockPasswordResetTokenRepo.findOne.mockResolvedValue({
+        id: 'prt-1',
+        tokenHash: 'hash',
+        userId: user.id,
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+      });
+      mockUsersService.findById.mockResolvedValue(user);
+      jest.spyOn(bcrypt, 'hash').mockResolvedValue('new-hash' as never);
+      mockUsersService.updatePassword.mockResolvedValue(undefined);
+
+      const { body } = await request(app.getHttpServer())
+        .post('/auth/reset-password')
+        .send({ token: 'a'.repeat(64), newPassword: 'NewP@ssw0rd1' })
+        .expect(200);
+
+      expect(body.success).toBe(true);
+      expect(body.data.message).toContain('sucesso');
+      expect(mockUsersService.updatePassword).toHaveBeenCalledWith(user.id, 'new-hash');
     });
   });
 });

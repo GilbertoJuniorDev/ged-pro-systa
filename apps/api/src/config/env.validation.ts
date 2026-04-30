@@ -10,6 +10,12 @@ const envSchema = z.object({
   NODE_ENV: z
     .enum(['development', 'production', 'test'])
     .default('development'),
+  MAIL_HOST: z.string().min(1),
+  MAIL_PORT: z.coerce.number().int().positive().default(1025),
+  MAIL_USER: z.string().default(''),
+  MAIL_PASS: z.string().default(''),
+  MAIL_FROM: z.string().min(1).default('noreply@ged.local'),
+  APP_URL: z.string().url().default('http://localhost:3000'),
 });
 
 export type Env = z.infer<typeof envSchema>;

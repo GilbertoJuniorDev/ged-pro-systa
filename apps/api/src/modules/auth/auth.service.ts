@@ -2,15 +2,18 @@ import {
   Injectable,
   UnauthorizedException,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
-import { User, RefreshToken } from '@ged/database';
+import * as crypto from 'crypto';
+import { User, RefreshToken, PasswordResetToken } from '@ged/database';
 import type { AuthTokensResponse } from '@ged/types';
 import { UsersService } from '../users/users.service';
+import { MailService } from '../mail/mail.service';
 
 /** Converte uma string de duração (ex: "15m", "7d") para segundos */
 function parseDurationToSeconds(duration: string): number {
@@ -34,8 +37,11 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly config: ConfigService,
+    private readonly mailService: MailService,
     @InjectRepository(RefreshToken)
     private readonly refreshTokenRepo: Repository<RefreshToken>,
+    @InjectRepository(PasswordResetToken)
+    private readonly passwordResetTokenRepo: Repository<PasswordResetToken>,
   ) {}
 
   async validateUser(
@@ -137,6 +143,59 @@ export class AuthService {
         return;
       }
     }
+  }
+
+  async forgotPassword(email: string): Promise<void> {
+    const user = await this.usersService.findByEmail(email);
+    // Silent fail — never reveal whether the address exists (OWASP A01)
+    if (!user) return;
+
+    // Remove any outstanding reset tokens for this user before issuing a new one
+    await this.passwordResetTokenRepo.delete({ userId: user.id });
+
+    const rawToken = crypto.randomBytes(32).toString('hex');
+    const tokenHash = crypto
+      .createHash('sha256')
+      .update(rawToken)
+      .digest('hex');
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+    const prt = this.passwordResetTokenRepo.create({
+      tokenHash,
+      userId: user.id,
+      expiresAt,
+    });
+    await this.passwordResetTokenRepo.save(prt);
+
+    const appUrl = this.config.get<string>('APP_URL') ?? 'http://localhost:3000';
+    const resetUrl = `${appUrl}/reset-password?token=${rawToken}`;
+
+    await this.mailService.sendPasswordReset(user.email, resetUrl, user.name);
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    const tokenHash = crypto
+      .createHash('sha256')
+      .update(token)
+      .digest('hex');
+
+    const prt = await this.passwordResetTokenRepo.findOne({
+      where: { tokenHash },
+    });
+
+    if (!prt || prt.expiresAt < new Date()) {
+      throw new BadRequestException('Token inválido ou expirado');
+    }
+
+    const user = await this.usersService.findById(prt.userId);
+    if (!user) {
+      throw new BadRequestException('Token inválido ou expirado');
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 12);
+    await this.usersService.updatePassword(user.id, passwordHash);
+
+    await this.passwordResetTokenRepo.delete({ id: prt.id });
   }
 }
 

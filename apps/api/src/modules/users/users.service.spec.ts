@@ -28,6 +28,7 @@ describe('UsersService', () => {
       findByEmail: jest.fn(),
       findById: jest.fn(),
       create: jest.fn(),
+      updatePassword: jest.fn(),
     };
 
     const module = await Test.createTestingModule({

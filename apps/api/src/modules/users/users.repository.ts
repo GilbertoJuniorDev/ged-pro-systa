@@ -30,4 +30,8 @@ export class UsersRepository implements IUserRepository {
     const user = this.repo.create(data);
     return this.repo.save(user);
   }
+
+  async updatePassword(id: string, passwordHash: string): Promise<void> {
+    await this.repo.update(id, { passwordHash });
+  }
 }

@@ -25,4 +25,8 @@ export class UsersService {
   create(data: CreateUserData): Promise<User> {
     return this.userRepository.create(data);
   }
+
+  updatePassword(id: string, passwordHash: string): Promise<void> {
+    return this.userRepository.updatePassword(id, passwordHash);
+  }
 }

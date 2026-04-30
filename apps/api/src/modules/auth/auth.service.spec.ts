@@ -2,12 +2,17 @@ import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  NotFoundException,
+  UnauthorizedException,
+  BadRequestException,
+} from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { RefreshToken } from '@ged/database';
+import { RefreshToken, PasswordResetToken } from '@ged/database';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import { USER_REPOSITORY } from '../users/users.service';
+import { MailService } from '../mail/mail.service';
 import type { User } from '@ged/database';
 
 // Fábrica para criar um User de teste sem passwordHash
@@ -41,7 +46,7 @@ function makeRefreshToken(overrides: Partial<RefreshToken> = {}): RefreshToken {
 
 describe('AuthService', () => {
   let service: AuthService;
-  let mockUsersService: jest.Mocked<Pick<UsersService, 'findByEmail' | 'findById'>>;
+  let mockUsersService: jest.Mocked<Pick<UsersService, 'findByEmail' | 'findById' | 'updatePassword'>>;
   let mockJwtService: jest.Mocked<Pick<JwtService, 'sign' | 'decode'>>;
   let mockConfigService: jest.Mocked<Pick<ConfigService, 'get' | 'getOrThrow'>>;
   let mockRefreshTokenRepo: {
@@ -50,11 +55,19 @@ describe('AuthService', () => {
     save: jest.Mock;
     delete: jest.Mock;
   };
+  let mockPasswordResetTokenRepo: {
+    findOne: jest.Mock;
+    create: jest.Mock;
+    save: jest.Mock;
+    delete: jest.Mock;
+  };
+  let mockMailService: jest.Mocked<Pick<MailService, 'sendPasswordReset'>>;
 
   beforeEach(async () => {
     mockUsersService = {
       findByEmail: jest.fn(),
       findById: jest.fn(),
+      updatePassword: jest.fn(),
     };
 
     mockJwtService = {
@@ -86,6 +99,17 @@ describe('AuthService', () => {
       delete: jest.fn(),
     };
 
+    mockPasswordResetTokenRepo = {
+      findOne: jest.fn(),
+      create: jest.fn(),
+      save: jest.fn(),
+      delete: jest.fn(),
+    };
+
+    mockMailService = {
+      sendPasswordReset: jest.fn().mockResolvedValue(undefined),
+    };
+
     const module = await Test.createTestingModule({
       providers: [
         AuthService,
@@ -104,6 +128,14 @@ describe('AuthService', () => {
         {
           provide: getRepositoryToken(RefreshToken),
           useValue: mockRefreshTokenRepo,
+        },
+        {
+          provide: getRepositoryToken(PasswordResetToken),
+          useValue: mockPasswordResetTokenRepo,
+        },
+        {
+          provide: MailService,
+          useValue: mockMailService,
         },
         // UsersService exige o token USER_REPOSITORY, mas aqui usamos mock direto
         {
@@ -253,6 +285,118 @@ describe('AuthService', () => {
       await service.logout('user-uuid-1', 'unknown-token');
 
       expect(mockRefreshTokenRepo.delete).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('forgotPassword', () => {
+    it('should silently return when email does not exist', async () => {
+      mockUsersService.findByEmail.mockResolvedValue(null);
+
+      await service.forgotPassword('unknown@ged.local');
+
+      expect(mockPasswordResetTokenRepo.delete).not.toHaveBeenCalled();
+      expect(mockMailService.sendPasswordReset).not.toHaveBeenCalled();
+    });
+
+    it('should delete old tokens, save new token and send email when user exists', async () => {
+      const user = makeUser();
+      mockUsersService.findByEmail.mockResolvedValue(user);
+      mockPasswordResetTokenRepo.delete.mockResolvedValue({});
+      mockPasswordResetTokenRepo.create.mockImplementation((data) => data);
+      mockPasswordResetTokenRepo.save.mockResolvedValue({});
+
+      await service.forgotPassword(user.email);
+
+      expect(mockPasswordResetTokenRepo.delete).toHaveBeenCalledWith({
+        userId: user.id,
+      });
+      expect(mockPasswordResetTokenRepo.create).toHaveBeenCalledWith(
+        expect.objectContaining({ userId: user.id }),
+      );
+      expect(mockPasswordResetTokenRepo.save).toHaveBeenCalledTimes(1);
+      expect(mockMailService.sendPasswordReset).toHaveBeenCalledWith(
+        user.email,
+        expect.stringContaining('/reset-password?token='),
+        user.name,
+      );
+    });
+
+    it('should include a 64-char hex token in the reset URL', async () => {
+      const user = makeUser();
+      mockUsersService.findByEmail.mockResolvedValue(user);
+      mockPasswordResetTokenRepo.delete.mockResolvedValue({});
+      mockPasswordResetTokenRepo.create.mockImplementation((data) => data);
+      mockPasswordResetTokenRepo.save.mockResolvedValue({});
+
+      await service.forgotPassword(user.email);
+
+      const [[, sentUrl]] = (mockMailService.sendPasswordReset as jest.Mock).mock.calls;
+      const tokenParam = new URL(sentUrl as string).searchParams.get('token');
+      expect(tokenParam).toMatch(/^[0-9a-f]{64}$/);
+    });
+  });
+
+  describe('resetPassword', () => {
+    it('should throw BadRequestException when token hash is not found', async () => {
+      mockPasswordResetTokenRepo.findOne.mockResolvedValue(null);
+
+      await expect(
+        service.resetPassword('a'.repeat(64), 'NewP@ssw0rd'),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should throw BadRequestException when token is expired', async () => {
+      const expiredPrt = {
+        id: 'prt-uuid-1',
+        tokenHash: 'some-hash',
+        userId: 'user-uuid-1',
+        expiresAt: new Date(Date.now() - 1000),
+      };
+      mockPasswordResetTokenRepo.findOne.mockResolvedValue(expiredPrt);
+
+      await expect(
+        service.resetPassword('a'.repeat(64), 'NewP@ssw0rd'),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should update password and delete token when token is valid', async () => {
+      const user = makeUser();
+      const validPrt = {
+        id: 'prt-uuid-1',
+        tokenHash: 'some-hash',
+        userId: user.id,
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+      };
+      mockPasswordResetTokenRepo.findOne.mockResolvedValue(validPrt);
+      mockUsersService.findById.mockResolvedValue(user);
+      jest.spyOn(bcrypt, 'hash').mockResolvedValue('new-hashed-password' as never);
+      mockUsersService.updatePassword.mockResolvedValue(undefined);
+      mockPasswordResetTokenRepo.delete.mockResolvedValue({});
+
+      await service.resetPassword('a'.repeat(64), 'NewP@ssw0rd');
+
+      expect(mockUsersService.updatePassword).toHaveBeenCalledWith(
+        user.id,
+        'new-hashed-password',
+      );
+      expect(mockPasswordResetTokenRepo.delete).toHaveBeenCalledWith({
+        id: validPrt.id,
+      });
+    });
+
+    it('should throw BadRequestException when user no longer exists', async () => {
+      const validPrt = {
+        id: 'prt-uuid-1',
+        tokenHash: 'some-hash',
+        userId: 'user-uuid-1',
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+      };
+      mockPasswordResetTokenRepo.findOne.mockResolvedValue(validPrt);
+      mockUsersService.findById.mockResolvedValue(null);
+
+      await expect(
+        service.resetPassword('a'.repeat(64), 'NewP@ssw0rd'),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 });

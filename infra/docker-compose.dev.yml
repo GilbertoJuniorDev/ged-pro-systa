@@ -57,6 +57,12 @@ services:
       JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-7d}
       STORAGE_DRIVER: ${STORAGE_DRIVER:-local}
       STORAGE_LOCAL_PATH: /app/uploads
+      MAIL_HOST: mailhog
+      MAIL_PORT: 1025
+      MAIL_USER: ''
+      MAIL_PASS: ''
+      MAIL_FROM: ${MAIL_FROM:-noreply@ged.local}
+      APP_URL: ${APP_URL:-http://localhost:3000}
       # Necessário no Windows: Docker Desktop não propaga eventos de FS nativos
       CHOKIDAR_USEPOLLING: 'true'
       CHOKIDAR_INTERVAL: '1000'
@@ -112,6 +118,16 @@ services:
       - ../packages/@ged/ui/src:/app/packages/@ged/ui/src
       - ../packages/@ged/types/src:/app/packages/@ged/types/src
       - ../packages/@ged/utils/src:/app/packages/@ged/utils/src
+    networks:
+      - ged-network
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: ged-mailhog-dev
+    restart: unless-stopped
+    ports:
+      - '1025:1025'  # SMTP
+      - '8025:8025'  # Web UI
     networks:
       - ged-network
 
