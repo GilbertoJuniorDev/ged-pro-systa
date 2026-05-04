@@ -30,7 +30,9 @@ interface ErrorBody {
   timestamp: string;
 }
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+// Server (SSR/Auth.js): uses API_INTERNAL_URL (Docker-internal, not exposed to browser)
+// Client (browser): API_INTERNAL_URL is undefined (no NEXT_PUBLIC_ prefix), falls back to NEXT_PUBLIC_API_URL
+const BASE_URL = process.env.API_INTERNAL_URL ?? process.env.NEXT_PUBLIC_API_URL ?? '';
 
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { body, token, headers: extraHeaders, ...rest } = options;

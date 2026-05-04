@@ -100,7 +100,10 @@ services:
         condition: service_healthy
     environment:
       NODE_ENV: development
-      NEXT_PUBLIC_API_URL: http://api:3333
+      # URL pública — acessível pelo browser (host machine)
+      NEXT_PUBLIC_API_URL: http://localhost:3333
+      # URL interna — usada pelo servidor Next.js dentro da rede Docker (SSR/Auth.js)
+      API_INTERNAL_URL: http://api:3333
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-dev_nextauth_secret_change_in_prod}
       NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
       # Necessário no Windows: Next.js usa watchpack para HMR

@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { join, dirname } from 'path';
-import { User, RefreshToken } from '@ged/database';
+import { User, RefreshToken, PasswordResetToken } from '@ged/database';
 
 @Module({
   imports: [
@@ -12,7 +12,7 @@ import { User, RefreshToken } from '@ged/database';
       useFactory: (config: ConfigService) => ({
         type: 'postgres' as const,
         url: config.get<string>('DATABASE_URL'),
-        entities: [User, RefreshToken],
+        entities: [User, RefreshToken, PasswordResetToken],
         synchronize: false,
         migrationsRun: true,
         logging: config.get<string>('NODE_ENV') === 'development',
