@@ -29,7 +29,7 @@ async function bootstrap() {
   app.useGlobalInterceptors(new TransformInterceptor());
 
   const swaggerConfig = new DocumentBuilder()
-    .setTitle('GED Systa API')
+    .setTitle('GED Pro API')
     .setDescription('API do Sistema de Gerenciamento Eletrônico de Documentos')
     .setVersion('1.0')
     .addBearerAuth()
@@ -45,7 +45,7 @@ async function bootstrap() {
     await seedAdmin(dataSource);
   }
 
-  console.log(`GED Systa API rodando na porta ${port}`);
+  console.log(`GED Pro API rodando na porta ${port}`);
 }
 
 bootstrap();

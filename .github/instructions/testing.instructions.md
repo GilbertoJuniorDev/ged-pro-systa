@@ -1,5 +1,5 @@
 ---
-description: "Use when writing tests: unit tests with Jest, integration tests with Supertest, or E2E tests with Playwright. Covers mock strategy, test isolation, naming patterns, coverage requirements, and the test pyramid for the GED Systa project."
+description: "Use when writing tests: unit tests with Jest, integration tests with Supertest, or E2E tests with Playwright. Covers mock strategy, test isolation, naming patterns, coverage requirements, and the test pyramid for the GED Pro project."
 applyTo: "**/*.spec.ts"
 ---
 

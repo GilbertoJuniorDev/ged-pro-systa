@@ -1,4 +1,4 @@
-# Variáveis de Ambiente — GED Systa
+# Variáveis de Ambiente — GED Pro
 
 Copie `.env.example` para `.env` e preencha os valores. **Nunca** commite o `.env` com valores reais.
 

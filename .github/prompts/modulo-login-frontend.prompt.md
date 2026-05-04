@@ -1,9 +1,9 @@
 ---
 agent: agent
-description: Implementa o frontend completo de autenticação (login page, Auth.js, API client, providers, middleware, testes unitários e E2E) no GED Systa
+description: Implementa o frontend completo de autenticação (login page, Auth.js, API client, providers, middleware, testes unitários e E2E) no GED Pro
 ---
 
-Implemente a feature de autenticação no frontend do GED Systa, do zero.
+Implemente a feature de autenticação no frontend do GED Pro, do zero.
 Siga estritamente as regras de:
 - #file:.github/instructions/frontend.instructions.md
 - #file:.github/instructions/project.instructions.md
@@ -106,7 +106,7 @@ Atualize o root layout para:
 - Importar fonte `Inter` via `next/font/google`
 - Envolver a árvore com `ThemeProvider` e `QueryProvider`
 - `SessionProvider` do `next-auth/react` recebendo a sessão como prop (buscar com `auth()` server-side)
-- Metadata: `title: 'GED Systa'`, `description: 'Sistema de Gerenciamento Eletrônico de Documentos'`
+- Metadata: `title: 'GED Pro'`, `description: 'Sistema de Gerenciamento Eletrônico de Documentos'`
 
 ---
 
@@ -115,7 +115,7 @@ Atualize o root layout para:
 **Visual:** siga fielmente o layout dos templates `login.html` (light) e `darklogin.html` (dark):
 - Layout split 50/50: painel esquerdo com formulário + painel direito com marketing (oculto em mobile)
 - Painel direito: gradiente `from-indigo-900 via-slate-900` com blobs decorativos e texto "Gestão Inteligente de Documentos"
-- Logo GED Systa no canto superior esquerdo (ícone SVG de documento + nome)
+- Logo GED Pro no canto superior esquerdo (ícone SVG de documento + nome)
 - Rodapé com copyright
 
 **Componente `LoginForm`** — `'use client'`, extraído em sub-componente:

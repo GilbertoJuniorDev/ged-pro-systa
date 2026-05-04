@@ -1,5 +1,5 @@
 ---
-description: "Use when modifying Docker files, docker-compose.yml, Dockerfiles, or infra configuration. Covers service topology, multi-stage build patterns, healthcheck configuration, and environment variable wiring for the GED Systa stack."
+description: "Use when modifying Docker files, docker-compose.yml, Dockerfiles, or infra configuration. Covers service topology, multi-stage build patterns, healthcheck configuration, and environment variable wiring for the GED Pro stack."
 applyTo: "infra/**"
 ---
 

@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * Playwright Configuration — GED Systa Web (apps/web)
+ * Playwright Configuration — GED Pro Web (apps/web)
  *
  * Os testes E2E do frontend precisam do Next.js em execução.
  * Em CI, o server é iniciado automaticamente via `webServer`.

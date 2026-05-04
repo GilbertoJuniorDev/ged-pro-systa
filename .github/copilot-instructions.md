@@ -1,6 +1,6 @@
-# GED Systa — Project Guidelines
+# GED Pro — Project Guidelines
 
-**GED Systa** é um Sistema de Gerenciamento Eletrônico de Documentos corporativo.
+**GED Pro** é um Sistema de Gerenciamento Eletrônico de Documentos corporativo.
 Monorepo: pnpm + Turborepo · Next.js 16.2 (frontend) · NestJS 11 (backend) · PostgreSQL 17 · Redis 7 · Docker.
 
 ## Stack

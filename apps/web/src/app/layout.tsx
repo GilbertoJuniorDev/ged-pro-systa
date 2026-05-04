@@ -9,7 +9,7 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'GED Systa',
+  title: 'GED Pro',
   description: 'Sistema de Gerenciamento Eletrônico de Documentos',
 };
 

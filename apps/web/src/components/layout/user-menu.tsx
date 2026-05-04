@@ -67,7 +67,7 @@ export function UserMenu({ user }: UserMenuProps) {
       {isOpen && (
         <div
           role="menu"
-          className="absolute bottom-full left-0 right-0 mb-2 bg-slate-800 border border-slate-700 rounded-xl shadow-lg p-1"
+          className="absolute bottom-full left-0 right-0 mb-2 bg-slate-800 border border-slate-700 rounded-xl shadow-lg p-1 animate-scale-in origin-bottom"
         >
           <div className="px-3 py-2 border-b border-slate-700">
             <p className="text-sm font-medium text-slate-200">{user.name}</p>

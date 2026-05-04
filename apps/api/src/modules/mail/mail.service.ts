@@ -12,7 +12,7 @@ export class MailService {
   ): Promise<void> {
     await this.mailerService.sendMail({
       to,
-      subject: 'Redefinição de senha — GED Systa',
+      subject: 'Redefinição de senha — GED Pro',
       template: 'reset-password',
       context: { name, resetUrl },
     });

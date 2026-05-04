@@ -1,4 +1,4 @@
-# Scripts e Pipeline — GED Systa
+# Scripts e Pipeline — GED Pro
 
 ## Scripts pnpm (raiz do monorepo)
 

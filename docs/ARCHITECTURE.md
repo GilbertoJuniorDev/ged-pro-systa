@@ -1,4 +1,4 @@
-# GED Systa — Arquitetura do Projeto
+# GED Pro — Arquitetura do Projeto
 
 > Sistema de Gerenciamento Eletrônico de Documentos (GED)
 > Monorepo · pnpm · Turborepo · Docker · Next.js 16.2 · NestJS 11 · React 19
@@ -27,7 +27,7 @@
 
 ## 1. Visão Geral
 
-O **GED Systa** é uma aplicação corporativa para controle, organização, armazenamento e acesso a documentos digitais. Oferece:
+O **GED Pro** é uma aplicação corporativa para controle, organização, armazenamento e acesso a documentos digitais. Oferece:
 
 - Autenticação e controle de acesso baseado em papéis (RBAC)
 - Upload, versionamento e download de documentos

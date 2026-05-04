@@ -26,7 +26,7 @@ export function Sidebar({ user }: SidebarProps) {
         }`}
       >
         <div className="h-16 flex items-center justify-between px-6 border-b border-slate-700">
-          <span className="text-xl font-bold text-indigo-400 tracking-tight">GED Systa</span>
+          <span className="text-xl font-bold text-indigo-400 tracking-tight">GED Pro</span>
           <button
             type="button"
             className="md:hidden text-slate-500 hover:text-slate-300 transition-colors"
@@ -46,7 +46,7 @@ export function Sidebar({ user }: SidebarProps) {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center px-3 py-2.5 rounded-lg font-medium transition-colors ${
+                className={`flex items-center px-3 py-2.5 rounded-lg font-medium transition-all duration-200 ease-in-out ${
                   isActive
                     ? 'bg-indigo-900/40 text-indigo-400'
                     : 'text-slate-400 hover:bg-slate-800 hover:text-slate-100'
@@ -75,7 +75,7 @@ export function Sidebar({ user }: SidebarProps) {
       {isOpen && (
         <div
           id="sidebarOverlay"
-          className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-20 md:hidden"
+          className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-20 md:hidden animate-fade-in"
           onClick={() => setIsOpen(false)}
           aria-hidden="true"
         />

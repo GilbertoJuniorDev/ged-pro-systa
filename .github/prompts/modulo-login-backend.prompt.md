@@ -1,9 +1,9 @@
 ---
 agent: agent
-description: Implementa o backend completo de autenticação (login, refresh, logout, me) no GED Systa
+description: Implementa o backend completo de autenticação (login, refresh, logout, me) no GED Pro
 ---
 
-Implemente a feature de autenticação no backend do GED Systa, do zero.
+Implemente a feature de autenticação no backend do GED Pro, do zero.
 Siga estritamente as regras de:
 - #file:.github/instructions/backend.instructions.md
 - #file:.github/instructions/database.instructions.md

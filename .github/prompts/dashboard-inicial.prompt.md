@@ -1,9 +1,9 @@
 ---
 agent: agent
-description: Implementa o esqueleto inicial do dashboard (layout com sidebar, user menu com logout e página principal) no GED Systa
+description: Implementa o esqueleto inicial do dashboard (layout com sidebar, user menu com logout e página principal) no GED Pro
 ---
 
-Implemente o esqueleto inicial do dashboard no frontend do GED Systa.
+Implemente o esqueleto inicial do dashboard no frontend do GED Pro.
 Siga estritamente as regras de:
 - #file:.github/instructions/frontend.instructions.md
 - #file:.github/instructions/project.instructions.md
@@ -73,7 +73,7 @@ interface SidebarProps {
 - Estado de visibilidade mobile via `useState<boolean>(false)` — `-translate-x-full` quando fechado
 
 **Header da sidebar:**
-- Logo `GED Systa` com texto `text-xl font-bold text-indigo-400 tracking-tight`
+- Logo `GED Pro` com texto `text-xl font-bold text-indigo-400 tracking-tight`
 - Botão de fechar (mobile) com SVG `M6 18L18 6M6 6l12 12`, visível apenas em `md:hidden`
 
 **Nav** (`flex-1 overflow-y-auto py-4 px-3 space-y-1`):
@@ -175,7 +175,7 @@ function getInitials(name?: string | null): string {
 Substitua o TODO existente. Requisitos:
 - Server Component (sem `'use client'`)
 - Chama `auth()` para obter o nome do usuário (saudação)
-- `export const metadata: Metadata = { title: 'Dashboard — GED Systa' }`
+- `export const metadata: Metadata = { title: 'Dashboard — GED Pro' }`
 
 **Estrutura da página** (fiel ao template `darkesqueleto.html`):
 
@@ -184,7 +184,7 @@ Substitua o TODO existente. Requisitos:
   <!-- Saudação -->
   <div class="mb-8">
     <h2>Olá, {session.user?.name ?? 'usuário'}</h2>
-    <p>Bem-vindo ao GED Systa.</p>
+    <p>Bem-vindo ao GED Pro.</p>
   </div>
 
   <!-- Stat Cards skeleton (3 cards) -->

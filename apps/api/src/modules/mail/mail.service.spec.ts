@@ -31,7 +31,7 @@ describe('MailService', () => {
 
       expect(mockMailerService.sendMail).toHaveBeenCalledWith({
         to,
-        subject: 'Redefinição de senha — GED Systa',
+        subject: 'Redefinição de senha — GED Pro',
         template: 'reset-password',
         context: { name, resetUrl },
       });

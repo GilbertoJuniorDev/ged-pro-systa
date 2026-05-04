@@ -1,8 +1,8 @@
 ---
-description: "Visão geral da arquitetura do GED Systa e índice para instruções especializadas. Use quando precisar entender a estrutura geral do projeto, decisões arquiteturais, stack de tecnologia ou encontrar a instrução correta para uma área específica."
+description: "Visão geral da arquitetura do GED Pro e índice para instruções especializadas. Use quando precisar entender a estrutura geral do projeto, decisões arquiteturais, stack de tecnologia ou encontrar a instrução correta para uma área específica."
 ---
 
-# GED Systa — Índice de Instruções
+# GED Pro — Índice de Instruções
 
 > Este arquivo é o ponto de entrada. Para guias detalhados, consulte as instruções especializadas abaixo.
 
@@ -27,7 +27,7 @@ description: "Visão geral da arquitetura do GED Systa e índice para instruçõ
 
 ## Visão Geral do Projeto
 
-**GED Systa** — Sistema de Gerenciamento Eletrônico de Documentos corporativo.
+**GED Pro** — Sistema de Gerenciamento Eletrônico de Documentos corporativo.
 
 - Autenticação JWT + Refresh Token com RBAC (ADMIN / MANAGER / VIEWER)
 - Upload, versionamento, categorização e pesquisa de documentos
@@ -54,7 +54,7 @@ description: "Visão geral da arquitetura do GED Systa e índice para instruçõ
 
 <!-- CONTEÚDO ORIGINAL PRESERVADO ABAIXO PARA REFERÊNCIA HISTÓRICA — Ver docs/ARCHITECTURE.md para versão legível -->
 
-# GED Systa — Arquitetura do Projeto
+# GED Pro — Arquitetura do Projeto
 
 > Sistema de Gerenciamento Eletrônico de Documentos (GED)
 > Monorepo · pnpm · Turborepo · Docker · Next.js 16.2 · NestJS 11 · React 19
@@ -83,7 +83,7 @@ description: "Visão geral da arquitetura do GED Systa e índice para instruçõ
 
 ## 1. Visão Geral
 
-O **GED Systa** é uma aplicação corporativa para controle, organização, armazenamento e acesso a documentos digitais. Oferece:
+O **GED Pro** é uma aplicação corporativa para controle, organização, armazenamento e acesso a documentos digitais. Oferece:
 
 - Autenticação e controle de acesso baseado em papéis (RBAC)
 - Upload, versionamento e download de documentos
