@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { toast } from 'sonner';
 import { apiClient, ApiError } from '@/lib/api-client';
 
 interface RecoveryFormProps {
@@ -9,22 +10,20 @@ interface RecoveryFormProps {
 
 export function RecoveryForm({ onBack }: RecoveryFormProps) {
   const [email, setEmail] = useState('');
-  const [sent, setSent] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setError(null);
     startTransition(async () => {
       try {
         await apiClient.post('/auth/forgot-password', { email });
-        setSent(true);
+        toast.success(`Link de recuperação enviado para ${email}. Verifique sua caixa de entrada.`);
+        onBack();
       } catch (err) {
         if (err instanceof ApiError) {
-          setError(err.message);
+          toast.error(err.message);
         } else {
-          setError('Erro ao enviar o e-mail. Tente novamente.');
+          toast.error('Erro ao enviar o e-mail. Tente novamente.');
         }
       }
     });
@@ -48,12 +47,7 @@ export function RecoveryForm({ onBack }: RecoveryFormProps) {
         Digite seu e-mail abaixo. Enviaremos as instruções para você redefinir sua senha.
       </p>
 
-      {sent ? (
-        <div className="rounded-lg bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 px-4 py-4 text-sm text-emerald-700 dark:text-emerald-400">
-          Link de recuperação enviado para <strong>{email}</strong>. Verifique sua caixa de entrada.
-        </div>
-      ) : (
-        <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label
               htmlFor="recoveryEmail"
@@ -72,10 +66,6 @@ export function RecoveryForm({ onBack }: RecoveryFormProps) {
               className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-indigo-600 focus:border-transparent outline-none transition-all text-slate-700 dark:text-slate-100 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-700 placeholder-slate-400 dark:placeholder-slate-500 disabled:opacity-50 disabled:cursor-not-allowed"
             />
           </div>
-
-          {error && (
-            <p className="text-sm text-red-500 dark:text-red-400">{error}</p>
-          )}
 
           <button
             type="submit"
@@ -100,7 +90,6 @@ export function RecoveryForm({ onBack }: RecoveryFormProps) {
             )}
           </button>
         </form>
-      )}
     </div>
   );
 }

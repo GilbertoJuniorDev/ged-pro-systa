@@ -6,7 +6,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import type { LoginFormData } from '@/types';
+import { Spinner } from '@/components/ui/spinner';
 
 const loginSchema = z.object({
   email: z.string().email('E-mail inválido'),
@@ -20,7 +22,6 @@ interface LoginFormProps {
 export function LoginForm({ onForgotPassword }: LoginFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
 
   const {
@@ -30,7 +31,6 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
   } = useForm<LoginFormData>({ resolver: zodResolver(loginSchema) });
 
   function onSubmit(data: LoginFormData) {
-    setError(null);
     startTransition(async () => {
       const result = await signIn('credentials', {
         email: data.email,
@@ -38,7 +38,7 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
         redirect: false,
       });
       if (result?.error) {
-        setError('Credenciais inválidas. Verifique seu e-mail e senha.');
+        toast.error('Credenciais inválidas. Verifique seu e-mail e senha.');
       } else {
         router.push('/');
       }
@@ -126,19 +126,20 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
           </label>
         </div>
 
-        {error && (
-          <p data-testid="error-message" className="text-sm text-red-500 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg px-4 py-3">
-            {error}
-          </p>
-        )}
-
         <button
           type="submit"
           data-testid="submit"
           disabled={isPending}
           className="w-full bg-indigo-600 hover:bg-indigo-700 dark:hover:bg-indigo-500 text-white font-semibold py-3 px-4 rounded-lg transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          {isPending ? 'Entrando...' : 'Entrar no Sistema'}
+          {isPending ? (
+            <span className="flex items-center justify-center gap-2">
+              <Spinner size="sm" />
+              Entrando...
+            </span>
+          ) : (
+            'Entrar no Sistema'
+          )}
         </button>
       </form>
     </div>

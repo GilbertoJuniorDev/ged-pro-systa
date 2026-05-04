@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { UserMenu } from './user-menu';
-import { NAV_ITEMS } from './sidebar-nav-items';
+import { NAV_ITEMS, ADMIN_NAV_ITEMS } from './sidebar-nav-items';
+import { useNavigation } from '@/providers/navigation-provider';
+import { Spinner } from '@/components/ui/spinner';
 
 interface SidebarProps {
   readonly user: {
@@ -16,7 +18,22 @@ interface SidebarProps {
 
 export function Sidebar({ user }: SidebarProps) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
   const pathname = usePathname();
+  const { startNavigation } = useNavigation();
+  const isAdmin = user.role === 'ADMIN';
+
+  useEffect(() => {
+    setPendingHref(null);
+  }, [pathname]);
+
+  function handleLinkClick(href: string) {
+    if (href !== pathname) {
+      setPendingHref(href);
+      startNavigation();
+    }
+    setIsOpen(false);
+  }
 
   return (
     <>
@@ -42,29 +59,78 @@ export function Sidebar({ user }: SidebarProps) {
         <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
           {NAV_ITEMS.map((item) => {
             const isActive = pathname === item.href;
+            const isPendingItem = pendingHref === item.href;
             return (
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={() => handleLinkClick(item.href)}
                 className={`flex items-center px-3 py-2.5 rounded-lg font-medium transition-all duration-200 ease-in-out ${
                   isActive
                     ? 'bg-indigo-900/40 text-indigo-400'
                     : 'text-slate-400 hover:bg-slate-800 hover:text-slate-100'
                 }`}
               >
-                <svg
-                  className="w-5 h-5 mr-3"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.iconPath} />
-                </svg>
+                {isPendingItem ? (
+                  <Spinner size="sm" className="mr-3 text-indigo-400" />
+                ) : (
+                  <svg
+                    className="w-5 h-5 mr-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    {item.iconPaths.map((d, i) => (
+                      <path key={i} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
+                    ))}
+                  </svg>
+                )}
                 {item.label}
               </Link>
             );
           })}
+
+          {isAdmin && (
+            <>
+              <div className="pt-4 pb-2 px-3 text-[10px] font-bold uppercase tracking-wider text-slate-600">
+                Sistema
+              </div>
+              {ADMIN_NAV_ITEMS.map((item) => {
+                const isActive = pathname.startsWith('/admin');
+                const isPendingItem = pendingHref === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => handleLinkClick(item.href)}
+                    className={`flex items-center px-3 py-2.5 rounded-lg font-medium transition-all duration-200 ease-in-out ${
+                      isActive
+                        ? 'bg-indigo-900/40 text-indigo-400'
+                        : 'text-slate-400 hover:bg-slate-800 hover:text-slate-100'
+                    }`}
+                  >
+                    {isPendingItem ? (
+                      <Spinner size="sm" className="mr-3 text-indigo-400" />
+                    ) : (
+                      <svg
+                        className="w-5 h-5 mr-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                      >
+                        {item.iconPaths.map((d, i) => (
+                          <path key={i} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
+                        ))}
+                      </svg>
+                    )}
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </>
+          )}
         </nav>
 
         <div className="border-t border-slate-700/50 p-3">
