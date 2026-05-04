@@ -1,6 +1,6 @@
 import type { AuthTokensResponse, JwtPayload } from '@ged/types';
 
-export type { AuthTokensResponse, JwtPayload } from '@ged/types';
+export type { AuthTokensResponse, JwtPayload, UserDto, UpdateUserPayload } from '@ged/types';
 
 export interface LoginFormData {
   email: string;

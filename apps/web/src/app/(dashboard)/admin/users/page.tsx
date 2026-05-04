@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { CreateUserForm } from '../../../../components/admin/create-user-form';
+import { UserList } from '../../../../components/admin/user-list';
 
 export const metadata: Metadata = {
-  title: 'Criar Usuário — GED Pro',
+  title: 'Gerenciar Usuários — GED Pro',
 };
 
 export default function AdminUsersPage() {
@@ -18,14 +19,20 @@ export default function AdminUsersPage() {
             ← Configurações Admin
           </Link>
         </div>
-        <h2 className="text-2xl font-bold text-slate-100">Criar Usuário</h2>
-        <p className="text-slate-400">Adicione um novo usuário ao sistema com a função desejada.</p>
+        <h2 className="text-2xl font-bold text-slate-100">Gerenciar Usuários</h2>
+        <p className="text-slate-400">Crie, edite, ative/desative e remova usuários do sistema.</p>
       </div>
 
-      <div className="max-w-lg">
+      <div className="grid grid-cols-1 xl:grid-cols-[400px_1fr] gap-6 items-start">
+        {/* Coluna esquerda — formulário de criação */}
         <div className="bg-slate-900 rounded-2xl border border-slate-700 shadow-sm p-6">
+          <h3 className="text-base font-semibold text-slate-100 mb-1">Criar Usuário</h3>
+          <p className="text-xs text-slate-400 mb-5">Adicione um novo usuário ao sistema com a função desejada.</p>
           <CreateUserForm />
         </div>
+
+        {/* Coluna direita — listagem de usuários */}
+        <UserList />
       </div>
     </main>
   );

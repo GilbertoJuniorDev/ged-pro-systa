@@ -20,3 +20,17 @@ export interface AuthTokensResponse {
   };
 }
 
+export interface UserDto {
+  readonly id: string;
+  readonly name: string;
+  readonly email: string;
+  readonly role: Role;
+  readonly isActive: boolean;
+  readonly createdAt: string;
+}
+
+export interface UpdateUserPayload {
+  readonly name?: string;
+  readonly role?: Extract<Role, 'MANAGER' | 'VIEWER'>;
+}
+
