@@ -12,6 +12,7 @@ import { usePermissoes } from '../../hooks/use-permissoes';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Combobox } from '@/components/ui/combobox';
+import { PasswordStrengthBar, PasswordStrengthCriteria } from '@/components/ui/password-strength';
 
 const pessoaFisicaSchema = z.object({
   nome: z.string().min(2, 'Nome deve ter ao menos 2 caracteres'),
@@ -129,9 +130,10 @@ export function CreateUserForm() {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-slate-300 mb-1.5">
+            <label htmlFor="password" className="block text-sm font-medium text-slate-300 mb-1">
               Senha
             </label>
+            <PasswordStrengthBar password={watch('password') ?? ''} />
             <input
               id="password"
               type="password"
@@ -140,6 +142,7 @@ export function CreateUserForm() {
               placeholder="Mínimo 8 caracteres"
               {...register('password')}
             />
+            <PasswordStrengthCriteria password={watch('password') ?? ''} />
             {errors.password && (
               <p className="mt-1.5 text-xs text-rose-400">{errors.password.message}</p>
             )}
