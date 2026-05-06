@@ -10,7 +10,7 @@ export default function CategoriesLoading() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {[0, 1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="bg-slate-900 rounded-xl border border-slate-700 p-5">
+          <div key={i} className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900">
             <div className="flex items-center gap-3 mb-3">
               <Skeleton className="h-10 w-10 rounded-lg flex-shrink-0" />
               <Skeleton className="h-5 w-32" />

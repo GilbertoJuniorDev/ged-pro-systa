@@ -114,12 +114,12 @@ export function Combobox({
         onClick={() => setOpen((o) => !o)}
         className={cn(
           'w-full flex items-center justify-between gap-2 rounded-lg px-3.5 py-2.5 text-sm transition-colors',
-          'bg-slate-800 border text-left',
+          'border bg-white text-left dark:bg-slate-800',
           error
             ? 'border-rose-500 focus:ring-rose-500'
-            : 'border-slate-700 focus:ring-indigo-500',
+            : 'border-slate-300 focus:ring-indigo-500 dark:border-slate-700',
           'focus:outline-none focus:ring-2 focus:border-transparent',
-          selectedOption ? 'text-slate-100' : 'text-slate-500',
+          selectedOption ? 'text-slate-900 dark:text-slate-100' : 'text-slate-500',
           disabled && 'opacity-50 cursor-not-allowed',
         )}
       >
@@ -128,7 +128,7 @@ export function Combobox({
         </span>
         <ChevronDown
           className={cn(
-            'w-4 h-4 shrink-0 text-slate-400 transition-transform duration-200',
+            'w-4 h-4 shrink-0 text-slate-500 transition-transform duration-200 dark:text-slate-400',
             open && 'rotate-180',
           )}
         />
@@ -138,12 +138,12 @@ export function Combobox({
       {open && (
         <div
           className={cn(
-            'absolute z-50 mt-2 w-full min-w-[12rem] rounded-xl border border-slate-700',
-            'bg-slate-900 shadow-2xl shadow-black/40 animate-scale-in overflow-hidden',
+            'absolute z-50 mt-2 w-full min-w-[12rem] overflow-hidden rounded-xl border border-slate-200',
+            'animate-scale-in bg-white shadow-lg dark:border-slate-700 dark:bg-slate-900 dark:shadow-2xl dark:shadow-black/40',
           )}
         >
           {/* Search input */}
-          <div className="flex items-center gap-2 px-3 py-2.5 border-b border-slate-700/60">
+          <div className="flex items-center gap-2 border-b border-slate-200 px-3 py-2.5 dark:border-slate-700/60">
             <Search className="w-3.5 h-3.5 shrink-0 text-slate-500" />
             <input
               ref={searchRef}
@@ -153,7 +153,7 @@ export function Combobox({
               onKeyDown={handleKeyDown}
               placeholder={searchPlaceholder}
               className={cn(
-                'flex-1 bg-transparent text-sm text-slate-100 placeholder-slate-500',
+                'flex-1 bg-transparent text-sm text-slate-900 placeholder-slate-500 dark:text-slate-100',
                 'focus:outline-none',
               )}
             />
@@ -183,8 +183,8 @@ export function Combobox({
                     onClick={() => select(option)}
                     className={cn(
                       'flex items-center gap-2.5 px-3 py-2 text-sm cursor-pointer transition-colors select-none',
-                      isActive ? 'bg-slate-700/80' : 'hover:bg-slate-800',
-                      isSelected ? 'text-indigo-300' : 'text-slate-200',
+                      isActive ? 'bg-slate-100 dark:bg-slate-700/80' : 'hover:bg-slate-100 dark:hover:bg-slate-800',
+                      isSelected ? 'text-indigo-700 dark:text-indigo-300' : 'text-slate-700 dark:text-slate-200',
                     )}
                   >
                     <Check

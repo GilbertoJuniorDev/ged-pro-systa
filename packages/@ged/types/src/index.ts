@@ -34,7 +34,7 @@ export interface UpdateUserPayload {
   readonly role?: Extract<Role, 'MANAGER' | 'VIEWER'>;
 }
 
-export interface PermissionDto {
+export interface PermissaoDto {
   readonly id: string;
   readonly nome: string;
   readonly descricao: string | null;
@@ -43,7 +43,9 @@ export interface PermissionDto {
   readonly createdAt: string;
 }
 
-export interface ModuleDto {
+export type PermissionDto = PermissaoDto;
+
+export interface ModuloDto {
   readonly id: string;
   readonly nome: string;
   readonly slug: string;
@@ -55,7 +57,9 @@ export interface ModuleDto {
   readonly updatedAt: string;
 }
 
-export interface PhysicalPersonDto {
+export type ModuleDto = ModuloDto;
+
+export interface PessoaFisicaDto {
   readonly id: string;
   readonly userId: string;
   readonly nome: string;
@@ -65,7 +69,9 @@ export interface PhysicalPersonDto {
   readonly sexo: 'M' | 'F' | 'O';
 }
 
-export interface AddressDto {
+export type PhysicalPersonDto = PessoaFisicaDto;
+
+export interface EnderecoDto {
   readonly id: string;
   readonly pessoaFisicaId: string;
   readonly tipo: 'RESIDENCIAL' | 'COMERCIAL' | 'OUTRO';
@@ -78,12 +84,16 @@ export interface AddressDto {
   readonly cep: string;
 }
 
-export interface PhoneDto {
+export type AddressDto = EnderecoDto;
+
+export interface TelefoneDto {
   readonly id: string;
   readonly pessoaFisicaId: string;
   readonly tipo: 'CELULAR' | 'RESIDENCIAL' | 'COMERCIAL';
   readonly numero: string;
 }
+
+export type PhoneDto = TelefoneDto;
 
 export interface AuditLogDto {
   readonly id: string;
@@ -96,7 +106,7 @@ export interface AuditLogDto {
   readonly createdAt: string;
 }
 
-export interface UserPermissionDto {
+export interface UsuarioPermissaoDto {
   readonly id: string;
   readonly usuarioId: string;
   readonly permissaoId: string;
@@ -104,6 +114,8 @@ export interface UserPermissionDto {
   readonly permissaoDescricao: string | null;
   readonly createdAt: string;
 }
+
+export type UserPermissionDto = UsuarioPermissaoDto;
 
 export interface PaginatedResult<T> {
   readonly data: T[];

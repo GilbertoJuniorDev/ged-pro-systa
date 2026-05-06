@@ -29,7 +29,7 @@ const createUserSchema = z
     confirmPassword: z.string(),
     role: z.enum([ROLE.MANAGER, ROLE.VIEWER]),
     pessoaFisica: pessoaFisicaSchema,
-    permissaoIds: z.array(z.string().uuid()).optional().default([]),
+    permissaoIds: z.array(z.string().uuid()),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'As senhas não coincidem',

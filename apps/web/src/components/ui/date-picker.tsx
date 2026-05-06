@@ -183,16 +183,16 @@ export function DatePicker({
         onClick={() => setOpen((o) => !o)}
         className={cn(
           'w-full flex items-center gap-2 rounded-lg px-3.5 py-2.5 text-sm transition-colors',
-          'bg-slate-800 border text-left',
+          'border bg-white text-left dark:bg-slate-800',
           error
             ? 'border-rose-500 focus:ring-rose-500'
-            : 'border-slate-700 focus:ring-indigo-500',
+            : 'border-slate-300 focus:ring-indigo-500 dark:border-slate-700',
           'focus:outline-none focus:ring-2 focus:border-transparent',
-          selected ? 'text-slate-100' : 'text-slate-500',
+          selected ? 'text-slate-900 dark:text-slate-100' : 'text-slate-500',
           disabled && 'opacity-50 cursor-not-allowed',
         )}
       >
-        <CalendarIcon className="w-4 h-4 shrink-0 text-slate-400" />
+        <CalendarIcon className="w-4 h-4 shrink-0 text-slate-500 dark:text-slate-400" />
         <span className="flex-1">
           {selected ? formatDisplay(selected) : placeholder}
         </span>
@@ -202,8 +202,8 @@ export function DatePicker({
       {open && (
         <div
           className={cn(
-            'absolute z-50 mt-2 w-72 rounded-xl border border-slate-700',
-            'bg-slate-900 shadow-2xl shadow-black/40 p-3 animate-scale-in',
+            'absolute z-50 mt-2 w-72 rounded-xl border border-slate-200',
+            'animate-scale-in bg-white p-3 shadow-lg dark:border-slate-700 dark:bg-slate-900 dark:shadow-2xl dark:shadow-black/40',
           )}
         >
           {/* ── Header ── */}
@@ -216,7 +216,7 @@ export function DatePicker({
                 else if (viewMode === 'years') setYearRangeCenter((c) => c - 20);
               }}
               className={cn(
-                'p-1.5 rounded-lg hover:bg-slate-700 text-slate-400 hover:text-slate-100 transition-colors',
+                'rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100',
                 viewMode === 'months' && 'invisible',
               )}
               aria-label="Anterior"
@@ -228,7 +228,7 @@ export function DatePicker({
             <button
               type="button"
               onClick={toggleViewMode}
-              className="flex items-center gap-1 text-sm font-semibold text-slate-100 hover:text-indigo-300 transition-colors rounded-lg px-2 py-1 hover:bg-slate-800 select-none"
+              className="flex select-none items-center gap-1 rounded-lg px-2 py-1 text-sm font-semibold text-slate-950 transition-colors hover:bg-slate-100 hover:text-indigo-700 dark:text-slate-100 dark:hover:bg-slate-800 dark:hover:text-indigo-300"
             >
               {viewMode === 'days' && (
                 <>
@@ -260,7 +260,7 @@ export function DatePicker({
                 else if (viewMode === 'years') setYearRangeCenter((c) => c + 20);
               }}
               className={cn(
-                'p-1.5 rounded-lg hover:bg-slate-700 text-slate-400 hover:text-slate-100 transition-colors',
+                'rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100',
                 viewMode === 'months' && 'invisible',
               )}
               aria-label="Próximo"
@@ -281,7 +281,7 @@ export function DatePicker({
                     'rounded-lg py-2 text-xs font-medium transition-colors',
                     y === viewYear
                       ? 'bg-indigo-600 text-white'
-                      : 'text-slate-300 hover:bg-slate-700',
+                      : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700',
                     y === today.getFullYear() && y !== viewYear &&
                       'ring-1 ring-indigo-500/50 text-indigo-300',
                   )}
@@ -304,7 +304,7 @@ export function DatePicker({
                     'rounded-lg py-2.5 text-sm font-medium transition-colors',
                     i === viewMonth
                       ? 'bg-indigo-600 text-white'
-                      : 'text-slate-300 hover:bg-slate-700',
+                      : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700',
                     i === today.getMonth() &&
                       viewYear === today.getFullYear() &&
                       i !== viewMonth &&
@@ -346,8 +346,8 @@ export function DatePicker({
                       onClick={() => selectDay(day)}
                       className={cn(
                         'mx-auto flex h-8 w-8 items-center justify-center rounded-full text-xs transition-colors',
-                        !isCurrentMonth && 'text-slate-600',
-                        isCurrentMonth && !isSelected && 'text-slate-300 hover:bg-slate-700',
+                        !isCurrentMonth && 'text-slate-400 dark:text-slate-600',
+                        isCurrentMonth && !isSelected && 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700',
                         isToday && !isSelected && 'ring-1 ring-indigo-400 text-indigo-300',
                         isSelected && 'bg-indigo-600 text-white font-semibold hover:bg-indigo-500',
                       )}
@@ -359,11 +359,11 @@ export function DatePicker({
               </div>
 
               {/* Rodapé — botão Hoje */}
-              <div className="mt-3 pt-3 border-t border-slate-700/60">
+              <div className="mt-3 border-t border-slate-200 pt-3 dark:border-slate-700/60">
                 <button
                   type="button"
                   onClick={() => selectDay(today)}
-                  className="w-full text-xs text-indigo-400 hover:text-indigo-300 transition-colors py-1 rounded-lg hover:bg-slate-800"
+                  className="w-full rounded-lg py-1 text-xs text-indigo-700 transition-colors hover:bg-slate-100 hover:text-indigo-800 dark:text-indigo-400 dark:hover:bg-slate-800 dark:hover:text-indigo-300"
                 >
                   Hoje
                 </button>

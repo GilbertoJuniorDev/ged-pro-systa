@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { PermissionsGuard, USUARIO_PERMISSOES_SERVICE } from './permissions.guard';
-import type { IPermissaoChecker } from './permissions.guard';
+import { PermissionsGuard, USER_PERMISSIONS_SERVICE } from './permissions.guard';
+import type { IPermissionChecker } from './permissions.guard';
 import { PERMISSIONS_KEY } from '../decorators/permissions.decorator';
 import { ROLE } from '@ged/database';
 import type { JwtPayload } from '@ged/types';
@@ -21,7 +21,7 @@ const makeContext = (user: Partial<JwtPayload>): ExecutionContext => {
 describe('PermissionsGuard', () => {
   let guard: PermissionsGuard;
   let reflector: jest.Mocked<Reflector>;
-  let mockChecker: jest.Mocked<IPermissaoChecker>;
+  let mockChecker: jest.Mocked<IPermissionChecker>;
 
   beforeEach(async () => {
     reflector = {
@@ -29,14 +29,14 @@ describe('PermissionsGuard', () => {
     } as unknown as jest.Mocked<Reflector>;
 
     mockChecker = {
-      hasPermissao: jest.fn(),
+      hasPermission: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         PermissionsGuard,
         { provide: Reflector, useValue: reflector },
-        { provide: USUARIO_PERMISSOES_SERVICE, useValue: mockChecker },
+        { provide: USER_PERMISSIONS_SERVICE, useValue: mockChecker },
       ],
     }).compile();
 
@@ -48,7 +48,7 @@ describe('PermissionsGuard', () => {
     const ctx = makeContext({ sub: 'u1', role: ROLE.VIEWER, email: 'a@b.com' });
 
     await expect(guard.canActivate(ctx)).resolves.toBe(true);
-    expect(mockChecker.hasPermissao).not.toHaveBeenCalled();
+    expect(mockChecker.hasPermission).not.toHaveBeenCalled();
   });
 
   it('should return true for ADMIN regardless of permissions', async () => {
@@ -56,21 +56,21 @@ describe('PermissionsGuard', () => {
     const ctx = makeContext({ sub: 'admin-1', role: ROLE.ADMIN, email: 'a@b.com' });
 
     await expect(guard.canActivate(ctx)).resolves.toBe(true);
-    expect(mockChecker.hasPermissao).not.toHaveBeenCalled();
+    expect(mockChecker.hasPermission).not.toHaveBeenCalled();
   });
 
   it('should return true when VIEWER has all required permissions', async () => {
     reflector.getAllAndOverride.mockReturnValue(['documents:read', 'categories:read']);
-    mockChecker.hasPermissao.mockResolvedValue(true);
+    mockChecker.hasPermission.mockResolvedValue(true);
     const ctx = makeContext({ sub: 'viewer-1', role: ROLE.VIEWER, email: 'v@b.com' });
 
     await expect(guard.canActivate(ctx)).resolves.toBe(true);
-    expect(mockChecker.hasPermissao).toHaveBeenCalledTimes(2);
+    expect(mockChecker.hasPermission).toHaveBeenCalledTimes(2);
   });
 
   it('should throw ForbiddenException when VIEWER is missing a permission', async () => {
     reflector.getAllAndOverride.mockReturnValue(['documents:read', 'documents:delete']);
-    mockChecker.hasPermissao
+    mockChecker.hasPermission
       .mockResolvedValueOnce(true)   // documents:read ✓
       .mockResolvedValueOnce(false); // documents:delete ✗
     const ctx = makeContext({ sub: 'viewer-1', role: ROLE.VIEWER, email: 'v@b.com' });

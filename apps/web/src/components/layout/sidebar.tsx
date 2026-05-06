@@ -8,6 +8,7 @@ import { NAV_ITEMS, ADMIN_NAV_ITEMS } from './sidebar-nav-items';
 import { useNavigation } from '@/providers/navigation-provider';
 import { usePermissions } from '@/hooks/use-permissions';
 import { Spinner } from '@/components/ui/spinner';
+import { ThemeToggle } from './theme-toggle';
 
 interface SidebarProps {
   readonly user: {
@@ -44,15 +45,15 @@ export function Sidebar({ user }: SidebarProps) {
   return (
     <>
       <aside
-        className={`bg-slate-900 dark:bg-slate-900 w-64 border-r border-slate-700 flex flex-col transition-transform duration-300 absolute z-30 h-full md:relative md:translate-x-0 ${
+        className={`w-64 border-r border-slate-200 bg-white flex flex-col transition-transform duration-300 absolute z-30 h-full md:relative md:translate-x-0 dark:border-slate-700 dark:bg-slate-900 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="h-16 flex items-center justify-between px-6 border-b border-slate-700">
-          <span className="text-xl font-bold text-indigo-400 tracking-tight">GED Pro</span>
+        <div className="h-16 flex items-center justify-between px-6 border-b border-slate-200 dark:border-slate-700">
+          <span className="text-xl font-bold text-indigo-600 tracking-tight dark:text-indigo-400">GED Pro</span>
           <button
             type="button"
-            className="md:hidden text-slate-500 hover:text-slate-300 transition-colors"
+            className="text-slate-500 transition-colors hover:text-slate-900 md:hidden dark:hover:text-slate-300"
             onClick={() => setIsOpen(false)}
             aria-label="Fechar menu"
           >
@@ -73,8 +74,8 @@ export function Sidebar({ user }: SidebarProps) {
                 onClick={() => handleLinkClick(item.href)}
                 className={`flex items-center px-3 py-2.5 rounded-lg font-medium transition-all duration-200 ease-in-out ${
                   isActive
-                    ? 'bg-indigo-900/40 text-indigo-400'
-                    : 'text-slate-400 hover:bg-slate-800 hover:text-slate-100'
+                    ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400'
+                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'
                 }`}
               >
                 {isPendingItem ? (
@@ -99,7 +100,7 @@ export function Sidebar({ user }: SidebarProps) {
 
           {isAdmin && (
             <>
-              <div className="pt-4 pb-2 px-3 text-[10px] font-bold uppercase tracking-wider text-slate-600">
+              <div className="pt-4 pb-2 px-3 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-600">
                 Sistema
               </div>
               {ADMIN_NAV_ITEMS.map((item) => {
@@ -112,8 +113,8 @@ export function Sidebar({ user }: SidebarProps) {
                     onClick={() => handleLinkClick(item.href)}
                     className={`flex items-center px-3 py-2.5 rounded-lg font-medium transition-all duration-200 ease-in-out ${
                       isActive
-                        ? 'bg-indigo-900/40 text-indigo-400'
-                        : 'text-slate-400 hover:bg-slate-800 hover:text-slate-100'
+                        ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400'
+                        : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'
                     }`}
                   >
                     {isPendingItem ? (
@@ -139,7 +140,10 @@ export function Sidebar({ user }: SidebarProps) {
           )}
         </nav>
 
-        <div className="border-t border-slate-700/50 p-3">
+        <div className="space-y-3 border-t border-slate-200 p-3 dark:border-slate-700/50">
+          <div className="flex justify-end px-1">
+            <ThemeToggle />
+          </div>
           <UserMenu user={user} />
         </div>
       </aside>
@@ -147,7 +151,7 @@ export function Sidebar({ user }: SidebarProps) {
       {isOpen && (
         <div
           id="sidebarOverlay"
-          className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-20 md:hidden animate-fade-in"
+          className="fixed inset-0 z-20 animate-fade-in bg-slate-900/30 backdrop-blur-sm md:hidden dark:bg-slate-950/60"
           onClick={() => setIsOpen(false)}
           aria-hidden="true"
         />
@@ -155,7 +159,7 @@ export function Sidebar({ user }: SidebarProps) {
 
       <button
         type="button"
-        className="fixed top-4 left-4 z-10 md:hidden p-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-400 hover:text-slate-100 transition-colors"
+        className="fixed left-4 top-4 z-10 rounded-lg border border-slate-200 bg-white p-2 text-slate-600 transition-colors hover:text-slate-950 md:hidden dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
         onClick={() => setIsOpen(true)}
         aria-label="Abrir menu"
       >

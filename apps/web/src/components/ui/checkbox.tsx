@@ -70,11 +70,11 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
             'border-2 transition-all duration-150 ease-in-out',
             isActive
               ? 'bg-indigo-600 border-indigo-600 shadow-[0_0_0_3px_rgba(99,102,241,0.18)]'
-              : 'bg-slate-800 border-slate-600',
+              : 'border-slate-300 bg-white dark:border-slate-600 dark:bg-slate-800',
             !disabled && !isActive
-              ? 'group-hover:border-slate-400 peer-hover:border-slate-400'
+              ? 'group-hover:border-slate-500 peer-hover:border-slate-500 dark:group-hover:border-slate-400 dark:peer-hover:border-slate-400'
               : '',
-            'peer-focus-visible:ring-2 peer-focus-visible:ring-indigo-500 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-slate-900',
+            'peer-focus-visible:ring-2 peer-focus-visible:ring-indigo-500 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-white dark:peer-focus-visible:ring-offset-slate-900',
             disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer',
           ]
             .filter(Boolean)

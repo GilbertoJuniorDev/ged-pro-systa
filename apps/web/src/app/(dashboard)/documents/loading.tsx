@@ -8,11 +8,11 @@ export default function DocumentsLoading() {
         <Skeleton className="h-10 w-36 rounded-lg" />
       </div>
 
-      <div className="bg-slate-900 rounded-xl border border-slate-700 overflow-hidden">
-        <div className="p-4 border-b border-slate-800">
+      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
+        <div className="border-b border-slate-200 p-4 dark:border-slate-800">
           <Skeleton className="h-10 w-64 rounded-lg" />
         </div>
-        <div className="divide-y divide-slate-800">
+        <div className="divide-y divide-slate-200 dark:divide-slate-800">
           {[0, 1, 2, 3, 4].map((i) => (
             <div key={i} className="p-4 flex items-center gap-4">
               <Skeleton className="h-10 w-10 rounded-lg flex-shrink-0" />

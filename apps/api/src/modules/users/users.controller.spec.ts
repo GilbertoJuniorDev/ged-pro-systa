@@ -1,14 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
 import { ROLE } from '@ged/database';
 import type { User } from '@ged/database';
 import type { JwtPayload } from '@ged/types';
+import type { HttpRequest } from '../../common/interfaces/http-request.interface';
+import { AuditLogsService } from '../audit-logs/audit-logs.service';
 import { UsersController } from './users.controller';
 import { UsersService, USER_REPOSITORY } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ToggleUserStatusDto } from './dto/toggle-user-status.dto';
+import { CreateUserWithProfileUseCase } from './use-cases/create-user-with-profile.use-case';
 
 const makeUser = (overrides: Partial<User> = {}): User =>
   ({
@@ -29,9 +31,32 @@ const makeJwtPayload = (overrides: Partial<JwtPayload> = {}): JwtPayload => ({
   ...overrides,
 });
 
+const makeCreateUserDto = (overrides: Partial<CreateUserDto> = {}): CreateUserDto => ({
+  name: 'Novo Usuário',
+  email: 'novo@example.com',
+  password: 'Password123',
+  pessoaFisica: {
+    nome: 'Novo',
+    sobrenome: 'Usuário',
+    cpf: '12345678901',
+    dataNascimento: '1990-05-15',
+    sexo: 'F',
+  },
+  ...overrides,
+});
+
+const makeHttpRequest = (overrides: Partial<HttpRequest> = {}): HttpRequest => ({
+  user: makeJwtPayload(),
+  ip: '127.0.0.1',
+  headers: { 'user-agent': 'jest' },
+  ...overrides,
+});
+
 describe('UsersController', () => {
   let controller: UsersController;
   let usersService: jest.Mocked<UsersService>;
+  let createUserWithProfileUseCase: jest.Mocked<Pick<CreateUserWithProfileUseCase, 'execute'>>;
+  let auditLogsService: jest.Mocked<Pick<AuditLogsService, 'log'>>;
 
   beforeEach(async () => {
     const mockRepository = {
@@ -45,11 +70,21 @@ describe('UsersController', () => {
       setActive: jest.fn(),
     };
 
+    createUserWithProfileUseCase = {
+      execute: jest.fn(),
+    };
+
+    auditLogsService = {
+      log: jest.fn().mockResolvedValue(undefined),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UsersController],
       providers: [
         UsersService,
         { provide: USER_REPOSITORY, useValue: mockRepository },
+        { provide: CreateUserWithProfileUseCase, useValue: createUserWithProfileUseCase },
+        { provide: AuditLogsService, useValue: auditLogsService },
       ],
     }).compile();
 
@@ -66,63 +101,55 @@ describe('UsersController', () => {
 
   describe('create', () => {
     it('should create a user when email is not taken', async () => {
-      jest.spyOn(usersService, 'findByEmail').mockResolvedValue(null);
-      jest.spyOn(usersService, 'create').mockResolvedValue(makeUser());
-      jest.spyOn(bcrypt, 'hash').mockResolvedValue('hashed-password' as never);
+      createUserWithProfileUseCase.execute.mockResolvedValue(makeUser());
+      const dto = makeCreateUserDto();
 
-      const dto: CreateUserDto = {
-        name: 'Novo Usuário',
-        email: 'novo@example.com',
-        password: 'Password123',
-      };
-
-      const result = await controller.create(dto);
+      const result = await controller.create(makeHttpRequest(), dto);
 
       expect(result.id).toBe('uuid-1');
       expect(result.email).toBe('novo@example.com');
       expect(result).not.toHaveProperty('passwordHash');
-      expect(usersService.create).toHaveBeenCalledWith(
+      expect(createUserWithProfileUseCase.execute).toHaveBeenCalledWith(
         expect.objectContaining({
           name: 'Novo Usuário',
           email: 'novo@example.com',
-          passwordHash: 'hashed-password',
-          role: ROLE.VIEWER,
+          password: 'Password123',
+          pessoaFisica: dto.pessoaFisica,
+        }),
+      );
+      expect(auditLogsService.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          usuarioId: 'admin-uuid',
+          acao: 'CRIAR_USUARIO',
+          entidade: 'User',
+          entidadeId: 'uuid-1',
         }),
       );
     });
 
     it('should use provided role when creating user', async () => {
-      jest.spyOn(usersService, 'findByEmail').mockResolvedValue(null);
-      jest
-        .spyOn(usersService, 'create')
-        .mockResolvedValue(makeUser({ role: ROLE.MANAGER }));
-      jest.spyOn(bcrypt, 'hash').mockResolvedValue('hashed-password' as never);
-
-      const dto: CreateUserDto = {
+      createUserWithProfileUseCase.execute.mockResolvedValue(makeUser({ role: ROLE.MANAGER }));
+      const dto = makeCreateUserDto({
         name: 'Gerente',
         email: 'gerente@example.com',
-        password: 'Password123',
         role: ROLE.MANAGER,
-      };
+      });
 
-      await controller.create(dto);
+      await controller.create(makeHttpRequest(), dto);
 
-      expect(usersService.create).toHaveBeenCalledWith(
+      expect(createUserWithProfileUseCase.execute).toHaveBeenCalledWith(
         expect.objectContaining({ role: ROLE.MANAGER }),
       );
     });
 
     it('should throw ConflictException when email is already taken', async () => {
-      jest.spyOn(usersService, 'findByEmail').mockResolvedValue(makeUser());
-
-      const dto: CreateUserDto = {
+      createUserWithProfileUseCase.execute.mockRejectedValue(new ConflictException());
+      const dto = makeCreateUserDto({
         name: 'Duplicado',
         email: 'novo@example.com',
-        password: 'Password123',
-      };
+      });
 
-      await expect(controller.create(dto)).rejects.toThrow(ConflictException);
-      expect(usersService.create).not.toHaveBeenCalled();
+      await expect(controller.create(makeHttpRequest(), dto)).rejects.toThrow(ConflictException);
     });
   });
 
@@ -145,7 +172,7 @@ describe('UsersController', () => {
       jest.spyOn(usersService, 'update').mockResolvedValue(updated);
 
       const dto: UpdateUserDto = { name: 'Nome Novo', role: ROLE.MANAGER };
-      const result = await controller.update('uuid-1', dto);
+      const result = await controller.update(makeHttpRequest(), 'uuid-1', dto);
 
       expect(result.name).toBe('Nome Novo');
       expect(result.role).toBe(ROLE.MANAGER);
@@ -155,7 +182,7 @@ describe('UsersController', () => {
     it('should throw NotFoundException when user does not exist', async () => {
       jest.spyOn(usersService, 'update').mockRejectedValue(new NotFoundException());
 
-      await expect(controller.update('nonexistent', {})).rejects.toThrow(NotFoundException);
+      await expect(controller.update(makeHttpRequest(), 'nonexistent', {})).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -189,7 +216,7 @@ describe('UsersController', () => {
       jest.spyOn(usersService, 'remove').mockResolvedValue(undefined);
 
       const currentUser = makeJwtPayload();
-      await expect(controller.remove('uuid-1', currentUser)).resolves.toBeUndefined();
+      await expect(controller.remove(makeHttpRequest(), 'uuid-1', currentUser)).resolves.toBeUndefined();
       expect(usersService.remove).toHaveBeenCalledWith('uuid-1', 'admin-uuid');
     });
 
@@ -198,7 +225,7 @@ describe('UsersController', () => {
 
       const currentUser = makeJwtPayload({ sub: 'uuid-1' });
 
-      await expect(controller.remove('uuid-1', currentUser)).rejects.toThrow(BadRequestException);
+      await expect(controller.remove(makeHttpRequest(), 'uuid-1', currentUser)).rejects.toThrow(BadRequestException);
     });
   });
 });

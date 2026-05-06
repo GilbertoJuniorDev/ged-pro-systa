@@ -72,7 +72,7 @@ export function PasswordStrengthBar({ password }: PasswordStrengthProps) {
           key={i}
           className={cn(
             'h-1 flex-1 rounded-full transition-all duration-300',
-            i < level.segments ? level.color : 'bg-slate-700',
+            i < level.segments ? level.color : 'bg-slate-200 dark:bg-slate-700',
           )}
         />
       ))}
@@ -97,7 +97,9 @@ export function PasswordStrengthCriteria({ password }: PasswordStrengthProps) {
           <span
             className={cn(
               'flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full transition-colors',
-              results[i] ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-700/60 text-slate-600',
+              results[i]
+                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400'
+                : 'bg-slate-100 text-slate-400 dark:bg-slate-700/60 dark:text-slate-600',
             )}
           >
             {results[i]
@@ -105,7 +107,7 @@ export function PasswordStrengthCriteria({ password }: PasswordStrengthProps) {
               : <X className="w-2 h-2" strokeWidth={3} />
             }
           </span>
-          <span className={cn('text-xs transition-colors', results[i] ? 'text-slate-400' : 'text-slate-600')}>
+          <span className={cn('text-xs transition-colors', results[i] ? 'text-slate-600 dark:text-slate-400' : 'text-slate-500 dark:text-slate-600')}>
             {criterion.label}
           </span>
         </li>

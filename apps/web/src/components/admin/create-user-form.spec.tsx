@@ -1,5 +1,4 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { useRouter } from 'next/navigation';
 import { CreateUserForm } from './create-user-form';
 import { useCreateUser } from '../../hooks/use-create-user';

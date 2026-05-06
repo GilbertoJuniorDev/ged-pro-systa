@@ -2,7 +2,7 @@ import { BadRequestException, ConflictException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { getDataSourceToken } from '@nestjs/typeorm';
 import type { DataSource, EntityManager } from 'typeorm';
-import { Permissao, PessoaFisica, User, UsuarioPermissao } from '@ged/database';
+import { Permission, PhysicalPerson, User, UserPermission } from '@ged/database';
 import { CreateUserWithProfileUseCase } from './create-user-with-profile.use-case';
 
 jest.mock('bcrypt', () => ({
@@ -122,7 +122,7 @@ describe('CreateUserWithProfileUseCase', () => {
   it('should check CPF uniqueness using PessoaFisica entity', async () => {
     await useCase.execute(mockCreateData);
 
-    expect(mockManager.findOne).toHaveBeenCalledWith(PessoaFisica, {
+    expect(mockManager.findOne).toHaveBeenCalledWith(PhysicalPerson, {
       where: { cpf: '12345678901' },
     });
   });
@@ -141,18 +141,18 @@ describe('CreateUserWithProfileUseCase', () => {
       const permissaoId1 = 'aaa00000-0000-4000-a000-000000000001';
       const permissaoId2 = 'aaa00000-0000-4000-a000-000000000002';
       const mockPermissoes = [
-        { id: permissaoId1, nome: 'docs:read' } as Permissao,
-        { id: permissaoId2, nome: 'docs:write' } as Permissao,
+        { id: permissaoId1, nome: 'docs:read' } as Permission,
+        { id: permissaoId2, nome: 'docs:write' } as Permission,
       ];
       mockManager.findBy = jest.fn().mockResolvedValue(mockPermissoes);
 
       await useCase.execute({ ...mockCreateData, permissaoIds: [permissaoId1, permissaoId2] });
 
-      expect(mockManager.findBy).toHaveBeenCalledWith(Permissao, expect.objectContaining({}));
+      expect(mockManager.findBy).toHaveBeenCalledWith(Permission, expect.objectContaining({}));
       // save called for User, PessoaFisica, and UsuarioPermissao[]  
       expect(mockManager.save).toHaveBeenCalledTimes(3);
       expect(mockManager.save).toHaveBeenCalledWith(
-        UsuarioPermissao,
+        UserPermission,
         expect.arrayContaining([
           expect.objectContaining({ permissaoId: permissaoId1 }),
           expect.objectContaining({ permissaoId: permissaoId2 }),
@@ -164,7 +164,7 @@ describe('CreateUserWithProfileUseCase', () => {
       const validId = 'aaa00000-0000-4000-a000-000000000001';
       const invalidId = 'bbb00000-0000-4000-b000-000000000002';
       // Only one found, two requested
-      mockManager.findBy = jest.fn().mockResolvedValue([{ id: validId } as Permissao]);
+      mockManager.findBy = jest.fn().mockResolvedValue([{ id: validId } as Permission]);
 
       await expect(
         useCase.execute({ ...mockCreateData, permissaoIds: [validId, invalidId] }),

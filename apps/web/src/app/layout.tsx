@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { SessionProvider } from 'next-auth/react';
-import { Toaster } from 'sonner';
 import { auth } from '@/lib/auth';
 import { ThemeProvider } from '@/providers/theme-provider';
+import { ThemeAwareToaster } from '@/providers/theme-aware-toaster';
 import { QueryProvider } from '@/providers/query-provider';
 import { NavigationProvider } from '@/providers/navigation-provider';
 import './globals.css';
@@ -30,7 +30,7 @@ export default async function RootLayout({
             <QueryProvider>
               <NavigationProvider>{children}</NavigationProvider>
             </QueryProvider>
-            <Toaster theme="system" richColors position="top-right" />
+            <ThemeAwareToaster />
           </ThemeProvider>
         </SessionProvider>
       </body>
