@@ -5,8 +5,8 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { formatCpf, stripCpfMask } from '@ged/utils';
-import type { PessoaFisicaDto } from '@/types';
-import { useCreatePessoaFisica, useUpdatePessoaFisica } from '@/hooks/use-pessoa-fisica';
+import type { PhysicalPersonDto } from '@/types';
+import { useCreatePhysicalPerson, useUpdatePhysicalPerson } from '@/hooks/use-physical-person';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Combobox } from '@/components/ui/combobox';
 
@@ -24,12 +24,12 @@ type FormData = z.infer<typeof schema>;
 
 interface Props {
   userId: string;
-  existingData?: PessoaFisicaDto;
+  existingData?: PhysicalPersonDto;
 }
 
 export function PessoaFisicaForm({ userId, existingData }: Props) {
-  const create = useCreatePessoaFisica(userId);
-  const update = useUpdatePessoaFisica(userId);
+  const create = useCreatePhysicalPerson(userId);
+  const update = useUpdatePhysicalPerson(userId);
   const isPending = create.isPending || update.isPending;
 
   const {

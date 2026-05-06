@@ -10,18 +10,18 @@ import { ROLE } from '@ged/database';
 import type { JwtPayload } from '@ged/types';
 import { PERMISSIONS_KEY } from '../decorators/permissions.decorator';
 
-export const USUARIO_PERMISSOES_SERVICE = 'USUARIO_PERMISSOES_SERVICE';
+export const USER_PERMISSIONS_SERVICE = 'USER_PERMISSIONS_SERVICE';
 
-export interface IPermissaoChecker {
-  hasPermissao(usuarioId: string, nomePermissao: string): Promise<boolean>;
+export interface IPermissionChecker {
+  hasPermission(userId: string, permissionName: string): Promise<boolean>;
 }
 
 @Injectable()
 export class PermissionsGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
-    @Inject(USUARIO_PERMISSOES_SERVICE)
-    private readonly permissaoChecker: IPermissaoChecker,
+    @Inject(USER_PERMISSIONS_SERVICE)
+    private readonly permissionChecker: IPermissionChecker,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -38,7 +38,7 @@ export class PermissionsGuard implements CanActivate {
     const { user } = request;
 
     if (!user) {
-      throw new ForbiddenException('Acesso negado');
+      throw new ForbiddenException('Access denied');
     }
 
     // ADMIN tem bypass total
@@ -48,14 +48,14 @@ export class PermissionsGuard implements CanActivate {
 
     const results = await Promise.all(
       requiredPermissions.map((nome) =>
-        this.permissaoChecker.hasPermissao(user.sub, nome),
+        this.permissionChecker.hasPermission(user.sub, nome),
       ),
     );
 
     const hasAll = results.every(Boolean);
 
     if (!hasAll) {
-      throw new ForbiddenException('Acesso negado: permissão insuficiente');
+      throw new ForbiddenException('Access denied: insufficient permissions');
     }
 
     return true;

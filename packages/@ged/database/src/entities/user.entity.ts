@@ -51,10 +51,10 @@ export class User {
   @OneToMany('RefreshToken', 'user')
   refreshTokens!: unknown[];
 
-  @OneToOne('PessoaFisica', 'usuario')
+  @OneToOne('PhysicalPerson', 'usuario')
   pessoaFisica!: unknown;
 
-  @OneToMany('UsuarioPermissao', 'usuario')
+  @OneToMany('UserPermission', 'usuario')
   usuarioPermissoes!: unknown[];
 
   @OneToMany('AuditLog', 'usuario')

@@ -7,8 +7,8 @@ import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 import { ROLE } from '@ged/types';
 import { useCreateUser } from '../../hooks/use-create-user';
-import { useModulos } from '../../hooks/use-modulos';
-import { usePermissoes } from '../../hooks/use-permissoes';
+import { useModules } from '../../hooks/use-modules';
+import { usePermissionsManagement } from '../../hooks/use-permission-management';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Combobox } from '@/components/ui/combobox';
@@ -41,8 +41,8 @@ type CreateUserFormData = z.infer<typeof createUserSchema>;
 export function CreateUserForm() {
   const router = useRouter();
   const { mutateAsync, isPending } = useCreateUser();
-  const { data: modulosRaw } = useModulos();
-  const { data: permissoesRaw } = usePermissoes();
+  const { data: modulosRaw } = useModules();
+  const { data: permissoesRaw } = usePermissionsManagement();
 
   const modulos = useMemo(
     () => (modulosRaw ?? []).filter((m) => m.isActive).sort((a, b) => a.ordem - b.ordem),

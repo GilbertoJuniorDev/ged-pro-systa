@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { useSession } from 'next-auth/react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../lib/api-client';
-import type { UsuarioPermissaoDto } from '../types';
+import type { UserPermissionDto } from '../types';
 
 export function useUsuarioPermissoes(userId: string) {
   const { data: session } = useSession();
@@ -12,7 +12,7 @@ export function useUsuarioPermissoes(userId: string) {
   return useQuery({
     queryKey: ['usuario-permissoes', userId],
     queryFn: () =>
-      apiClient.get<UsuarioPermissaoDto[]>(`/users/${userId}/permissoes`, {
+      apiClient.get<UserPermissionDto[]>(`/users/${userId}/permissions`, {
         token: session?.user?.accessToken,
       }),
     enabled: !!session?.user?.accessToken && !!userId,
@@ -25,7 +25,7 @@ export function useAssignPermissao(userId: string) {
 
   return useMutation({
     mutationFn: (permissaoId: string) =>
-      apiClient.post<UsuarioPermissaoDto>(`/users/${userId}/permissoes`, { permissaoId }, {
+      apiClient.post<UserPermissionDto>(`/users/${userId}/permissions`, { permissaoId }, {
         token: session?.user?.accessToken,
       }),
     onSuccess: () => {
@@ -49,7 +49,7 @@ export function useRevokePermissao(userId: string) {
 
   return useMutation({
     mutationFn: (permissaoId: string) =>
-      apiClient.delete<void>(`/users/${userId}/permissoes/${permissaoId}`, {
+      apiClient.delete<void>(`/users/${userId}/permissions/${permissaoId}`, {
         token: session?.user?.accessToken,
       }),
     onSuccess: () => {

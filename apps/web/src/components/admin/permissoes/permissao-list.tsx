@@ -1,12 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import type { PermissaoDto } from '@/types';
-import { usePermissoes, useDeletePermissao } from '@/hooks/use-permissoes';
+import type { PermissionDto } from '@/types';
+import { usePermissionsManagement, useDeletePermission } from '@/hooks/use-permission-management';
 import { EditPermissaoDialog } from './edit-permissao-dialog';
 
 interface DeleteConfirmProps {
-  permissao: PermissaoDto;
+  permissao: PermissionDto;
   onConfirm: () => void;
   onCancel: () => void;
   isPending: boolean;
@@ -59,10 +59,10 @@ function SkeletonRow() {
 }
 
 export function PermissaoList() {
-  const { data: permissoes, isLoading, isError } = usePermissoes();
-  const deletePermissao = useDeletePermissao();
-  const [editTarget, setEditTarget] = useState<PermissaoDto | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<PermissaoDto | null>(null);
+  const { data: permissoes, isLoading, isError } = usePermissionsManagement();
+  const deletePermissao = useDeletePermission();
+  const [editTarget, setEditTarget] = useState<PermissionDto | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<PermissionDto | null>(null);
 
   if (isError) {
     return (

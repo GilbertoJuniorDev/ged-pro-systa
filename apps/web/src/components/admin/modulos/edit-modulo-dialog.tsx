@@ -4,8 +4,8 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import type { ModuloDto } from '@/types';
-import { useUpdateModulo } from '@/hooks/use-modulos';
+import type { ModuleDto } from '@/types';
+import { useUpdateModule } from '@/hooks/use-modules';
 import { Checkbox } from '@/components/ui/checkbox';
 
 const schema = z.object({
@@ -24,12 +24,12 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 interface Props {
-  modulo: ModuloDto;
+  modulo: ModuleDto;
   onClose: () => void;
 }
 
 export function EditModuloDialog({ modulo, onClose }: Props) {
-  const update = useUpdateModulo();
+  const update = useUpdateModule();
   const {
     register,
     handleSubmit,

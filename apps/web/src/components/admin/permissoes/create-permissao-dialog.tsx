@@ -3,8 +3,8 @@
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useCreatePermissao } from '@/hooks/use-permissoes';
-import { useModulos } from '@/hooks/use-modulos';
+import { useCreatePermission } from '@/hooks/use-permission-management';
+import { useModules } from '@/hooks/use-modules';
 import { Combobox } from '@/components/ui/combobox';
 
 const schema = z.object({
@@ -20,8 +20,8 @@ interface Props {
 }
 
 export function CreatePermissaoDialog({ onClose }: Props) {
-  const create = useCreatePermissao();
-  const { data: modulos } = useModulos();
+  const create = useCreatePermission();
+  const { data: modulos } = useModules();
   const {
     register,
     handleSubmit,

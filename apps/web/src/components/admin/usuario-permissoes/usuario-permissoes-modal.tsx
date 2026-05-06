@@ -2,8 +2,8 @@
 
 import { useMemo, useState } from 'react';
 import { useUsuarioPermissoes, useAssignPermissao, useRevokePermissao } from '@/hooks/use-usuario-permissoes';
-import { usePermissoes } from '@/hooks/use-permissoes';
-import { useModulos } from '@/hooks/use-modulos';
+import { usePermissionsManagement } from '@/hooks/use-permission-management';
+import { useModules } from '@/hooks/use-modules';
 import { Checkbox } from '@/components/ui/checkbox';
 
 interface ContentProps {
@@ -12,8 +12,8 @@ interface ContentProps {
 
 export function UsuarioPermissoesContent({ userId }: ContentProps) {
   const { data: atribuidas, isLoading } = useUsuarioPermissoes(userId);
-  const { data: todasPermissoes } = usePermissoes();
-  const { data: modulosRaw } = useModulos();
+  const { data: todasPermissoes } = usePermissionsManagement();
+  const { data: modulosRaw } = useModules();
   const assign = useAssignPermissao(userId);
   const revoke = useRevokePermissao(userId);
   const [pendingId, setPendingId] = useState<string | null>(null);

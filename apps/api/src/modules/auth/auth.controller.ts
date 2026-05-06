@@ -25,7 +25,7 @@ import { Public } from '../../common/decorators/public.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import type { JwtPayload, MeResponseDto } from '@ged/types';
-import { UsuarioPermissoesService } from '../usuario-permissoes/usuario-permissoes.service';
+import { UserPermissionsService } from '../user-permissions/user-permissions.service';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
 
 @ApiTags('auth')
@@ -34,7 +34,7 @@ import { AuditLogsService } from '../audit-logs/audit-logs.service';
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly usuarioPermissoesService: UsuarioPermissoesService,
+    private readonly userPermissionsService: UserPermissionsService,
     private readonly auditLogsService: AuditLogsService,
   ) {}
 
@@ -108,7 +108,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Retornar dados do usuário autenticado' })
   @ApiResponse({ status: 200, description: 'Dados do usuário autenticado' })
   async me(@CurrentUser() user: JwtPayload): Promise<MeResponseDto> {
-    const ups = await this.usuarioPermissoesService.findByUsuarioId(user.sub);
+    const ups = await this.userPermissionsService.findByUserId(user.sub);
 
     const permissoes = ups
       .map((up) => (up as unknown as { permissao?: { nome?: string } }).permissao?.nome)

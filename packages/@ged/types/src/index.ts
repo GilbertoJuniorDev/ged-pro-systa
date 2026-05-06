@@ -34,7 +34,7 @@ export interface UpdateUserPayload {
   readonly role?: Extract<Role, 'MANAGER' | 'VIEWER'>;
 }
 
-export interface PermissaoDto {
+export interface PermissionDto {
   readonly id: string;
   readonly nome: string;
   readonly descricao: string | null;
@@ -43,7 +43,7 @@ export interface PermissaoDto {
   readonly createdAt: string;
 }
 
-export interface ModuloDto {
+export interface ModuleDto {
   readonly id: string;
   readonly nome: string;
   readonly slug: string;
@@ -55,7 +55,7 @@ export interface ModuloDto {
   readonly updatedAt: string;
 }
 
-export interface PessoaFisicaDto {
+export interface PhysicalPersonDto {
   readonly id: string;
   readonly userId: string;
   readonly nome: string;
@@ -65,7 +65,7 @@ export interface PessoaFisicaDto {
   readonly sexo: 'M' | 'F' | 'O';
 }
 
-export interface EnderecoDto {
+export interface AddressDto {
   readonly id: string;
   readonly pessoaFisicaId: string;
   readonly tipo: 'RESIDENCIAL' | 'COMERCIAL' | 'OUTRO';
@@ -78,7 +78,7 @@ export interface EnderecoDto {
   readonly cep: string;
 }
 
-export interface TelefoneDto {
+export interface PhoneDto {
   readonly id: string;
   readonly pessoaFisicaId: string;
   readonly tipo: 'CELULAR' | 'RESIDENCIAL' | 'COMERCIAL';
@@ -96,7 +96,7 @@ export interface AuditLogDto {
   readonly createdAt: string;
 }
 
-export interface UsuarioPermissaoDto {
+export interface UserPermissionDto {
   readonly id: string;
   readonly usuarioId: string;
   readonly permissaoId: string;

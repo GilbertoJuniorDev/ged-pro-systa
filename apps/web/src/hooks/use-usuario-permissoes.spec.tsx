@@ -8,7 +8,7 @@ import {
   useRevokePermissao,
 } from './use-usuario-permissoes';
 import { apiClient } from '../lib/api-client';
-import type { UsuarioPermissaoDto } from '../types';
+import type { UserPermissionDto } from '../types';
 
 jest.mock('next-auth/react', () => ({
   useSession: jest.fn().mockReturnValue({
@@ -37,7 +37,7 @@ const mockedApiClient = apiClient as jest.Mocked<typeof apiClient>;
 
 const USER_ID = 'user-uuid-1';
 
-function makeUsuarioPermissao(overrides: Partial<UsuarioPermissaoDto> = {}): UsuarioPermissaoDto {
+function makeUsuarioPermissao(overrides: Partial<UserPermissionDto> = {}): UserPermissionDto {
   return {
     id: 'up-uuid-1',
     usuarioId: USER_ID,
@@ -73,7 +73,7 @@ describe('useUsuarioPermissoes', () => {
 
     expect(result.current.data).toHaveLength(1);
     expect(mockedApiClient.get).toHaveBeenCalledWith(
-      `/users/${USER_ID}/permissoes`,
+      `/users/${USER_ID}/permissions`,
       { token: 'test-token' },
     );
   });
@@ -104,7 +104,7 @@ describe('useAssignPermissao', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     expect(mockedApiClient.post).toHaveBeenCalledWith(
-      `/users/${USER_ID}/permissoes`,
+      `/users/${USER_ID}/permissions`,
       { permissaoId: 'perm-uuid-1' },
       { token: 'test-token' },
     );
@@ -143,7 +143,7 @@ describe('useRevokePermissao', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     expect(mockedApiClient.delete).toHaveBeenCalledWith(
-      `/users/${USER_ID}/permissoes/perm-uuid-1`,
+      `/users/${USER_ID}/permissions/perm-uuid-1`,
       { token: 'test-token' },
     );
     expect(mockedToast.success).toHaveBeenCalledWith('Permissão revogada com sucesso!');

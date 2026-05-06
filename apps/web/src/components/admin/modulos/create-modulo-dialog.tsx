@@ -3,7 +3,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useCreateModulo } from '@/hooks/use-modulos';
+import { useCreateModule } from '@/hooks/use-modules';
 
 const schema = z.object({
   nome: z.string().min(2, 'Mínimo 2 caracteres').max(100, 'Máximo 100 caracteres'),
@@ -24,7 +24,7 @@ interface Props {
 }
 
 export function CreateModuloDialog({ onClose }: Props) {
-  const create = useCreateModulo();
+  const create = useCreateModule();
   const {
     register,
     handleSubmit,

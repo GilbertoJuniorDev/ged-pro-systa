@@ -12,7 +12,7 @@ import { UsuarioPermissoesContent } from '@/components/admin/usuario-permissoes/
 import { PessoaFisicaForm } from '@/components/admin/pessoa-fisica/pessoa-fisica-form';
 import { EnderecoList } from '@/components/admin/pessoa-fisica/endereco-list';
 import { TelefoneList } from '@/components/admin/pessoa-fisica/telefone-list';
-import { usePessoaFisica } from '@/hooks/use-pessoa-fisica';
+import { usePhysicalPerson } from '@/hooks/use-physical-person';
 import { Combobox } from '@/components/ui/combobox';
 
 const editSchema = z.object({
@@ -149,7 +149,7 @@ function DadosTab({ user }: { user: UserDto }) {
 }
 
 function PessoaFisicaTab({ userId }: { userId: string }) {
-  const { data: pessoaFisica, isLoading } = usePessoaFisica(userId);
+  const { data: pessoaFisica, isLoading } = usePhysicalPerson(userId);
 
   if (isLoading) {
     return <div className="h-40 rounded-xl bg-slate-800 animate-pulse" />;

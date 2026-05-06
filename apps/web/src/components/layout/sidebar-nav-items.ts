@@ -66,7 +66,7 @@ export const ADMIN_NAV_ITEMS: readonly NavItem[] = [
     ],
   },
   {
-    label: 'Configurações Admin',
+    label: 'Setup',
     href: '/admin/settings',
     moduloSlug: null,
     iconPaths: [

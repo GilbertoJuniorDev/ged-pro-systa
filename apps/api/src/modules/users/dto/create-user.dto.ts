@@ -2,7 +2,7 @@ import { IsArray, IsEmail, IsIn, IsOptional, IsString, IsUUID, MinLength, Valida
 import { Type } from 'class-transformer';
 import { ROLE } from '@ged/database';
 import type { Role } from '@ged/types';
-import { CreatePessoaFisicaDto } from '../../pessoa-fisica/dto/create-pessoa-fisica.dto';
+import { CreatePhysicalPersonDto } from '../../physical-person/dto/create-physical-person.dto';
 
 const ALLOWED_ROLES = [ROLE.MANAGER, ROLE.VIEWER] as const;
 
@@ -23,8 +23,8 @@ export class CreateUserDto {
   readonly role?: Role;
 
   @ValidateNested()
-  @Type(() => CreatePessoaFisicaDto)
-  readonly pessoaFisica!: CreatePessoaFisicaDto;
+  @Type(() => CreatePhysicalPersonDto)
+  readonly pessoaFisica!: CreatePhysicalPersonDto;
 
   @IsOptional()
   @IsArray()

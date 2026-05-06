@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { PessoaFisica, User } from '@ged/database';
+import { PhysicalPerson, User } from '@ged/database';
 import { UsersRepository } from './users.repository';
 import { UsersService, USER_REPOSITORY } from './users.service';
 import { UsersController } from './users.controller';
@@ -9,7 +9,7 @@ import { CreateUserWithProfileUseCase } from './use-cases/create-user-with-profi
 import { AuditLogsModule } from '../audit-logs/audit-logs.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, PessoaFisica]), AuditLogsModule],
+  imports: [TypeOrmModule.forFeature([User, PhysicalPerson]), AuditLogsModule],
   controllers: [UsersController],
   providers: [
     {

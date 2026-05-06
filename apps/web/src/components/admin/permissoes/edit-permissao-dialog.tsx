@@ -4,9 +4,9 @@ import { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import type { PermissaoDto } from '@/types';
-import { useUpdatePermissao } from '@/hooks/use-permissoes';
-import { useModulos } from '@/hooks/use-modulos';
+import type { PermissionDto } from '@/types';
+import { useUpdatePermission } from '@/hooks/use-permission-management';
+import { useModules } from '@/hooks/use-modules';
 import { Combobox } from '@/components/ui/combobox';
 
 const schema = z.object({
@@ -18,13 +18,13 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 interface Props {
-  permissao: PermissaoDto;
+  permissao: PermissionDto;
   onClose: () => void;
 }
 
 export function EditPermissaoDialog({ permissao, onClose }: Props) {
-  const update = useUpdatePermissao();
-  const { data: modulos } = useModulos();
+  const update = useUpdatePermission();
+  const { data: modulos } = useModules();
   const {
     register,
     handleSubmit,

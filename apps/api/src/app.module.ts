@@ -5,10 +5,10 @@ import { validate } from './config/env.validation';
 import { DatabaseModule } from './database/database.module';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
-import { ModulosModule } from './modules/modulos/modulos.module';
-import { PermissoesModule } from './modules/permissoes/permissoes.module';
-import { UsuarioPermissoesModule } from './modules/usuario-permissoes/usuario-permissoes.module';
-import { PessoaFisicaModule } from './modules/pessoa-fisica/pessoa-fisica.module';
+import { ModulesModule } from './modules/modules/modules.module';
+import { PermissionsModule } from './modules/permissions/permissions.module';
+import { UserPermissionsModule } from './modules/user-permissions/user-permissions.module';
+import { PhysicalPersonModule } from './modules/physical-person/physical-person.module';
 import { AuditLogsModule } from './modules/audit-logs/audit-logs.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { PermissionsGuard } from './common/guards/permissions.guard';
@@ -22,10 +22,10 @@ import { PermissionsGuard } from './common/guards/permissions.guard';
     DatabaseModule,
     UsersModule,
     AuthModule,
-    ModulosModule,
-    PermissoesModule,
-    UsuarioPermissoesModule,
-    PessoaFisicaModule,
+    ModulesModule,
+    PermissionsModule,
+    UserPermissionsModule,
+    PhysicalPersonModule,
     AuditLogsModule,
   ],
   providers: [

@@ -1,12 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import type { ModuloDto } from '@/types';
-import { useModulos, useDeleteModulo } from '@/hooks/use-modulos';
+import type { ModuleDto } from '@/types';
+import { useModules, useDeleteModule } from '@/hooks/use-modules';
 import { EditModuloDialog } from './edit-modulo-dialog';
 
 interface DeleteConfirmProps {
-  modulo: ModuloDto;
+  modulo: ModuleDto;
   onConfirm: () => void;
   onCancel: () => void;
   isPending: boolean;
@@ -59,10 +59,10 @@ function SkeletonRow() {
 }
 
 export function ModuloList() {
-  const { data: modulos, isLoading, isError } = useModulos();
-  const deleteModulo = useDeleteModulo();
-  const [editTarget, setEditTarget] = useState<ModuloDto | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<ModuloDto | null>(null);
+  const { data: modulos, isLoading, isError } = useModules();
+  const deleteModulo = useDeleteModule();
+  const [editTarget, setEditTarget] = useState<ModuleDto | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<ModuleDto | null>(null);
 
   if (isError) {
     return <p className="text-rose-400 text-sm py-4">Erro ao carregar módulos.</p>;
