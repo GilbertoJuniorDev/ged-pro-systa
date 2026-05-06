@@ -25,7 +25,11 @@ export class UsuarioPermissoesRepository implements IUsuarioPermissaoRepository 
 
   async assign(usuarioId: string, permissaoId: string): Promise<UsuarioPermissao> {
     const up = this.repo.create({ usuarioId, permissaoId });
-    return this.repo.save(up);
+    const saved = await this.repo.save(up);
+    return this.repo.findOneOrFail({
+      where: { id: saved.id },
+      relations: ['permissao'],
+    });
   }
 
   async revoke(usuarioId: string, permissaoId: string): Promise<void> {
