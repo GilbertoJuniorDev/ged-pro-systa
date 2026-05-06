@@ -1,17 +1,16 @@
 import {
   Body,
-  ConflictException,
   Controller,
   Delete,
   Get,
   HttpCode,
   HttpStatus,
+  NotFoundException,
   Param,
   Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
 import { ROLE } from '@ged/database';
 import type { JwtPayload } from '@ged/types';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -23,13 +22,15 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ToggleUserStatusDto } from './dto/toggle-user-status.dto';
 import { UserResponseDto } from './dto/user-response.dto';
-
-const BCRYPT_ROUNDS = 12;
+import { CreateUserWithProfileUseCase } from './use-cases/create-user-with-profile.use-case';
 
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly createUserWithProfileUseCase: CreateUserWithProfileUseCase,
+  ) {}
 
   @Get()
   @Roles(ROLE.ADMIN)
@@ -52,21 +53,32 @@ export class UsersController {
   @Roles(ROLE.ADMIN)
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() dto: CreateUserDto): Promise<UserResponseDto> {
-    const existing = await this.usersService.findByEmail(dto.email);
-
-    if (existing) {
-      throw new ConflictException('E-mail já cadastrado');
-    }
-
-    const passwordHash = await bcrypt.hash(dto.password, BCRYPT_ROUNDS);
-
-    const user = await this.usersService.create({
+    const user = await this.createUserWithProfileUseCase.execute({
       name: dto.name,
       email: dto.email,
-      passwordHash,
-      role: dto.role ?? ROLE.VIEWER,
+      password: dto.password,
+      role: dto.role,
+      pessoaFisica: dto.pessoaFisica,
+      permissaoIds: dto.permissaoIds,
     });
 
+    return new UserResponseDto({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      isActive: user.isActive,
+      createdAt: user.createdAt,
+    });
+  }
+
+  @Get(':id')
+  @Roles(ROLE.ADMIN)
+  async findOne(@Param('id') id: string): Promise<UserResponseDto> {
+    const user = await this.usersService.findById(id);
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado');
+    }
     return new UserResponseDto({
       id: user.id,
       name: user.name,

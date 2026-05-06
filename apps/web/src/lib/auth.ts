@@ -3,7 +3,7 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import type { NextAuthConfig } from 'next-auth';
 import { apiClient } from '@/lib/api-client';
 import type { AuthUser } from '@/types';
-import type { AuthTokensResponse, Role } from '@ged/types';
+import type { AuthTokensResponse, MeResponseDto, Role } from '@ged/types';
 
 const config: NextAuthConfig = {
   providers: [
@@ -22,6 +22,10 @@ const config: NextAuthConfig = {
             password: credentials.password,
           });
 
+          const meData = await apiClient.get<MeResponseDto>('/auth/me', {
+              token: response.accessToken,
+            });
+
           return {
             id: response.user.id,
             email: response.user.email,
@@ -30,6 +34,8 @@ const config: NextAuthConfig = {
             accessToken: response.accessToken,
             refreshToken: response.refreshToken,
             expiresIn: response.expiresIn,
+            permissoes: meData.permissoes,
+            modulos: meData.modulos,
           } satisfies AuthUser;
         } catch (error: unknown) {
           const message = error instanceof Error ? error.message : String(error);
@@ -46,7 +52,22 @@ const config: NextAuthConfig = {
         token.accessToken = authUser.accessToken;
         token.refreshToken = authUser.refreshToken;
         token.role = authUser.role;
+        token.permissoes = authUser.permissoes;
+        token.modulos = authUser.modulos;
         token.expiresAt = Date.now() + authUser.expiresIn * 1000;
+        return token;
+      }
+
+      if (trigger === 'update') {
+        try {
+          const meData = await apiClient.get<MeResponseDto>('/auth/me', {
+            token: token.accessToken as string,
+          });
+          token.permissoes = meData.permissoes;
+          token.modulos = meData.modulos;
+        } catch {
+          // mantém permissões existentes se a re-busca falhar
+        }
         return token;
       }
 
@@ -76,6 +97,8 @@ const config: NextAuthConfig = {
         sub: token.sub,
         accessToken: token.accessToken as string,
         role: token.role as string,
+        permissoes: (token.permissoes ?? []) as string[],
+        modulos: (token.modulos ?? []) as string[],
       };
       return session;
     },

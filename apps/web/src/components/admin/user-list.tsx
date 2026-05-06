@@ -1,11 +1,14 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { ROLE } from '@ged/types';
 import type { UserDto } from '@/types';
 import { useUsers, useToggleUserActive, useDeleteUser } from '@/hooks/use-users';
 import { EditUserDialog } from './edit-user-dialog';
+import { UsuarioPermissoesModal } from './usuario-permissoes/usuario-permissoes-modal';
 
 const ROLE_LABELS: Record<string, string> = {
   ADMIN: 'Admin',
@@ -92,9 +95,11 @@ export function UserList() {
   const { data: users, isLoading, isError } = useUsers();
   const { mutateAsync: toggleActive, isPending: isTogglingId } = useToggleUserActive();
   const { mutateAsync: deleteUser, isPending: isDeleting } = useDeleteUser();
+  const router = useRouter();
 
   const [editingUser, setEditingUser] = useState<UserDto | null>(null);
   const [deletingUser, setDeletingUser] = useState<UserDto | null>(null);
+  const [permissoesUser, setPermissoesUser] = useState<UserDto | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
 
   const currentUserId = session?.user?.id;
@@ -142,6 +147,15 @@ export function UserList() {
             <h3 className="text-base font-semibold text-slate-100">Usuários do sistema</h3>
             <p className="text-xs text-slate-400 mt-0.5">{users?.length ?? 0} usuários cadastrados</p>
           </div>
+          <Link
+            href="/admin/users/new"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-900"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Novo Usuário
+          </Link>
         </div>
 
         {!users?.length ? (
@@ -209,6 +223,30 @@ export function UserList() {
                       </td>
                       <td className="px-5 py-3.5">
                         <div className="flex items-center justify-end gap-1">
+                          {/* Ver Detalhes */}
+                          <button
+                            type="button"
+                            onClick={() => router.push(`/admin/users/${user.id}`)}
+                            title="Ver detalhes"
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-cyan-400 hover:bg-cyan-500/10 transition-colors"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                            </svg>
+                          </button>
+
+                          {/* Permissões */}
+                          <button
+                            type="button"
+                            onClick={() => setPermissoesUser(user)}
+                            title="Gerenciar permissões"
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-violet-400 hover:bg-violet-500/10 transition-colors"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+                            </svg>
+                          </button>
+
                           {/* Edit */}
                           <button
                             type="button"
@@ -275,6 +313,14 @@ export function UserList() {
 
       {editingUser && (
         <EditUserDialog user={editingUser} onClose={() => setEditingUser(null)} />
+      )}
+
+      {permissoesUser && (
+        <UsuarioPermissoesModal
+          userId={permissoesUser.id}
+          userName={permissoesUser.name}
+          onClose={() => setPermissoesUser(null)}
+        />
       )}
 
       {deletingUser && (

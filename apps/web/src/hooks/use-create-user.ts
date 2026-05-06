@@ -11,6 +11,14 @@ interface CreateUserPayload {
   readonly email: string;
   readonly password: string;
   readonly role?: string;
+  readonly permissaoIds?: readonly string[];
+  readonly pessoaFisica: {
+    readonly nome: string;
+    readonly sobrenome: string;
+    readonly cpf: string;
+    readonly dataNascimento: string;
+    readonly sexo: 'M' | 'F' | 'O';
+  };
 }
 
 interface UserCreated {

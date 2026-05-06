@@ -3,6 +3,14 @@ import { DataSource } from 'typeorm';
 import { CreateUsersTable1745798400000 } from './1745798400000-CreateUsersTable';
 import { CreateRefreshTokensTable1745798401000 } from './1745798401000-CreateRefreshTokensTable';
 import { CreatePasswordResetTokensTable1746057600000 } from './1746057600000-CreatePasswordResetTokensTable';
+import { CreatePessoaFisicasTable1746403200000 } from './1746403200000-CreatePessoaFisicasTable';
+import { CreateEnderecosTable1746403200001 } from './1746403200001-CreateEnderecosTable';
+import { CreateTelefonesTable1746403200002 } from './1746403200002-CreateTelefonesTable';
+import { CreatePermissoesTable1746403200003 } from './1746403200003-CreatePermissoesTable';
+import { CreateUsuarioPermissoesTable1746403200004 } from './1746403200004-CreateUsuarioPermissoesTable';
+import { CreateAuditLogsTable1746403200005 } from './1746403200005-CreateAuditLogsTable';
+import { CreateModulosTable1746403200006 } from './1746403200006-CreateModulosTable';
+import { AddModuloIdToPermissoes1746403200007 } from './1746403200007-AddModuloIdToPermissoes';
 
 const DATABASE_URL = process.env['DATABASE_URL'];
 
@@ -19,6 +27,14 @@ const dataSource = new DataSource({
     CreateUsersTable1745798400000,
     CreateRefreshTokensTable1745798401000,
     CreatePasswordResetTokensTable1746057600000,
+    CreatePessoaFisicasTable1746403200000,
+    CreateEnderecosTable1746403200001,
+    CreateTelefonesTable1746403200002,
+    CreatePermissoesTable1746403200003,
+    CreateUsuarioPermissoesTable1746403200004,
+    CreateAuditLogsTable1746403200005,
+    CreateModulosTable1746403200006,
+    AddModuloIdToPermissoes1746403200007,
   ],
   migrationsTableName: 'migrations',
 });

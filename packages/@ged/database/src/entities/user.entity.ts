@@ -5,6 +5,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
+  OneToOne,
 } from 'typeorm';
 
 
@@ -49,4 +50,13 @@ export class User {
 
   @OneToMany('RefreshToken', 'user')
   refreshTokens!: unknown[];
+
+  @OneToOne('PessoaFisica', 'usuario')
+  pessoaFisica!: unknown;
+
+  @OneToMany('UsuarioPermissao', 'usuario')
+  usuarioPermissoes!: unknown[];
+
+  @OneToMany('AuditLog', 'usuario')
+  auditLogs!: unknown[];
 }

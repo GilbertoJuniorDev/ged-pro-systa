@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { UserMenu } from './user-menu';
 import { NAV_ITEMS, ADMIN_NAV_ITEMS } from './sidebar-nav-items';
 import { useNavigation } from '@/providers/navigation-provider';
+import { usePermissions } from '@/hooks/use-permissions';
 import { Spinner } from '@/components/ui/spinner';
 
 interface SidebarProps {
@@ -21,7 +22,12 @@ export function Sidebar({ user }: SidebarProps) {
   const [pendingHref, setPendingHref] = useState<string | null>(null);
   const pathname = usePathname();
   const { startNavigation } = useNavigation();
+  const { hasModuleAccess } = usePermissions();
   const isAdmin = user.role === 'ADMIN';
+
+  const visibleNavItems = NAV_ITEMS.filter(
+    (item) => item.moduloSlug == null || hasModuleAccess(item.moduloSlug),
+  );
 
   useEffect(() => {
     setPendingHref(null);
@@ -57,7 +63,7 @@ export function Sidebar({ user }: SidebarProps) {
         </div>
 
         <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
-          {NAV_ITEMS.map((item) => {
+          {visibleNavItems.map((item) => {
             const isActive = pathname === item.href;
             const isPendingItem = pendingHref === item.href;
             return (
@@ -97,7 +103,7 @@ export function Sidebar({ user }: SidebarProps) {
                 Sistema
               </div>
               {ADMIN_NAV_ITEMS.map((item) => {
-                const isActive = pathname.startsWith('/admin');
+                const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
                 const isPendingItem = pendingHref === item.href;
                 return (
                   <Link

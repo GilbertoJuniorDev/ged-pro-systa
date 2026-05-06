@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import type { LoginFormData } from '@/types';
 import { Spinner } from '@/components/ui/spinner';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const loginSchema = z.object({
   email: z.string().email('E-mail inválido'),
@@ -115,13 +116,9 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
           )}
         </div>
 
-        <div className="flex items-center">
-          <input
-            id="remember"
-            type="checkbox"
-            className="w-4 h-4 text-indigo-600 border-slate-300 dark:border-slate-600 rounded focus:ring-indigo-600 cursor-pointer bg-white dark:bg-slate-800"
-          />
-          <label htmlFor="remember" className="ml-2 block text-sm text-slate-600 dark:text-slate-400 cursor-pointer">
+        <div className="flex items-center gap-2">
+          <Checkbox id="remember" />
+          <label htmlFor="remember" className="text-sm text-slate-600 dark:text-slate-400 cursor-pointer select-none">
             Lembrar de mim neste dispositivo
           </label>
         </div>

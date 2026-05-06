@@ -27,6 +27,7 @@ packages/@ged/database/src/entities/
 
 - **Enum nativo do banco vs `const object`**: para colunas `enum` no PostgreSQL, use a feature nativa do TypeORM — garante validação no nível do banco. Fora da entidade, exporte um `const object + as const` para o restante da aplicação consumir (nunca o `enum` TypeScript diretamente)
 - **Campos nullable**: apenas declare `nullable: true` quando o campo **realmente** for opcional no domínio. Não usar nullable como atalho para campos não implementados ainda
+- **Colunas nullable com union types**: sempre declarar `type:` explicitamente (ex: `type: 'varchar'`) em todo `@Column` com `nullable: true` cujo tipo TypeScript seja uma union (`string | null`, `number | null`). O `reflect-metadata` não consegue inferir union types — retorna `Object` em runtime, que o TypeORM não consegue mapear para o PostgreSQL e lança `DataTypeNotSupportedError` na inicialização
 - **Defaults**: preferir defaults na entidade (`default: value`) em vez de apenas no banco via migration, para que o TypeScript conheça o valor padrão sem precisar buscá-lo
 - **`select: false`**: use em colunas sensíveis (ex: `passwordHash`) para evitar retorno acidental em queries sem `addSelect` explícito
 - **Relacionamentos lazy vs eager**: nunca usar `eager: true` — carregar relacionamentos explicitamente com `relations: []` no Repository para evitar N+1 queries acidentais

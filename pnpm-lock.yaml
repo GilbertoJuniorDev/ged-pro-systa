@@ -159,6 +159,9 @@ importers:
       '@ged/types':
         specifier: workspace:^
         version: link:../../packages/@ged/types
+      '@ged/utils':
+        specifier: workspace:^
+        version: link:../../packages/@ged/utils
       '@hookform/resolvers':
         specifier: ^5.2.2
         version: 5.2.2(react-hook-form@7.74.0(react@19.2.5))

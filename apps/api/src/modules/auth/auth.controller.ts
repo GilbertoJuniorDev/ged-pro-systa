@@ -22,13 +22,17 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { Public } from '../../common/decorators/public.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import type { JwtPayload } from '@ged/types';
+import type { JwtPayload, MeResponseDto } from '@ged/types';
+import { UsuarioPermissoesService } from '../usuario-permissoes/usuario-permissoes.service';
 
 @ApiTags('auth')
 @UseGuards(JwtAuthGuard)
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly usuarioPermissoesService: UsuarioPermissoesService,
+  ) {}
 
   @Public()
   @Post('login')
@@ -81,8 +85,26 @@ export class AuthController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Retornar dados do usuário autenticado' })
   @ApiResponse({ status: 200, description: 'Dados do usuário autenticado' })
-  me(@CurrentUser() user: JwtPayload): JwtPayload {
-    return user;
+  async me(@CurrentUser() user: JwtPayload): Promise<MeResponseDto> {
+    const ups = await this.usuarioPermissoesService.findByUsuarioId(user.sub);
+
+    const permissoes = ups
+      .map((up) => (up as unknown as { permissao?: { nome?: string } }).permissao?.nome)
+      .filter((nome): nome is string => typeof nome === 'string');
+
+    const moduloSlugs = [
+      ...new Set(
+        ups
+          .map(
+            (up) =>
+              (up as unknown as { permissao?: { modulo?: { slug?: string } } }).permissao?.modulo
+                ?.slug,
+          )
+          .filter((slug): slug is string => typeof slug === 'string'),
+      ),
+    ];
+
+    return { ...user, permissoes, modulos: moduloSlugs };
   }
 
   @Public()
