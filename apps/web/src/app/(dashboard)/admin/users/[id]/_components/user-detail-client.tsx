@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useSession } from 'next-auth/react';
@@ -13,6 +13,7 @@ import { PessoaFisicaForm } from '@/components/admin/pessoa-fisica/pessoa-fisica
 import { EnderecoList } from '@/components/admin/pessoa-fisica/endereco-list';
 import { TelefoneList } from '@/components/admin/pessoa-fisica/telefone-list';
 import { usePessoaFisica } from '@/hooks/use-pessoa-fisica';
+import { Combobox } from '@/components/ui/combobox';
 
 const editSchema = z.object({
   name: z.string().min(2, 'Mínimo 2 caracteres'),
@@ -55,6 +56,7 @@ function DadosTab({ user }: { user: UserDto }) {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
   } = useForm<EditFormData>({
     resolver: zodResolver(editSchema),
@@ -90,13 +92,21 @@ function DadosTab({ user }: { user: UserDto }) {
         {user.role !== ROLE.ADMIN && (
           <div>
             <label className="block text-sm text-slate-400 mb-1">Função</label>
-            <select
-              {...register('role')}
-              className="w-full rounded-lg bg-slate-800 border border-slate-600 px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              <option value="MANAGER">Gerente</option>
-              <option value="VIEWER">Visualizador</option>
-            </select>
+            <Controller
+              name="role"
+              control={control}
+              render={({ field }) => (
+                <Combobox
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  placeholder="Selecionar função…"
+                  options={[
+                    { value: 'MANAGER', label: 'Gerente' },
+                    { value: 'VIEWER', label: 'Visualizador' },
+                  ]}
+                />
+              )}
+            />
           </div>
         )}
         <button

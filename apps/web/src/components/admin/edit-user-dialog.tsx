@@ -1,12 +1,13 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { ROLE } from '@ged/types';
 import type { UserDto } from '@/types';
 import { useUpdateUser } from '@/hooks/use-users';
+import { Combobox } from '@/components/ui/combobox';
 
 const editUserSchema = z.object({
   name: z.string().min(2, 'Nome deve ter ao menos 2 caracteres'),
@@ -27,6 +28,7 @@ export function EditUserDialog({ user, onClose }: EditUserDialogProps) {
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors },
   } = useForm<EditUserFormData>({
     resolver: zodResolver(editUserSchema),
@@ -95,14 +97,22 @@ export function EditUserDialog({ user, onClose }: EditUserDialogProps) {
             <label htmlFor="edit-role" className="block text-sm font-medium text-slate-300 mb-1.5">
               Função
             </label>
-            <select
-              id="edit-role"
-              className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-              {...register('role')}
-            >
-              <option value={ROLE.VIEWER}>Visualizador</option>
-              <option value={ROLE.MANAGER}>Gerente</option>
-            </select>
+            <Controller
+              name="role"
+              control={control}
+              render={({ field }) => (
+                <Combobox
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  placeholder="Selecionar função…"
+                  error={!!errors.role}
+                  options={[
+                    { value: ROLE.VIEWER, label: 'Visualizador' },
+                    { value: ROLE.MANAGER, label: 'Gerente' },
+                  ]}
+                />
+              )}
+            />
             {errors.role && (
               <p className="mt-1.5 text-xs text-rose-400">{errors.role.message}</p>
             )}

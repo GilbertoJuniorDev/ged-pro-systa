@@ -7,6 +7,8 @@ import { z } from 'zod';
 import { formatCpf, stripCpfMask } from '@ged/utils';
 import type { PessoaFisicaDto } from '@/types';
 import { useCreatePessoaFisica, useUpdatePessoaFisica } from '@/hooks/use-pessoa-fisica';
+import { DatePicker } from '@/components/ui/date-picker';
+import { Combobox } from '@/components/ui/combobox';
 
 const schema = z.object({
   nome: z.string().min(2, 'Mínimo 2 caracteres'),
@@ -100,10 +102,17 @@ export function PessoaFisicaForm({ userId, existingData }: Props) {
         </div>
         <div>
           <label className="block text-sm text-slate-400 mb-1">Data de Nascimento <span className="text-rose-400">*</span></label>
-          <input
-            type="date"
-            {...register('dataNascimento')}
-            className="w-full rounded-lg bg-slate-800 border border-slate-600 px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          <Controller
+            name="dataNascimento"
+            control={control}
+            render={({ field }) => (
+              <DatePicker
+                value={field.value}
+                onChange={field.onChange}
+                placeholder="DD/MM/AAAA"
+                error={!!errors.dataNascimento}
+              />
+            )}
           />
           {errors.dataNascimento && <p className="text-rose-400 text-xs mt-1">{errors.dataNascimento.message}</p>}
         </div>
@@ -111,15 +120,23 @@ export function PessoaFisicaForm({ userId, existingData }: Props) {
 
       <div className="w-full sm:w-1/2">
         <label className="block text-sm text-slate-400 mb-1">Sexo <span className="text-rose-400">*</span></label>
-        <select
-          {...register('sexo')}
-          className="w-full rounded-lg bg-slate-800 border border-slate-600 px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        >
-          <option value="">Selecionar…</option>
-          <option value="M">Masculino</option>
-          <option value="F">Feminino</option>
-          <option value="O">Outro</option>
-        </select>
+        <Controller
+          name="sexo"
+          control={control}
+          render={({ field }) => (
+            <Combobox
+              value={field.value}
+              onValueChange={field.onChange}
+              placeholder="Selecionar…"
+              error={!!errors.sexo}
+              options={[
+                { value: 'M', label: 'Masculino' },
+                { value: 'F', label: 'Feminino' },
+                { value: 'O', label: 'Outro' },
+              ]}
+            />
+          )}
+        />
         {errors.sexo && <p className="text-rose-400 text-xs mt-1">{errors.sexo.message}</p>}
       </div>
 

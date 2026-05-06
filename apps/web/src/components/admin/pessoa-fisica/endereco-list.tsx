@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import type { EnderecoDto } from '@/types';
@@ -12,6 +12,7 @@ import {
   useDeleteEndereco,
   type CreateEnderecoPayload,
 } from '@/hooks/use-enderecos';
+import { Combobox } from '@/components/ui/combobox';
 
 const schema = z.object({
   tipo: z.enum(['RESIDENCIAL', 'COMERCIAL', 'OUTRO']),
@@ -37,7 +38,7 @@ function EnderecoForm({ userId, editing, onDone }: EnderecoFormProps) {
   const update = useUpdateEndereco(userId);
   const isPending = create.isPending || update.isPending;
 
-  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
+  const { register, handleSubmit, control, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: editing
       ? { ...editing, complemento: editing.complemento ?? undefined }
@@ -57,11 +58,22 @@ function EnderecoForm({ userId, editing, onDone }: EnderecoFormProps) {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="col-span-2 sm:col-span-1">
           <label className="block text-xs text-slate-400 mb-1">Tipo</label>
-          <select {...register('tipo')} className="w-full rounded-lg bg-slate-800 border border-slate-600 px-2 py-1.5 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-            <option value="RESIDENCIAL">Residencial</option>
-            <option value="COMERCIAL">Comercial</option>
-            <option value="OUTRO">Outro</option>
-          </select>
+          <Controller
+            name="tipo"
+            control={control}
+            render={({ field }) => (
+              <Combobox
+                value={field.value}
+                onValueChange={field.onChange}
+                placeholder="Tipo…"
+                options={[
+                  { value: 'RESIDENCIAL', label: 'Residencial' },
+                  { value: 'COMERCIAL', label: 'Comercial' },
+                  { value: 'OUTRO', label: 'Outro' },
+                ]}
+              />
+            )}
+          />
         </div>
         <div className="col-span-2 sm:col-span-2">
           <label className="block text-xs text-slate-400 mb-1">Logradouro</label>

@@ -10,6 +10,8 @@ import { useCreateUser } from '../../hooks/use-create-user';
 import { useModulos } from '../../hooks/use-modulos';
 import { usePermissoes } from '../../hooks/use-permissoes';
 import { Checkbox } from '@/components/ui/checkbox';
+import { DatePicker } from '@/components/ui/date-picker';
+import { Combobox } from '@/components/ui/combobox';
 
 const pessoaFisicaSchema = z.object({
   nome: z.string().min(2, 'Nome deve ter ao menos 2 caracteres'),
@@ -164,14 +166,22 @@ export function CreateUserForm() {
             <label htmlFor="role" className="block text-sm font-medium text-slate-300 mb-1.5">
               Função
             </label>
-            <select
-              id="role"
-              className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-              {...register('role')}
-            >
-              <option value={ROLE.VIEWER}>Visualizador</option>
-              <option value={ROLE.MANAGER}>Gerente</option>
-            </select>
+            <Controller
+              name="role"
+              control={control}
+              render={({ field }) => (
+                <Combobox
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  placeholder="Selecionar função…"
+                  error={!!errors.role}
+                  options={[
+                    { value: ROLE.VIEWER, label: 'Visualizador' },
+                    { value: ROLE.MANAGER, label: 'Gerente' },
+                  ]}
+                />
+              )}
+            />
             {errors.role && (
               <p className="mt-1.5 text-xs text-rose-400">{errors.role.message}</p>
             )}
@@ -239,11 +249,17 @@ export function CreateUserForm() {
               <label htmlFor="pf-dataNascimento" className="block text-sm font-medium text-slate-300 mb-1.5">
                 Data de nascimento
               </label>
-              <input
-                id="pf-dataNascimento"
-                type="date"
-                className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors [color-scheme:dark]"
-                {...register('pessoaFisica.dataNascimento')}
+              <Controller
+                name="pessoaFisica.dataNascimento"
+                control={control}
+                render={({ field }) => (
+                  <DatePicker
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="DD/MM/AAAA"
+                    error={!!errors.pessoaFisica?.dataNascimento}
+                  />
+                )}
               />
               {errors.pessoaFisica?.dataNascimento && (
                 <p className="mt-1.5 text-xs text-rose-400">{errors.pessoaFisica.dataNascimento.message}</p>
@@ -254,16 +270,23 @@ export function CreateUserForm() {
               <label htmlFor="pf-sexo" className="block text-sm font-medium text-slate-300 mb-1.5">
                 Sexo
               </label>
-              <select
-                id="pf-sexo"
-                className="w-full bg-slate-800 border border-slate-700 text-slate-100 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-                {...register('pessoaFisica.sexo')}
-              >
-                <option value="">Selecione</option>
-                <option value="M">Masculino</option>
-                <option value="F">Feminino</option>
-                <option value="O">Outro</option>
-              </select>
+              <Controller
+                name="pessoaFisica.sexo"
+                control={control}
+                render={({ field }) => (
+                  <Combobox
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    placeholder="Selecionar…"
+                    error={!!errors.pessoaFisica?.sexo}
+                    options={[
+                      { value: 'M', label: 'Masculino' },
+                      { value: 'F', label: 'Feminino' },
+                      { value: 'O', label: 'Outro' },
+                    ]}
+                  />
+                )}
+              />
               {errors.pessoaFisica?.sexo && (
                 <p className="mt-1.5 text-xs text-rose-400">{errors.pessoaFisica.sexo.message}</p>
               )}

@@ -1,12 +1,13 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import type { PermissaoDto } from '@/types';
 import { useUpdatePermissao } from '@/hooks/use-permissoes';
 import { useModulos } from '@/hooks/use-modulos';
+import { Combobox } from '@/components/ui/combobox';
 
 const schema = z.object({
   nome: z.string().min(3, 'Mínimo 3 caracteres').max(100, 'Máximo 100 caracteres'),
@@ -28,6 +29,7 @@ export function EditPermissaoDialog({ permissao, onClose }: Props) {
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors },
   } = useForm<FormData>({ resolver: zodResolver(schema) });
 
@@ -89,18 +91,26 @@ export function EditPermissaoDialog({ permissao, onClose }: Props) {
             <label className="block text-sm text-slate-400 mb-1" htmlFor="edit-moduloId">
               Módulo
             </label>
-            <select
-              id="edit-moduloId"
-              {...register('moduloId')}
-              className="w-full rounded-lg bg-slate-800 border border-slate-600 px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              <option value="">— Sem módulo —</option>
-              {modulos?.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.nome} ({m.slug})
-                </option>
-              ))}
-            </select>
+            <Controller
+              name="moduloId"
+              control={control}
+              render={({ field }) => (
+                <Combobox
+                  value={field.value ?? ''}
+                  onValueChange={(v) => field.onChange(v === '' ? null : v)}
+                  placeholder="— Sem módulo —"
+                  searchPlaceholder="Buscar módulo…"
+                  error={!!errors.moduloId}
+                  options={[
+                    { value: '', label: '— Sem módulo —' },
+                    ...(modulos ?? []).map((m) => ({
+                      value: m.id,
+                      label: `${m.nome} (${m.slug})`,
+                    })),
+                  ]}
+                />
+              )}
+            />
             {errors.moduloId && <p className="text-rose-400 text-xs mt-1">{errors.moduloId.message}</p>}
           </div>
           <div className="flex gap-3 justify-end pt-2">
