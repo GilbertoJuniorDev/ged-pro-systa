@@ -6,9 +6,10 @@ import { UsersService, USER_REPOSITORY } from './users.service';
 import { UsersController } from './users.controller';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { CreateUserWithProfileUseCase } from './use-cases/create-user-with-profile.use-case';
+import { AuditLogsModule } from '../audit-logs/audit-logs.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, PessoaFisica])],
+  imports: [TypeOrmModule.forFeature([User, PessoaFisica]), AuditLogsModule],
   controllers: [UsersController],
   providers: [
     {

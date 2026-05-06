@@ -7,7 +7,9 @@ import {
   HttpStatus,
   UnauthorizedException,
   UseGuards,
+  Req,
 } from '@nestjs/common';
+import type { HttpRequest } from '../../common/interfaces/http-request.interface';
 import {
   ApiTags,
   ApiOperation,
@@ -24,6 +26,7 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import type { JwtPayload, MeResponseDto } from '@ged/types';
 import { UsuarioPermissoesService } from '../usuario-permissoes/usuario-permissoes.service';
+import { AuditLogsService } from '../audit-logs/audit-logs.service';
 
 @ApiTags('auth')
 @UseGuards(JwtAuthGuard)
@@ -32,6 +35,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly usuarioPermissoesService: UsuarioPermissoesService,
+    private readonly auditLogsService: AuditLogsService,
   ) {}
 
   @Public()
@@ -40,12 +44,21 @@ export class AuthController {
   @ApiOperation({ summary: 'Autenticar usuário e obter tokens JWT' })
   @ApiResponse({ status: 200, description: 'Login realizado com sucesso' })
   @ApiResponse({ status: 401, description: 'Credenciais inválidas' })
-  async login(@Body() dto: LoginDto) {
+  async login(@Req() req: HttpRequest, @Body() dto: LoginDto) {
     const user = await this.authService.validateUser(dto.email, dto.password);
     if (!user) {
       throw new UnauthorizedException('Credenciais inválidas');
     }
-    return this.authService.login(user);
+    const result = await this.authService.login(user);
+    void this.auditLogsService.log({
+      usuarioId: user.id,
+      acao: 'LOGIN',
+      entidade: 'User',
+      entidadeId: user.id,
+      ipCliente: req.ip ?? null,
+      userAgent: (req.headers['user-agent'] as string | undefined) ?? null,
+    });
+    return result;
   }
 
   @Public()
@@ -75,10 +88,19 @@ export class AuthController {
   @ApiOperation({ summary: 'Encerrar sessão e invalidar refresh token' })
   @ApiResponse({ status: 204, description: 'Logout realizado com sucesso' })
   async logout(
+    @Req() req: HttpRequest,
     @CurrentUser() user: JwtPayload,
     @Body() dto: RefreshTokenDto,
   ): Promise<void> {
     await this.authService.logout(user.sub, dto.refreshToken);
+    void this.auditLogsService.log({
+      usuarioId: user.sub,
+      acao: 'LOGOUT',
+      entidade: 'User',
+      entidadeId: user.sub,
+      ipCliente: req.ip ?? null,
+      userAgent: (req.headers['user-agent'] as string | undefined) ?? null,
+    });
   }
 
   @Get('me')

@@ -9,9 +9,10 @@ import {
 import { UsuarioPermissoesController } from './usuario-permissoes.controller';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { USUARIO_PERMISSOES_SERVICE } from '../../common/guards/permissions.guard';
+import { AuditLogsModule } from '../audit-logs/audit-logs.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UsuarioPermissao])],
+  imports: [TypeOrmModule.forFeature([UsuarioPermissao]), AuditLogsModule],
   controllers: [UsuarioPermissoesController],
   providers: [
     { provide: USUARIO_PERMISSAO_REPOSITORY, useClass: UsuarioPermissoesRepository },

@@ -5,9 +5,10 @@ import { PermissoesRepository } from './permissoes.repository';
 import { PermissoesService, PERMISSAO_REPOSITORY } from './permissoes.service';
 import { PermissoesController } from './permissoes.controller';
 import { RolesGuard } from '../../common/guards/roles.guard';
+import { AuditLogsModule } from '../audit-logs/audit-logs.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Permissao])],
+  imports: [TypeOrmModule.forFeature([Permissao]), AuditLogsModule],
   controllers: [PermissoesController],
   providers: [
     { provide: PERMISSAO_REPOSITORY, useClass: PermissoesRepository },

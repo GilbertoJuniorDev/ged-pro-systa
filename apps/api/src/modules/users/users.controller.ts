@@ -9,8 +9,10 @@ import {
   Param,
   Patch,
   Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
+import type { HttpRequest } from '../../common/interfaces/http-request.interface';
 import { ROLE } from '@ged/database';
 import type { JwtPayload } from '@ged/types';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -18,6 +20,7 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { UsersService } from './users.service';
+import { AuditLogsService } from '../audit-logs/audit-logs.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ToggleUserStatusDto } from './dto/toggle-user-status.dto';
@@ -30,6 +33,7 @@ export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     private readonly createUserWithProfileUseCase: CreateUserWithProfileUseCase,
+    private readonly auditLogsService: AuditLogsService,
   ) {}
 
   @Get()
@@ -52,7 +56,7 @@ export class UsersController {
   @Post()
   @Roles(ROLE.ADMIN)
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body() dto: CreateUserDto): Promise<UserResponseDto> {
+  async create(@Req() req: HttpRequest, @Body() dto: CreateUserDto): Promise<UserResponseDto> {
     const user = await this.createUserWithProfileUseCase.execute({
       name: dto.name,
       email: dto.email,
@@ -61,7 +65,14 @@ export class UsersController {
       pessoaFisica: dto.pessoaFisica,
       permissaoIds: dto.permissaoIds,
     });
-
+    void this.auditLogsService.log({
+      usuarioId: (req.user as { sub: string } | undefined)?.sub ?? null,
+      acao: 'CRIAR_USUARIO',
+      entidade: 'User',
+      entidadeId: user.id,
+      ipCliente: req.ip ?? null,
+      userAgent: req.headers['user-agent'] ?? null,
+    });
     return new UserResponseDto({
       id: user.id,
       name: user.name,
@@ -92,10 +103,19 @@ export class UsersController {
   @Patch(':id')
   @Roles(ROLE.ADMIN)
   async update(
+    @Req() req: HttpRequest,
     @Param('id') id: string,
     @Body() dto: UpdateUserDto,
   ): Promise<UserResponseDto> {
     const user = await this.usersService.update(id, dto);
+    void this.auditLogsService.log({
+      usuarioId: (req.user as { sub: string } | undefined)?.sub ?? null,
+      acao: 'ATUALIZAR_USUARIO',
+      entidade: 'User',
+      entidadeId: user.id,
+      ipCliente: req.ip ?? null,
+      userAgent: req.headers['user-agent'] ?? null,
+    });
     return new UserResponseDto({
       id: user.id,
       name: user.name,
@@ -128,9 +148,18 @@ export class UsersController {
   @Roles(ROLE.ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(
+    @Req() req: HttpRequest,
     @Param('id') id: string,
     @CurrentUser() currentUser: JwtPayload,
   ): Promise<void> {
     await this.usersService.remove(id, currentUser.sub);
+    void this.auditLogsService.log({
+      usuarioId: currentUser.sub,
+      acao: 'DELETAR_USUARIO',
+      entidade: 'User',
+      entidadeId: id,
+      ipCliente: req.ip ?? null,
+      userAgent: req.headers['user-agent'] ?? null,
+    });
   }
 }
