@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/lib/auth';
-import { Sidebar } from '@/components/layout/sidebar';
-import { NavigationProgress } from '@/components/layout/navigation-progress';
+import { DashboardShell } from '@/components/layout/dashboard-shell';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -27,12 +26,8 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-950">
-      <NavigationProgress />
-      <Sidebar user={user} />
-      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto animate-fade-in">
-        {children}
-      </div>
-    </div>
+    <DashboardShell user={user}>
+      {children}
+    </DashboardShell>
   );
 }

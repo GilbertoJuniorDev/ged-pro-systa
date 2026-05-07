@@ -105,94 +105,11 @@ export function CreateUserForm() {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
 
-      {/* Grid 2 colunas: Dados de Acesso | Dados Pessoais */}
+      {/* Grid 2 colunas: Dados Pessoais | Dados de Acesso */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-0">
 
-        {/* Coluna esquerda — Dados de Acesso */}
+        {/* Coluna esquerda — Dados Pessoais */}
         <div className="space-y-5">
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Dados de Acesso</p>
-
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-1.5">
-              E-mail
-            </label>
-            <input
-              id="email"
-              type="email"
-              autoComplete="email"
-              className="w-full bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-500 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-              placeholder="usuario@empresa.com"
-              {...register('email')}
-            />
-            {errors.email && (
-              <p className="mt-1.5 text-xs text-rose-400">{errors.email.message}</p>
-            )}
-          </div>
-
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-slate-300 mb-1">
-              Senha
-            </label>
-            <PasswordStrengthBar password={watch('password') ?? ''} />
-            <input
-              id="password"
-              type="password"
-              autoComplete="new-password"
-              className="w-full bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-500 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-              placeholder="Mínimo 8 caracteres"
-              {...register('password')}
-            />
-            <PasswordStrengthCriteria password={watch('password') ?? ''} />
-            {errors.password && (
-              <p className="mt-1.5 text-xs text-rose-400">{errors.password.message}</p>
-            )}
-          </div>
-
-          <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-300 mb-1.5">
-              Confirmar senha
-            </label>
-            <input
-              id="confirmPassword"
-              type="password"
-              autoComplete="new-password"
-              className="w-full bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-500 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-              placeholder="Repita a senha"
-              {...register('confirmPassword')}
-            />
-            {errors.confirmPassword && (
-              <p className="mt-1.5 text-xs text-rose-400">{errors.confirmPassword.message}</p>
-            )}
-          </div>
-
-          <div>
-            <label htmlFor="role" className="block text-sm font-medium text-slate-300 mb-1.5">
-              Função
-            </label>
-            <Controller
-              name="role"
-              control={control}
-              render={({ field }) => (
-                <Combobox
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  placeholder="Selecionar função…"
-                  error={!!errors.role}
-                  options={[
-                    { value: ROLE.VIEWER, label: 'Visualizador' },
-                    { value: ROLE.MANAGER, label: 'Gerente' },
-                  ]}
-                />
-              )}
-            />
-            {errors.role && (
-              <p className="mt-1.5 text-xs text-rose-400">{errors.role.message}</p>
-            )}
-          </div>
-        </div>
-
-        {/* Coluna direita — Dados Pessoais */}
-        <div className="space-y-5 mt-6 lg:mt-0">
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Dados Pessoais</p>
 
           <div className="grid grid-cols-2 gap-4">
@@ -294,6 +211,64 @@ export function CreateUserForm() {
                 <p className="mt-1.5 text-xs text-rose-400">{errors.pessoaFisica.sexo.message}</p>
               )}
             </div>
+          </div>
+        </div>
+
+        {/* Coluna direita — Dados de Acesso */}
+        <div className="space-y-5 mt-6 lg:mt-0">
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Dados de Acesso</p>
+
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-1.5">
+              E-mail
+            </label>
+            <input
+              id="email"
+              type="email"
+              autoComplete="email"
+              className="w-full bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-500 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+              placeholder="usuario@empresa.com"
+              {...register('email')}
+            />
+            {errors.email && (
+              <p className="mt-1.5 text-xs text-rose-400">{errors.email.message}</p>
+            )}
+          </div>
+
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-slate-300 mb-1">
+              Senha
+            </label>
+            <PasswordStrengthBar password={watch('password') ?? ''} />
+            <input
+              id="password"
+              type="password"
+              autoComplete="new-password"
+              className="w-full bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-500 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+              placeholder="Mínimo 8 caracteres"
+              {...register('password')}
+            />
+            <PasswordStrengthCriteria password={watch('password') ?? ''} />
+            {errors.password && (
+              <p className="mt-1.5 text-xs text-rose-400">{errors.password.message}</p>
+            )}
+          </div>
+
+          <div>
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-300 mb-1.5">
+              Confirmar senha
+            </label>
+            <input
+              id="confirmPassword"
+              type="password"
+              autoComplete="new-password"
+              className="w-full bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-500 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+              placeholder="Repita a senha"
+              {...register('confirmPassword')}
+            />
+            {errors.confirmPassword && (
+              <p className="mt-1.5 text-xs text-rose-400">{errors.confirmPassword.message}</p>
+            )}
           </div>
         </div>
       </div>

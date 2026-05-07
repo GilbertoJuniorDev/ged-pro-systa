@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { UserMenu } from './user-menu';
 import { NAV_ITEMS, ADMIN_NAV_ITEMS } from './sidebar-nav-items';
+import type { NavItem } from './sidebar-nav-items';
 import { useNavigation } from '@/providers/navigation-provider';
 import { usePermissions } from '@/hooks/use-permissions';
 import { Spinner } from '@/components/ui/spinner';
@@ -16,10 +17,117 @@ interface SidebarProps {
     readonly email?: string | null;
     readonly role?: string;
   };
+  readonly isOpen: boolean;
+  readonly onClose: () => void;
 }
 
-export function Sidebar({ user }: SidebarProps) {
-  const [isOpen, setIsOpen] = useState<boolean>(false);
+interface AccordionItemProps {
+  readonly item: NavItem;
+  readonly pathname: string;
+  readonly pendingHref: string | null;
+  readonly onLinkClick: (href: string) => void;
+}
+
+function AccordionItem({ item, pathname, pendingHref, onLinkClick }: AccordionItemProps) {
+  const isParentActive =
+    pathname === item.href ||
+    (item.children != null &&
+      item.children.some((c) => pathname === c.href || pathname.startsWith(c.href + '/')));
+
+  if (!item.children || item.children.length === 0) {
+    const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+    const isPending = pendingHref === item.href;
+    return (
+      <Link
+        href={item.href}
+        onClick={() => onLinkClick(item.href)}
+        className={`flex items-center px-3 py-2.5 rounded-lg font-medium transition-all duration-200 ease-in-out ${
+          isActive
+            ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400'
+            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'
+        }`}
+      >
+        {isPending ? (
+          <Spinner size="sm" className="mr-3 text-indigo-400" />
+        ) : (
+          <svg className="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            {item.iconPaths.map((d, i) => (
+              <path key={i} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
+            ))}
+          </svg>
+        )}
+        {item.label}
+      </Link>
+    );
+  }
+
+  const isPending = pendingHref === item.href;
+
+  return (
+    <div>
+      <Link
+        href={item.href}
+        onClick={() => onLinkClick(item.href)}
+        className={`flex items-center px-3 py-2.5 rounded-lg font-medium transition-all duration-200 ease-in-out ${
+          isParentActive
+            ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400'
+            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'
+        }`}
+      >
+        {isPending ? (
+          <Spinner size="sm" className="mr-3 text-indigo-400" />
+        ) : (
+          <svg className="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            {item.iconPaths.map((d, i) => (
+              <path key={i} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
+            ))}
+          </svg>
+        )}
+        {item.label}
+      </Link>
+
+      <div
+        className={`grid transition-all duration-300 ease-in-out ${
+          isParentActive ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+        }`}
+      >
+        <div className="overflow-hidden">
+          <div className="mt-1 space-y-0.5 pb-1">
+            {item.children.map((child) => {
+              const isChildActive = pathname === child.href || pathname.startsWith(child.href + '/');
+              const isChildPending = pendingHref === child.href;
+              return (
+                <Link
+                  key={child.href}
+                  href={child.href}
+                  onClick={() => onLinkClick(child.href)}
+                  className={`flex items-center pl-9 pr-3 py-2 text-sm rounded-lg font-medium transition-all duration-200 ease-in-out ${
+                    isChildActive
+                      ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400'
+                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'
+                  }`}
+                >
+                  {isChildPending ? (
+                    <Spinner size="sm" className="mr-2.5 text-indigo-400" />
+                  ) : (
+                    <svg className="w-4 h-4 mr-2.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      {child.iconPaths.map((d, i) => (
+                        <path key={i} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
+                      ))}
+                    </svg>
+                  )}
+                  {child.label}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function Sidebar({ user, isOpen, onClose }: SidebarProps) {
   const [pendingHref, setPendingHref] = useState<string | null>(null);
   const pathname = usePathname();
   const { startNavigation } = useNavigation();
@@ -39,7 +147,7 @@ export function Sidebar({ user }: SidebarProps) {
       setPendingHref(href);
       startNavigation();
     }
-    setIsOpen(false);
+    onClose();
   }
 
   return (
@@ -54,7 +162,7 @@ export function Sidebar({ user }: SidebarProps) {
           <button
             type="button"
             className="text-slate-500 transition-colors hover:text-slate-900 md:hidden dark:hover:text-slate-300"
-            onClick={() => setIsOpen(false)}
+            onClick={onClose}
             aria-label="Fechar menu"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -103,39 +211,15 @@ export function Sidebar({ user }: SidebarProps) {
               <div className="pt-4 pb-2 px-3 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-600">
                 Sistema
               </div>
-              {ADMIN_NAV_ITEMS.map((item) => {
-                const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
-                const isPendingItem = pendingHref === item.href;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => handleLinkClick(item.href)}
-                    className={`flex items-center px-3 py-2.5 rounded-lg font-medium transition-all duration-200 ease-in-out ${
-                      isActive
-                        ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400'
-                        : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'
-                    }`}
-                  >
-                    {isPendingItem ? (
-                      <Spinner size="sm" className="mr-3 text-indigo-400" />
-                    ) : (
-                      <svg
-                        className="w-5 h-5 mr-3"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        aria-hidden="true"
-                      >
-                        {item.iconPaths.map((d, i) => (
-                          <path key={i} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
-                        ))}
-                      </svg>
-                    )}
-                    {item.label}
-                  </Link>
-                );
-              })}
+              {ADMIN_NAV_ITEMS.map((item) => (
+                <AccordionItem
+                  key={item.href}
+                  item={item}
+                  pathname={pathname}
+                  pendingHref={pendingHref}
+                  onLinkClick={handleLinkClick}
+                />
+              ))}
             </>
           )}
         </nav>
@@ -152,21 +236,10 @@ export function Sidebar({ user }: SidebarProps) {
         <div
           id="sidebarOverlay"
           className="fixed inset-0 z-20 animate-fade-in bg-slate-900/30 backdrop-blur-sm md:hidden dark:bg-slate-950/60"
-          onClick={() => setIsOpen(false)}
+          onClick={onClose}
           aria-hidden="true"
         />
       )}
-
-      <button
-        type="button"
-        className="fixed left-4 top-4 z-10 rounded-lg border border-slate-200 bg-white p-2 text-slate-600 transition-colors hover:text-slate-950 md:hidden dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-        onClick={() => setIsOpen(true)}
-        aria-label="Abrir menu"
-      >
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
-      </button>
     </>
   );
 }
