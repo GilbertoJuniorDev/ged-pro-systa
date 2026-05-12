@@ -2,7 +2,23 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { join, dirname } from 'path';
-import { User, RefreshToken, PasswordResetToken } from '@ged/database';
+import {
+  User,
+  RefreshToken,
+  PasswordResetToken,
+  PhysicalPerson,
+  Address,
+  Phone,
+  Email,
+  Cnae,
+  Module as ModuleEntity,
+  Permission,
+  UserPermission,
+  AuditLog,
+  Company,
+  Subscription,
+  SubscriptionPayment,
+} from '@ged/database';
 
 @Module({
   imports: [
@@ -12,7 +28,23 @@ import { User, RefreshToken, PasswordResetToken } from '@ged/database';
       useFactory: (config: ConfigService) => ({
         type: 'postgres' as const,
         url: config.get<string>('DATABASE_URL'),
-        entities: [User, RefreshToken, PasswordResetToken],
+        entities: [
+          User,
+          RefreshToken,
+          PasswordResetToken,
+          PhysicalPerson,
+          Address,
+          Phone,
+          Email,
+          Cnae,
+          ModuleEntity,
+          Permission,
+          UserPermission,
+          AuditLog,
+          Company,
+          Subscription,
+          SubscriptionPayment,
+        ],
         synchronize: false,
         migrationsRun: true,
         logging: config.get<string>('NODE_ENV') === 'development',

@@ -22,6 +22,7 @@ COPY --from=deps /app ./
 # Sobrepõe com código-fonte (node_modules excluído via .dockerignore)
 COPY . .
 
+ENV NEXT_BUILD_STANDALONE=true
 RUN pnpm --filter=web build
 
 # ─── Stage 3: runner ─────────────────────────────────────────────────────────

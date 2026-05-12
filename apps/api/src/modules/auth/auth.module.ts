@@ -6,6 +6,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { RefreshToken, PasswordResetToken } from '@ged/database';
 import { UsersModule } from '../users/users.module';
 import { MailModule } from '../mail/mail.module';
+import { UserPermissionsModule } from '../user-permissions/user-permissions.module';
+import { AuditLogsModule } from '../audit-logs/audit-logs.module';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
@@ -15,6 +17,8 @@ import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
   imports: [
     UsersModule,
     MailModule,
+    UserPermissionsModule,
+    AuditLogsModule,
     PassportModule,
     TypeOrmModule.forFeature([RefreshToken, PasswordResetToken]),
     JwtModule.registerAsync({

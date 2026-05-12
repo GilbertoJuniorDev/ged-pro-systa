@@ -7,8 +7,20 @@ jest.mock('next/navigation', () => ({
   usePathname: jest.fn(),
 }));
 
+jest.mock('@/providers/navigation-provider', () => ({
+  useNavigation: () => ({ startNavigation: jest.fn() }),
+}));
+
+jest.mock('@/hooks/use-permissions', () => ({
+  usePermissions: () => ({ hasModuleAccess: () => true }),
+}));
+
 jest.mock('./user-menu', () => ({
   UserMenu: () => <div data-testid="user-menu-mock" />,
+}));
+
+jest.mock('./theme-toggle', () => ({
+  ThemeToggle: () => <button type="button" aria-label="Alternar tema" />,
 }));
 
 jest.mock('next/link', () => ({
@@ -55,7 +67,7 @@ describe('Sidebar', () => {
     render(<Sidebar user={defaultUser} />);
 
     const dashboardLink = screen.getByText('Dashboard').closest('a');
-    expect(dashboardLink).toHaveClass('bg-indigo-900/40');
+    expect(dashboardLink).toHaveClass('bg-indigo-50');
   });
 
   it('should toggle sidebar visibility when mobile open button is clicked', () => {
@@ -78,6 +90,7 @@ describe('Sidebar', () => {
 
     render(<Sidebar user={defaultUser} />);
 
+    expect(screen.getByLabelText('Alternar tema')).toBeInTheDocument();
     expect(screen.getByTestId('user-menu-mock')).toBeInTheDocument();
   });
 });

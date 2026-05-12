@@ -1,6 +1,45 @@
 import type { AuthTokensResponse, JwtPayload } from '@ged/types';
 
-export type { AuthTokensResponse, JwtPayload } from '@ged/types';
+export type {
+  AuthTokensResponse,
+  JwtPayload,
+  UserDto,
+  UpdateUserPayload,
+  PermissaoDto,
+  PermissionDto,
+  ModuloDto,
+  ModuleDto,
+  PessoaFisicaDto,
+  PhysicalPersonDto,
+  EnderecoDto,
+  AddressDto,
+  TelefoneDto,
+  PhoneDto,
+  AuditLogDto,
+  UsuarioPermissaoDto,
+  UserPermissionDto,
+  PaginatedResult,
+  MeResponseDto,
+  CompanyDto,
+  UpsertCompanyInput,
+  CompanyAddressDto,
+  UpsertCompanyAddressInput,
+  CompanyAddressType,
+  CompanyPhoneDto,
+  UpsertCompanyPhoneInput,
+  CompanyPhoneType,
+  CompanyEmailDto,
+  UpsertCompanyEmailInput,
+  CompanyEmailType,
+  CompanyCnaeDto,
+  UpsertCompanyCnaeInput,
+  SubscriptionDto,
+  UpsertSubscriptionInput,
+  RecordPaymentInput,
+  SubscriptionStatus,
+  SubscriptionPaymentDto,
+} from '@ged/types';
+export { SUBSCRIPTION_STATUS } from '@ged/types';
 
 export interface LoginFormData {
   email: string;
@@ -28,4 +67,24 @@ export interface AuthUser {
   accessToken: AuthTokensResponse['accessToken'];
   refreshToken: AuthTokensResponse['refreshToken'];
   expiresIn: AuthTokensResponse['expiresIn'];
+  permissoes: string[];
+  modulos: string[];
+}
+
+// next-auth module augmentation — expõe campos customizados em session.user
+declare module 'next-auth' {
+  interface Session {
+    user: {
+      id?: string;
+      name?: string | null;
+      email?: string | null;
+      image?: string | null;
+      role?: string;
+      accessToken?: string;
+      refreshToken?: string;
+      expiresIn?: number;
+      permissoes?: string[];
+      modulos?: string[];
+    };
+  }
 }

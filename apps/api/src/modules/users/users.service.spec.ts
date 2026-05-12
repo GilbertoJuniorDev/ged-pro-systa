@@ -1,4 +1,5 @@
 import { Test } from '@nestjs/testing';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { UsersService, USER_REPOSITORY } from './users.service';
 import type { IUserRepository, CreateUserData } from './interfaces/user-repository.interface';
 import type { User } from '@ged/database';
@@ -27,8 +28,12 @@ describe('UsersService', () => {
     mockRepository = {
       findByEmail: jest.fn(),
       findById: jest.fn(),
+      findAll: jest.fn(),
       create: jest.fn(),
       updatePassword: jest.fn(),
+      update: jest.fn(),
+      remove: jest.fn(),
+      setActive: jest.fn(),
     };
 
     const module = await Test.createTestingModule({
@@ -81,6 +86,18 @@ describe('UsersService', () => {
     });
   });
 
+  describe('findAll', () => {
+    it('should return all users', async () => {
+      const users = [makeUser(), makeUser({ id: 'user-uuid-2', email: 'other@ged.local' })];
+      mockRepository.findAll.mockResolvedValue(users);
+
+      const result = await service.findAll();
+
+      expect(result).toHaveLength(2);
+      expect(mockRepository.findAll).toHaveBeenCalled();
+    });
+  });
+
   describe('create', () => {
     it('should create and return a new user', async () => {
       const data: CreateUserData = {
@@ -96,6 +113,85 @@ describe('UsersService', () => {
 
       expect(result).toEqual(created);
       expect(mockRepository.create).toHaveBeenCalledWith(data);
+    });
+  });
+
+  describe('update', () => {
+    it('should update user when found', async () => {
+      const existing = makeUser();
+      const updated = makeUser({ name: 'Novo Nome', role: 'MANAGER' });
+      mockRepository.findById.mockResolvedValue(existing);
+      mockRepository.update.mockResolvedValue(updated);
+
+      const result = await service.update('user-uuid-1', { name: 'Novo Nome', role: 'MANAGER' });
+
+      expect(result.name).toBe('Novo Nome');
+      expect(mockRepository.update).toHaveBeenCalledWith('user-uuid-1', {
+        name: 'Novo Nome',
+        role: 'MANAGER',
+      });
+    });
+
+    it('should throw NotFoundException when user does not exist', async () => {
+      mockRepository.findById.mockResolvedValue(null);
+
+      await expect(service.update('nonexistent', { name: 'X' })).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(mockRepository.update).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('remove', () => {
+    it('should remove user when found and not self', async () => {
+      mockRepository.findById.mockResolvedValue(makeUser());
+      mockRepository.remove.mockResolvedValue(undefined);
+
+      await expect(service.remove('user-uuid-1', 'admin-uuid')).resolves.toBeUndefined();
+      expect(mockRepository.remove).toHaveBeenCalledWith('user-uuid-1');
+    });
+
+    it('should throw BadRequestException when removing own account', async () => {
+      await expect(service.remove('user-uuid-1', 'user-uuid-1')).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(mockRepository.remove).not.toHaveBeenCalled();
+    });
+
+    it('should throw NotFoundException when user does not exist', async () => {
+      mockRepository.findById.mockResolvedValue(null);
+
+      await expect(service.remove('nonexistent', 'admin-uuid')).rejects.toThrow(NotFoundException);
+      expect(mockRepository.remove).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('setActive', () => {
+    it('should deactivate user when found and not self', async () => {
+      const deactivated = makeUser({ isActive: false });
+      mockRepository.findById.mockResolvedValue(makeUser());
+      mockRepository.setActive.mockResolvedValue(deactivated);
+
+      const result = await service.setActive('user-uuid-1', false, 'admin-uuid');
+
+      expect(result.isActive).toBe(false);
+      expect(mockRepository.setActive).toHaveBeenCalledWith('user-uuid-1', false);
+    });
+
+    it('should throw BadRequestException when changing own status', async () => {
+      await expect(service.setActive('user-uuid-1', false, 'user-uuid-1')).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(mockRepository.setActive).not.toHaveBeenCalled();
+    });
+
+    it('should throw NotFoundException when user does not exist', async () => {
+      mockRepository.findById.mockResolvedValue(null);
+
+      await expect(service.setActive('nonexistent', false, 'admin-uuid')).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(mockRepository.setActive).not.toHaveBeenCalled();
     });
   });
 });

@@ -3,7 +3,9 @@ import { Inter } from 'next/font/google';
 import { SessionProvider } from 'next-auth/react';
 import { auth } from '@/lib/auth';
 import { ThemeProvider } from '@/providers/theme-provider';
+import { ThemeAwareToaster } from '@/providers/theme-aware-toaster';
 import { QueryProvider } from '@/providers/query-provider';
+import { NavigationProvider } from '@/providers/navigation-provider';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -25,7 +27,10 @@ export default async function RootLayout({
       <body className={inter.className}>
         <SessionProvider session={session}>
           <ThemeProvider>
-            <QueryProvider>{children}</QueryProvider>
+            <QueryProvider>
+              <NavigationProvider>{children}</NavigationProvider>
+            </QueryProvider>
+            <ThemeAwareToaster />
           </ThemeProvider>
         </SessionProvider>
       </body>

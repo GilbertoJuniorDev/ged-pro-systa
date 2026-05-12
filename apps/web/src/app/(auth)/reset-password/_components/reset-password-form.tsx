@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { toast } from 'sonner';
 import { apiClient, ApiError } from '@/lib/api-client';
 
 const resetPasswordSchema = z
@@ -28,10 +29,9 @@ type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
 export function ResetPasswordForm() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const token = searchParams.get('token');
 
-  const [success, setSuccess] = useState(false);
-  const [apiError, setApiError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -61,39 +61,20 @@ export function ResetPasswordForm() {
     );
   }
 
-  if (success) {
-    return (
-      <div>
-        <div className="rounded-lg bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 px-4 py-4 text-sm text-emerald-700 dark:text-emerald-400 mb-6">
-          Senha redefinida com sucesso! Você já pode fazer login com a nova senha.
-        </div>
-        <Link
-          href="/login"
-          className="inline-flex items-center text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
-        >
-          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-          Ir para o login
-        </Link>
-      </div>
-    );
-  }
-
   function onSubmit(data: ResetPasswordFormData) {
-    setApiError(null);
     startTransition(async () => {
       try {
         await apiClient.post('/auth/reset-password', {
           token,
           newPassword: data.newPassword,
         });
-        setSuccess(true);
+        toast.success('Senha redefinida com sucesso! Redirecionando para o login...');
+        router.push('/login');
       } catch (err) {
         if (err instanceof ApiError) {
-          setApiError(err.message);
+          toast.error(err.message);
         } else {
-          setApiError('Erro ao redefinir a senha. Tente novamente.');
+          toast.error('Erro ao redefinir a senha. Tente novamente.');
         }
       }
     });
@@ -189,9 +170,6 @@ export function ResetPasswordForm() {
           )}
         </div>
 
-        {apiError && (
-          <p className="text-sm text-red-500 dark:text-red-400">{apiError}</p>
-        )}
 
         <button
           type="submit"

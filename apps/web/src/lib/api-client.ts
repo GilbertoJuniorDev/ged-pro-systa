@@ -62,6 +62,10 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     );
   }
 
+  if (response.status === 204 || response.headers.get('content-length') === '0') {
+    return undefined as T;
+  }
+
   const json = (await response.json()) as SuccessBody<T>;
   return json.data;
 }
@@ -78,8 +82,12 @@ function put<T>(path: string, body?: unknown, options?: Omit<RequestOptions, 'bo
   return request<T>(path, { ...options, method: 'PUT', body });
 }
 
+function patch<T>(path: string, body?: unknown, options?: Omit<RequestOptions, 'body'>): Promise<T> {
+  return request<T>(path, { ...options, method: 'PATCH', body });
+}
+
 function del<T>(path: string, options?: Omit<RequestOptions, 'body'>): Promise<T> {
   return request<T>(path, { ...options, method: 'DELETE' });
 }
 
-export const apiClient = { request, get, post, put, delete: del };
+export const apiClient = { request, get, post, put, patch, delete: del };
