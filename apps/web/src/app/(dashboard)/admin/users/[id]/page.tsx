@@ -38,7 +38,7 @@ export default async function AdminUserDetailPage({ params }: Props) {
           ← Gerenciar Usuários
         </Link>
         <div className="mt-3 flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-50 text-base font-semibold text-indigo-700 ring-1 ring-indigo-200 dark:bg-indigo-600/20 dark:text-indigo-300 dark:ring-indigo-600/30">
+          <div aria-hidden="true" className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-50 text-base font-semibold text-indigo-700 ring-1 ring-indigo-200 dark:bg-indigo-600/20 dark:text-indigo-300 dark:ring-indigo-600/30">
             {user.name
               .split(' ')
               .slice(0, 2)
@@ -47,7 +47,7 @@ export default async function AdminUserDetailPage({ params }: Props) {
               .toUpperCase()}
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-slate-950 dark:text-slate-100">{user.name}</h2>
+            <h1 className="text-2xl font-bold text-slate-950 dark:text-slate-100">{user.name}</h1>
             <p className="text-slate-600 dark:text-slate-400">{user.email}</p>
           </div>
         </div>

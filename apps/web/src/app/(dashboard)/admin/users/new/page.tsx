@@ -18,7 +18,7 @@ export default function AdminUserNewPage() {
             ← Gerenciar Usuários
           </Link>
         </div>
-        <h2 className="text-2xl font-bold text-slate-950 dark:text-slate-100">Novo Usuário</h2>
+        <h1 className="text-2xl font-bold text-slate-950 dark:text-slate-100">Novo Usuário</h1>
         <p className="text-slate-600 dark:text-slate-400">Preencha os dados para adicionar um novo usuário ao sistema.</p>
       </div>
 

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { ROLE } from '@ged/types';
@@ -31,7 +30,7 @@ function UserInitials({ name }: { name: string }) {
     .toUpperCase();
 
   return (
-    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600/20 text-xs font-semibold text-indigo-300 ring-1 ring-indigo-600/30 flex-shrink-0">
+    <span aria-hidden="true" className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600/20 text-xs font-semibold text-indigo-300 ring-1 ring-indigo-600/30 flex-shrink-0">
       {initials}
     </span>
   );
@@ -47,7 +46,7 @@ interface DeleteConfirmDialogProps {
 function DeleteConfirmDialog({ user, onConfirm, onCancel, isPending }: DeleteConfirmDialogProps) {
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm overscroll-contain"
       role="dialog"
       aria-modal="true"
       aria-labelledby="delete-dialog-title"
@@ -82,7 +81,7 @@ function DeleteConfirmDialog({ user, onConfirm, onCancel, isPending }: DeleteCon
             disabled={isPending}
             className="flex-1 bg-rose-600 hover:bg-rose-500 disabled:opacity-60 disabled:cursor-not-allowed text-white font-medium rounded-lg py-2.5 text-sm transition-colors"
           >
-            {isPending ? 'Excluindo...' : 'Excluir'}
+            {isPending ? 'Excluindo…' : 'Excluir'}
           </button>
         </div>
       </div>
@@ -95,7 +94,6 @@ export function UserList() {
   const { data: users, isLoading, isError } = useUsers();
   const { mutateAsync: toggleActive, isPending: isTogglingId } = useToggleUserActive();
   const { mutateAsync: deleteUser, isPending: isDeleting } = useDeleteUser();
-  const router = useRouter();
 
   const [editingUser, setEditingUser] = useState<UserDto | null>(null);
   const [deletingUser, setDeletingUser] = useState<UserDto | null>(null);
@@ -224,23 +222,22 @@ export function UserList() {
                       <td className="px-5 py-3.5">
                         <div className="flex items-center justify-end gap-1">
                           {/* Ver Detalhes */}
-                          <button
-                            type="button"
-                            onClick={() => router.push(`/admin/users/${user.id}`)}
-                            title="Ver detalhes"
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-cyan-400 hover:bg-cyan-500/10 transition-colors"
+                          <Link
+                            href={`/admin/users/${user.id}`}
+                            aria-label="Ver detalhes"
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-cyan-400 hover:bg-cyan-500/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
                             </svg>
-                          </button>
+                          </Link>
 
                           {/* Permissões */}
                           <button
                             type="button"
                             onClick={() => setPermissoesUser(user)}
-                            title="Gerenciar permissões"
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-violet-400 hover:bg-violet-500/10 transition-colors"
+                            aria-label="Gerenciar permissões"
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-violet-400 hover:bg-violet-500/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
@@ -252,8 +249,8 @@ export function UserList() {
                             type="button"
                             onClick={() => setEditingUser(user)}
                             disabled={isSelf && user.role === ROLE.ADMIN}
-                            title="Editar usuário"
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                            aria-label="Editar usuário"
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
@@ -265,8 +262,8 @@ export function UserList() {
                             type="button"
                             onClick={() => handleToggleActive(user)}
                             disabled={isSelf || isToggling}
-                            title={user.isActive ? 'Desativar usuário' : 'Ativar usuário'}
-                            className={`p-1.5 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+                            aria-label={user.isActive ? 'Desativar usuário' : 'Ativar usuário'}
+                            className={`p-1.5 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ${
                               user.isActive
                                 ? 'text-slate-400 hover:text-amber-400 hover:bg-amber-500/10'
                                 : 'text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10'
@@ -293,8 +290,8 @@ export function UserList() {
                             type="button"
                             onClick={() => setDeletingUser(user)}
                             disabled={isSelf}
-                            title="Excluir usuário"
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                            aria-label="Excluir usuário"
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />

@@ -5,6 +5,8 @@ import { ActivityLogsCard } from './_components/activity-logs-card';
 import { ModulesCard } from './_components/modules-card';
 import { UserPermissionsCard } from './_components/user-permissions-card';
 import { PerformanceMonitor } from './_components/performance-monitor';
+import { CompanyCard } from './_components/company-card';
+import { SubscriptionCard } from './_components/subscription-card';
 
 export const metadata: Metadata = {
   title: 'Configurações Admin — GED Pro',
@@ -19,6 +21,8 @@ export default function AdminSettingsPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <CompanyCard />
+        <SubscriptionCard />
         <GoogleDriveCard />
         <BackupCard />
         <ActivityLogsCard />

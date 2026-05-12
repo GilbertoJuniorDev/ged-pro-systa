@@ -155,14 +155,14 @@ describe('CreateUserForm', () => {
     });
   });
 
-  it('should render "Criando..." label while isPending is true', () => {
+  it('should render "Criando\u2026" label while isPending is true', () => {
     (useCreateUser as jest.Mock).mockReturnValue({
       mutateAsync: mockMutateAsync,
       isPending: true,
     });
     render(<CreateUserForm />);
 
-    expect(screen.getByRole('button', { name: /criando\.\.\./i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /criando…/i })).toBeInTheDocument();
     expect(screen.getByRole('button')).toBeDisabled();
   });
 

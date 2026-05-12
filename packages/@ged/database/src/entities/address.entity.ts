@@ -8,6 +8,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { PhysicalPerson } from './physical-person.entity';
+import { Company } from './company.entity';
 
 export const ADDRESS_TYPE = {
   RESIDENTIAL: 'RESIDENCIAL',
@@ -22,12 +23,19 @@ export class Address {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ name: 'pessoa_fisica_id' })
-  pessoaFisicaId!: string;
+  @Column({ name: 'pessoa_fisica_id', type: 'uuid', nullable: true })
+  pessoaFisicaId!: string | null;
 
-  @ManyToOne(() => PhysicalPerson, { onDelete: 'CASCADE' })
+  @ManyToOne(() => PhysicalPerson, { onDelete: 'CASCADE', nullable: true })
   @JoinColumn({ name: 'pessoa_fisica_id' })
-  physicalPerson!: PhysicalPerson;
+  physicalPerson!: PhysicalPerson | null;
+
+  @Column({ name: 'company_id', type: 'uuid', nullable: true })
+  companyId!: string | null;
+
+  @ManyToOne(() => Company, { onDelete: 'CASCADE', nullable: true })
+  @JoinColumn({ name: 'company_id' })
+  company!: Company | null;
 
   @Column({
     name: 'tipo',

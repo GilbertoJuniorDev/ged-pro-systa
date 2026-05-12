@@ -12,6 +12,9 @@ import { CreateAuditLogsTable1746403200005 } from './1746403200005-CreateAuditLo
 import { CreateModulosTable1746403200006 } from './1746403200006-CreateModulosTable';
 import { AddModuloIdToPermissoes1746403200007 } from './1746403200007-AddModuloIdToPermissoes';
 import { RenameTableNamesToEnglish1746500000000 } from './1746500000000-RenameTableNamesToEnglish';
+import { CreateCompanyAndSubscription1746600000000 } from './1746600000000-CreateCompanyAndSubscription';
+import { AddCompanyRelationsAndCnae1746700000000 } from './1746700000000-AddCompanyRelationsAndCnae';
+import { CreateSubscriptionPaymentsTable1747000000000 } from './1747000000000-CreateSubscriptionPaymentsTable';
 
 const DATABASE_URL = process.env['DATABASE_URL'];
 
@@ -36,7 +39,11 @@ const dataSource = new DataSource({
     CreateAuditLogsTable1746403200005,
     CreateModulosTable1746403200006,
     AddModuloIdToPermissoes1746403200007,
-    RenameTableNamesToEnglish1746500000000
+    RenameTableNamesToEnglish1746500000000,
+    CreateCompanyAndSubscription1746600000000,  
+    AddCompanyRelationsAndCnae1746700000000,
+    CreateSubscriptionPaymentsTable1747000000000,
+
   ],
   migrationsTableName: 'migrations',
 });

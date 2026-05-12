@@ -120,7 +120,8 @@ export function CreateUserForm() {
               <input
                 id="pf-nome"
                 type="text"
-                className="w-full bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-500 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                autoComplete="given-name"
+                className="w-full bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-500 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus:border-transparent transition-colors"
                 placeholder="Ex: Ana"
                 {...register('pessoaFisica.nome')}
               />
@@ -136,7 +137,8 @@ export function CreateUserForm() {
               <input
                 id="pf-sobrenome"
                 type="text"
-                className="w-full bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-500 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                autoComplete="family-name"
+                className="w-full bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-500 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus:border-transparent transition-colors"
                 placeholder="Ex: Souza"
                 {...register('pessoaFisica.sobrenome')}
               />
@@ -155,7 +157,9 @@ export function CreateUserForm() {
               type="text"
               inputMode="numeric"
               maxLength={11}
-              className="w-full bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-500 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+              autoComplete="off"
+              spellCheck={false}
+              className="w-full bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-500 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus:border-transparent transition-colors"
               placeholder="00000000000"
               {...register('pessoaFisica.cpf')}
             />
@@ -226,7 +230,7 @@ export function CreateUserForm() {
               id="email"
               type="email"
               autoComplete="email"
-              className="w-full bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-500 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+              className="w-full bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-500 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus:border-transparent transition-colors"
               placeholder="usuario@empresa.com"
               {...register('email')}
             />
@@ -244,7 +248,7 @@ export function CreateUserForm() {
               id="password"
               type="password"
               autoComplete="new-password"
-              className="w-full bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-500 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+              className="w-full bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-500 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus:border-transparent transition-colors"
               placeholder="Mínimo 8 caracteres"
               {...register('password')}
             />
@@ -262,7 +266,7 @@ export function CreateUserForm() {
               id="confirmPassword"
               type="password"
               autoComplete="new-password"
-              className="w-full bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-500 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+              className="w-full bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-500 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus:border-transparent transition-colors"
               placeholder="Repita a senha"
               {...register('confirmPassword')}
             />
@@ -429,9 +433,9 @@ export function CreateUserForm() {
       <button
         type="submit"
         disabled={isPending}
-        className="w-full py-2.5 px-4 text-sm font-semibold rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-900"
+        className="w-full py-2.5 px-4 text-sm font-semibold rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
       >
-        {isPending ? 'Criando...' : 'Criar Usuário'}
+        {isPending ? 'Criando…' : 'Criar Usuário'}
       </button>
     </form>
   );

@@ -52,7 +52,7 @@ export function EditUserDialog({ user, onClose }: EditUserDialogProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm overscroll-contain"
       role="dialog"
       aria-modal="true"
       aria-labelledby="edit-user-dialog-title"
@@ -85,7 +85,8 @@ export function EditUserDialog({ user, onClose }: EditUserDialogProps) {
             <input
               id="edit-name"
               type="text"
-              className="w-full bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-500 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+              autoComplete="name"
+              className="w-full bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-500 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus:border-transparent transition-colors"
               {...register('name')}
             />
             {errors.name && (
@@ -131,7 +132,7 @@ export function EditUserDialog({ user, onClose }: EditUserDialogProps) {
               disabled={isPending}
               className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed text-white font-medium rounded-lg py-2.5 text-sm transition-colors"
             >
-              {isPending ? 'Salvando...' : 'Salvar'}
+              {isPending ? 'Salvando…' : 'Salvar'}
             </button>
           </div>
         </form>

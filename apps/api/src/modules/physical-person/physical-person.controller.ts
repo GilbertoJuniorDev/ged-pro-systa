@@ -125,7 +125,7 @@ export class PhysicalPersonController {
     return addresses.map((e) =>
       new AddressResponseDto({
         id: e.id,
-        physicalPersonId: e.pessoaFisicaId,
+        physicalPersonId: e.pessoaFisicaId ?? '',
         tipo: e.tipo,
         logradouro: e.logradouro,
         numero: e.numero,
@@ -159,7 +159,7 @@ export class PhysicalPersonController {
     });
     return new AddressResponseDto({
       id: e.id,
-      physicalPersonId: e.pessoaFisicaId,
+      physicalPersonId: e.pessoaFisicaId ?? '',
       tipo: e.tipo,
       logradouro: e.logradouro,
       numero: e.numero,
@@ -185,7 +185,7 @@ export class PhysicalPersonController {
     );
     return new AddressResponseDto({
       id: e.id,
-      physicalPersonId: e.pessoaFisicaId,
+      physicalPersonId: e.pessoaFisicaId ?? '',
       tipo: e.tipo,
       logradouro: e.logradouro,
       numero: e.numero,
@@ -221,7 +221,7 @@ export class PhysicalPersonController {
     return phones.map((t) =>
       new PhoneResponseDto({
         id: t.id,
-        physicalPersonId: t.pessoaFisicaId,
+        physicalPersonId: t.pessoaFisicaId ?? '',
         tipo: t.tipo,
         numero: t.numero,
         createdAt: t.createdAt,
@@ -243,7 +243,7 @@ export class PhysicalPersonController {
     });
     return new PhoneResponseDto({
       id: t.id,
-      physicalPersonId: t.pessoaFisicaId,
+      physicalPersonId: t.pessoaFisicaId ?? '',
       tipo: t.tipo,
       numero: t.numero,
       createdAt: t.createdAt,
@@ -263,7 +263,7 @@ export class PhysicalPersonController {
     );
     return new PhoneResponseDto({
       id: t.id,
-      physicalPersonId: t.pessoaFisicaId,
+      physicalPersonId: t.pessoaFisicaId ?? '',
       tipo: t.tipo,
       numero: t.numero,
       createdAt: t.createdAt,

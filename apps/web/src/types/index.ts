@@ -20,7 +20,26 @@ export type {
   UserPermissionDto,
   PaginatedResult,
   MeResponseDto,
+  CompanyDto,
+  UpsertCompanyInput,
+  CompanyAddressDto,
+  UpsertCompanyAddressInput,
+  CompanyAddressType,
+  CompanyPhoneDto,
+  UpsertCompanyPhoneInput,
+  CompanyPhoneType,
+  CompanyEmailDto,
+  UpsertCompanyEmailInput,
+  CompanyEmailType,
+  CompanyCnaeDto,
+  UpsertCompanyCnaeInput,
+  SubscriptionDto,
+  UpsertSubscriptionInput,
+  RecordPaymentInput,
+  SubscriptionStatus,
+  SubscriptionPaymentDto,
 } from '@ged/types';
+export { SUBSCRIPTION_STATUS } from '@ged/types';
 
 export interface LoginFormData {
   email: string;
