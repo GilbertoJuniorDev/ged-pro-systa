@@ -138,8 +138,8 @@ export function Combobox({
       {open && (
         <div
           className={cn(
-            'absolute z-50 mt-2 w-full min-w-[12rem] overflow-hidden rounded-xl border border-slate-200',
-            'animate-scale-in bg-white shadow-lg dark:border-slate-700 dark:bg-slate-900 dark:shadow-2xl dark:shadow-black/40',
+            'absolute z-50 mt-2 w-max min-w-full overflow-hidden rounded-xl border border-slate-200',
+            'animate-dropdown-in bg-white shadow-lg dark:border-slate-700 dark:bg-slate-900 dark:shadow-2xl dark:shadow-black/40',
           )}
         >
           {/* Search input */}

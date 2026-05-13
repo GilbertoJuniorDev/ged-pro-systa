@@ -37,6 +37,22 @@ services:
       timeout: 5s
       retries: 5
 
+  mongo:
+    image: mongo:7
+    container_name: ged-mongo
+    restart: unless-stopped
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - ged-network
+    healthcheck:
+      test: ['CMD', 'mongosh', '--quiet', '--eval', "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   api:
     build:
       context: ..
@@ -48,11 +64,14 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      mongo:
+        condition: service_healthy
     environment:
       NODE_ENV: production
       PORT: 3333
       DATABASE_URL: postgresql://${DB_USER:-ged_user}:${DB_PASSWORD:-ged_password}@db:5432/${DB_NAME:-ged_systa}
       REDIS_URL: redis://redis:6379
+      MONGO_URL: ${MONGO_URL:-mongodb://mongo:27017/ged_logs}
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-15m}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
@@ -97,6 +116,7 @@ services:
 volumes:
   postgres_data:
   redis_data:
+  mongo_data:
 
 networks:
   ged-network:

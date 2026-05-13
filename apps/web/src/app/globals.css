@@ -18,6 +18,11 @@
   to   { opacity: 1; transform: scale(1)    translateY(0);   }
 }
 
+@keyframes dropdownIn {
+  from { transform: scale(0.97) translateY(-4px); }
+  to   { transform: scale(1)    translateY(0); }
+}
+
 @keyframes blobFloat {
   0%, 100% { transform: translate(0, 0) scale(1);          }
   33%       { transform: translate(15px, -15px) scale(1.05); }
@@ -35,7 +40,8 @@
 @layer utilities {
   .animate-fade-in  { animation: fadeIn  0.35s ease-out both; }
   .animate-slide-up { animation: slideUp 0.35s ease-out both; }
-  .animate-scale-in { animation: scaleIn 0.2s  ease-out both; }
+  .animate-scale-in   { animation: scaleIn    0.2s  ease-out both; }
+  .animate-dropdown-in { animation: dropdownIn 0.15s ease-out both; }
   .animate-blob     { animation: blobFloat 8s ease-in-out infinite; }
   .animate-progress-bar { animation: progressBar 2.5s cubic-bezier(0.1, 0.4, 0.6, 1) forwards; }
 

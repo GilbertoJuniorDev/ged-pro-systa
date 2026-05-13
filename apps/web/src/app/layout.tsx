@@ -6,6 +6,7 @@ import { ThemeProvider } from '@/providers/theme-provider';
 import { ThemeAwareToaster } from '@/providers/theme-aware-toaster';
 import { QueryProvider } from '@/providers/query-provider';
 import { NavigationProvider } from '@/providers/navigation-provider';
+import { ErrorTrackingProvider } from '@/providers/error-tracking-provider';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -30,6 +31,7 @@ export default async function RootLayout({
             <QueryProvider>
               <NavigationProvider>{children}</NavigationProvider>
             </QueryProvider>
+            <ErrorTrackingProvider />
             <ThemeAwareToaster />
           </ThemeProvider>
         </SessionProvider>
