@@ -14,6 +14,9 @@ DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@localhost:5432/${DB_NAME}
 # ─── Redis ────────────────────────────────────────────────────────────────────
 REDIS_URL=redis://localhost:6379
 
+# ─── MongoDB (logs de erro) ───────────────────────────────────────────────────
+MONGO_URL=mongodb://localhost:27017/ged_logs
+
 # ─── Autenticação JWT ─────────────────────────────────────────────────────────
 JWT_SECRET=troque-por-um-segredo-forte-de-pelo-menos-32-chars
 JWT_EXPIRES_IN=15m
@@ -71,6 +74,7 @@ export type EnvConfig = z.infer<typeof envSchema>;
 |---|---|---|---|
 | `DATABASE_URL` | API | ✅ | — |
 | `REDIS_URL` | API | ✅ | — |
+| `MONGO_URL` | API | — | `mongodb://localhost:27017/ged_logs` |
 | `JWT_SECRET` | API | ✅ (≥32 chars) | — |
 | `JWT_REFRESH_SECRET` | API | ✅ (≥32 chars) | — |
 | `JWT_EXPIRES_IN` | API | — | `15m` |

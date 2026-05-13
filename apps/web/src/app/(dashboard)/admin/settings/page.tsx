@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { GoogleDriveCard } from './_components/google-drive-card';
 import { BackupCard } from './_components/backup-card';
 import { ActivityLogsCard } from './_components/activity-logs-card';
+import { ErrorLogsCard } from './_components/error-logs-card';
 import { ModulesCard } from './_components/modules-card';
 import { UserPermissionsCard } from './_components/user-permissions-card';
 import { PerformanceMonitor } from './_components/performance-monitor';
@@ -26,6 +27,7 @@ export default function AdminSettingsPage() {
         <GoogleDriveCard />
         <BackupCard />
         <ActivityLogsCard />
+        <ErrorLogsCard />
         <ModulesCard />
         <UserPermissionsCard />
         <PerformanceMonitor />

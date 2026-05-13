@@ -85,10 +85,28 @@ export function useUploadDocument() {
 - Integração com `react-hook-form` + `zodResolver`
 - Nunca validar no submit sem feedback visual imediato ao usuário
 
+## Componentes de UI Obrigatórios
+
+Sempre que precisar de um destes elementos, **use o componente compartilhado** em `apps/web/src/components/ui/` em vez do elemento nativo. Não duplicar a estilização inline — se o componente não atender a um caso, estendê-lo, nunca recriá-lo ad-hoc.
+
+| Componente | Import | Substitui | Props principais |
+|---|---|---|---|
+| `Combobox` | `@/components/ui/combobox` | `<select>` | `value`, `onValueChange`, `options: ComboboxOption[]`, `placeholder`, `error`, `disabled` |
+| `DatePicker` | `@/components/ui/date-picker` | `<input type="date">` | `value` (string `YYYY-MM-DD`), `onChange`, `placeholder`, `error`, `disabled` |
+| `Checkbox` | `@/components/ui/checkbox` | `<input type="checkbox">` | `checked`, `onCheckedChange`, `disabled` |
+| `PasswordStrengthBar` / `PasswordStrengthCriteria` | `@/components/ui/password-strength` | Indicador de força de senha | `password` |
+| `Spinner` | `@/components/ui/spinner` | Loader inline | `size`, `className` |
+| `Skeleton` | `@/components/ui/skeleton` | Placeholders de loading | `className` |
+| `NavLinkButton` | `@/components/ui/nav-link-button` | Botão de navegação que usa `next/link` | `href`, `children` |
+
+Consequência prática: `Combobox` e `DatePicker` são **controlados** — formulários que os usam devem manter estado via `useState`/`react-hook-form` (`Controller`), nunca via `FormData` ou `defaultValue` de form não-controlado.
+
 ## Regras Obrigatórias
 
 - Máx. ~150 linhas por arquivo de componente — extrair sub-componentes se ultrapassar
 - Componentes de UI reutilizáveis sempre em `@ged/ui` (nunca duplicar em `apps/web/`)
+- **Proibido** usar `<select>`, `<input type="date">` ou `<input type="checkbox">` nativos — usar `Combobox`, `DatePicker`, `Checkbox` (ver tabela acima)
+- Antes de criar um componente de UI novo, verificar `apps/web/src/components/ui/` — se já existe, reutilizar; se quase existe, estender
 - Tipos e DTOs sempre de `@ged/types` — nunca redefinir no frontend
 - `next/image` para todas as imagens (nunca `<img>` direto)
 - `next/link` para toda navegação interna (nunca `<a href>` direto)
