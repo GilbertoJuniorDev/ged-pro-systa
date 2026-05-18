@@ -5,11 +5,13 @@ export class CreatePessoaFisicasTable1746403200000 implements MigrationInterface
 
   async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      CREATE TYPE "pessoa_fisicas_sexo_enum" AS ENUM ('M', 'F', 'O')
+      DO $$ BEGIN
+        CREATE TYPE "pessoa_fisicas_sexo_enum" AS ENUM ('M', 'F', 'O');
+      EXCEPTION WHEN duplicate_object THEN NULL; END $$;
     `);
 
     await queryRunner.query(`
-      CREATE TABLE "pessoa_fisicas" (
+      CREATE TABLE IF NOT EXISTS "pessoa_fisicas" (
         "id"              UUID                        NOT NULL DEFAULT gen_random_uuid(),
         "user_id"         UUID                        NOT NULL,
         "nome"            VARCHAR                     NOT NULL,
@@ -29,7 +31,7 @@ export class CreatePessoaFisicasTable1746403200000 implements MigrationInterface
   }
 
   async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP TABLE "pessoa_fisicas"`);
-    await queryRunner.query(`DROP TYPE "pessoa_fisicas_sexo_enum"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "pessoa_fisicas"`);
+    await queryRunner.query(`DROP TYPE IF EXISTS "pessoa_fisicas_sexo_enum"`);
   }
 }

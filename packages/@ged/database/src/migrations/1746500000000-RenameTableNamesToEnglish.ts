@@ -2,20 +2,20 @@ import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class RenameTableNamesToEnglish1746500000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.renameTable('permissoes', 'permissions');
-    await queryRunner.renameTable('modulos', 'modules');
-    await queryRunner.renameTable('pessoa_fisicas', 'physical_persons');
-    await queryRunner.renameTable('enderecos', 'addresses');
-    await queryRunner.renameTable('telefones', 'phones');
-    await queryRunner.renameTable('usuario_permissoes', 'user_permissions');
+    await queryRunner.query(`ALTER TABLE IF EXISTS "permissoes"          RENAME TO "permissions"`);
+    await queryRunner.query(`ALTER TABLE IF EXISTS "modulos"             RENAME TO "modules"`);
+    await queryRunner.query(`ALTER TABLE IF EXISTS "pessoa_fisicas"      RENAME TO "physical_persons"`);
+    await queryRunner.query(`ALTER TABLE IF EXISTS "enderecos"           RENAME TO "addresses"`);
+    await queryRunner.query(`ALTER TABLE IF EXISTS "telefones"           RENAME TO "phones"`);
+    await queryRunner.query(`ALTER TABLE IF EXISTS "usuario_permissoes" RENAME TO "user_permissions"`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.renameTable('user_permissions', 'usuario_permissoes');
-    await queryRunner.renameTable('phones', 'telefones');
-    await queryRunner.renameTable('addresses', 'enderecos');
-    await queryRunner.renameTable('physical_persons', 'pessoa_fisicas');
-    await queryRunner.renameTable('modules', 'modulos');
-    await queryRunner.renameTable('permissions', 'permissoes');
+    await queryRunner.query(`ALTER TABLE IF EXISTS "user_permissions" RENAME TO "usuario_permissoes"`);
+    await queryRunner.query(`ALTER TABLE IF EXISTS "phones"           RENAME TO "telefones"`);
+    await queryRunner.query(`ALTER TABLE IF EXISTS "addresses"        RENAME TO "enderecos"`);
+    await queryRunner.query(`ALTER TABLE IF EXISTS "physical_persons" RENAME TO "pessoa_fisicas"`);
+    await queryRunner.query(`ALTER TABLE IF EXISTS "modules"          RENAME TO "modulos"`);
+    await queryRunner.query(`ALTER TABLE IF EXISTS "permissions"      RENAME TO "permissoes"`);
   }
 }

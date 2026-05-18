@@ -5,11 +5,13 @@ export class CreateEnderecosTable1746403200001 implements MigrationInterface {
 
   async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      CREATE TYPE "enderecos_tipo_enum" AS ENUM ('RESIDENCIAL', 'COMERCIAL', 'OUTRO')
+      DO $$ BEGIN
+        CREATE TYPE "enderecos_tipo_enum" AS ENUM ('RESIDENCIAL', 'COMERCIAL', 'OUTRO');
+      EXCEPTION WHEN duplicate_object THEN NULL; END $$;
     `);
 
     await queryRunner.query(`
-      CREATE TABLE "enderecos" (
+      CREATE TABLE IF NOT EXISTS "enderecos" (
         "id"               UUID                    NOT NULL DEFAULT gen_random_uuid(),
         "pessoa_fisica_id" UUID                    NOT NULL,
         "tipo"             "enderecos_tipo_enum"   NOT NULL DEFAULT 'RESIDENCIAL',
@@ -30,7 +32,7 @@ export class CreateEnderecosTable1746403200001 implements MigrationInterface {
   }
 
   async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP TABLE "enderecos"`);
-    await queryRunner.query(`DROP TYPE "enderecos_tipo_enum"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "enderecos"`);
+    await queryRunner.query(`DROP TYPE IF EXISTS "enderecos_tipo_enum"`);
   }
 }

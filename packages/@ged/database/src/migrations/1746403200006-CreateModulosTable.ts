@@ -5,7 +5,7 @@ export class CreateModulosTable1746403200006 implements MigrationInterface {
 
   async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      CREATE TABLE "modulos" (
+      CREATE TABLE IF NOT EXISTS "modulos" (
         "id"         UUID      NOT NULL DEFAULT gen_random_uuid(),
         "nome"       VARCHAR   NOT NULL,
         "slug"       VARCHAR   NOT NULL,
@@ -23,6 +23,6 @@ export class CreateModulosTable1746403200006 implements MigrationInterface {
   }
 
   async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP TABLE "modulos"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "modulos"`);
   }
 }

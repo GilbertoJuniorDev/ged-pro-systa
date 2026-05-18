@@ -7,7 +7,7 @@ export class CreatePasswordResetTokensTable1746057600000
 
   async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      CREATE TABLE "password_reset_tokens" (
+      CREATE TABLE IF NOT EXISTS "password_reset_tokens" (
         "id"         UUID      NOT NULL DEFAULT gen_random_uuid(),
         "token_hash" VARCHAR   NOT NULL,
         "user_id"    UUID      NOT NULL,
@@ -24,6 +24,6 @@ export class CreatePasswordResetTokensTable1746057600000
   }
 
   async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP TABLE "password_reset_tokens"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "password_reset_tokens"`);
   }
 }

@@ -5,11 +5,13 @@ export class CreateUsersTable1745798400000 implements MigrationInterface {
 
   async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      CREATE TYPE "users_role_enum" AS ENUM ('ADMIN', 'MANAGER', 'VIEWER')
+      DO $$ BEGIN
+        CREATE TYPE "users_role_enum" AS ENUM ('ADMIN', 'MANAGER', 'VIEWER');
+      EXCEPTION WHEN duplicate_object THEN NULL; END $$;
     `);
 
     await queryRunner.query(`
-      CREATE TABLE "users" (
+      CREATE TABLE IF NOT EXISTS "users" (
         "id"            UUID              NOT NULL DEFAULT gen_random_uuid(),
         "name"          VARCHAR           NOT NULL,
         "email"         VARCHAR           NOT NULL,
@@ -25,7 +27,7 @@ export class CreateUsersTable1745798400000 implements MigrationInterface {
   }
 
   async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP TABLE "users"`);
-    await queryRunner.query(`DROP TYPE "users_role_enum"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "users"`);
+    await queryRunner.query(`DROP TYPE IF EXISTS "users_role_enum"`);
   }
 }

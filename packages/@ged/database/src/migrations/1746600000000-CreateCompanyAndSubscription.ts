@@ -6,7 +6,7 @@ export class CreateCompanyAndSubscription1746600000000 implements MigrationInter
   async up(queryRunner: QueryRunner): Promise<void> {
     // ── company (singleton) ───────────────────────────────────────────
     await queryRunner.query(`
-      CREATE TABLE "company" (
+      CREATE TABLE IF NOT EXISTS "company" (
         "id"                  UUID        NOT NULL DEFAULT gen_random_uuid(),
         "cnpj"                VARCHAR(14) NOT NULL,
         "razao_social"        VARCHAR     NOT NULL,
@@ -26,13 +26,15 @@ export class CreateCompanyAndSubscription1746600000000 implements MigrationInter
 
     // ── subscription (singleton) ──────────────────────────────────────
     await queryRunner.query(`
-      CREATE TYPE "subscription_status_enum" AS ENUM (
-        'ACTIVE', 'SUSPENDED', 'CANCELLED', 'OVERDUE', 'TRIAL'
-      )
+      DO $$ BEGIN
+        CREATE TYPE "subscription_status_enum" AS ENUM (
+          'ACTIVE', 'SUSPENDED', 'CANCELLED', 'OVERDUE', 'TRIAL'
+        );
+      EXCEPTION WHEN duplicate_object THEN NULL; END $$;
     `);
 
     await queryRunner.query(`
-      CREATE TABLE "subscription" (
+      CREATE TABLE IF NOT EXISTS "subscription" (
         "id"                  UUID                          NOT NULL DEFAULT gen_random_uuid(),
         "status"              "subscription_status_enum"    NOT NULL DEFAULT 'ACTIVE',
         "plan_name"           VARCHAR,
@@ -52,18 +54,18 @@ export class CreateCompanyAndSubscription1746600000000 implements MigrationInter
     `);
 
     await queryRunner.query(
-      `CREATE INDEX "IDX_subscription_status" ON "subscription" ("status")`,
+      `CREATE INDEX IF NOT EXISTS "IDX_subscription_status" ON "subscription" ("status")`,
     );
     await queryRunner.query(
-      `CREATE INDEX "IDX_subscription_next_billing_date" ON "subscription" ("next_billing_date")`,
+      `CREATE INDEX IF NOT EXISTS "IDX_subscription_next_billing_date" ON "subscription" ("next_billing_date")`,
     );
   }
 
   async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP INDEX "IDX_subscription_next_billing_date"`);
-    await queryRunner.query(`DROP INDEX "IDX_subscription_status"`);
-    await queryRunner.query(`DROP TABLE "subscription"`);
-    await queryRunner.query(`DROP TYPE "subscription_status_enum"`);
-    await queryRunner.query(`DROP TABLE "company"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_subscription_next_billing_date"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_subscription_status"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "subscription"`);
+    await queryRunner.query(`DROP TYPE  IF EXISTS "subscription_status_enum"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "company"`);
   }
 }

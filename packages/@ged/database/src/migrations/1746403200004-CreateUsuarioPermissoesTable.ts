@@ -5,7 +5,7 @@ export class CreateUsuarioPermissoesTable1746403200004 implements MigrationInter
 
   async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      CREATE TABLE "usuario_permissoes" (
+      CREATE TABLE IF NOT EXISTS "usuario_permissoes" (
         "id"           UUID      NOT NULL DEFAULT gen_random_uuid(),
         "usuario_id"   UUID      NOT NULL,
         "permissao_id" UUID      NOT NULL,
@@ -21,6 +21,6 @@ export class CreateUsuarioPermissoesTable1746403200004 implements MigrationInter
   }
 
   async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP TABLE "usuario_permissoes"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "usuario_permissoes"`);
   }
 }

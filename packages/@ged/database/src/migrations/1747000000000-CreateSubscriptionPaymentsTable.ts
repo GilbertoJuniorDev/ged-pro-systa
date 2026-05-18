@@ -7,7 +7,7 @@ export class CreateSubscriptionPaymentsTable1747000000000
 
   async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      CREATE TABLE "subscription_payments" (
+      CREATE TABLE IF NOT EXISTS "subscription_payments" (
         "id"                  UUID NOT NULL DEFAULT gen_random_uuid(),
         "subscription_id"     UUID NOT NULL,
         "paid_at"             DATE NOT NULL,
@@ -24,17 +24,17 @@ export class CreateSubscriptionPaymentsTable1747000000000
     `);
 
     await queryRunner.query(
-      `CREATE INDEX "IDX_subscription_payments_subscription_id"
+      `CREATE INDEX IF NOT EXISTS "IDX_subscription_payments_subscription_id"
        ON "subscription_payments" ("subscription_id")`,
     );
 
     await queryRunner.query(
-      `CREATE INDEX "IDX_subscription_payments_paid_at"
+      `CREATE INDEX IF NOT EXISTS "IDX_subscription_payments_paid_at"
        ON "subscription_payments" ("paid_at" DESC)`,
     );
   }
 
   async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP TABLE "subscription_payments"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "subscription_payments"`);
   }
 }

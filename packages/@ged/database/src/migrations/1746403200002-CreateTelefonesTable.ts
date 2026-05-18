@@ -5,11 +5,13 @@ export class CreateTelefonesTable1746403200002 implements MigrationInterface {
 
   async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      CREATE TYPE "telefones_tipo_enum" AS ENUM ('CELULAR', 'RESIDENCIAL', 'COMERCIAL')
+      DO $$ BEGIN
+        CREATE TYPE "telefones_tipo_enum" AS ENUM ('CELULAR', 'RESIDENCIAL', 'COMERCIAL');
+      EXCEPTION WHEN duplicate_object THEN NULL; END $$;
     `);
 
     await queryRunner.query(`
-      CREATE TABLE "telefones" (
+      CREATE TABLE IF NOT EXISTS "telefones" (
         "id"               UUID                    NOT NULL DEFAULT gen_random_uuid(),
         "pessoa_fisica_id" UUID                    NOT NULL,
         "tipo"             "telefones_tipo_enum"   NOT NULL DEFAULT 'CELULAR',
@@ -24,7 +26,7 @@ export class CreateTelefonesTable1746403200002 implements MigrationInterface {
   }
 
   async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP TABLE "telefones"`);
-    await queryRunner.query(`DROP TYPE "telefones_tipo_enum"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "telefones"`);
+    await queryRunner.query(`DROP TYPE IF EXISTS "telefones_tipo_enum"`);
   }
 }

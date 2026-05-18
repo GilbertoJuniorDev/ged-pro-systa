@@ -7,7 +7,7 @@ export class CreateRefreshTokensTable1745798401000
 
   async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      CREATE TABLE "refresh_tokens" (
+      CREATE TABLE IF NOT EXISTS "refresh_tokens" (
         "id"         UUID      NOT NULL DEFAULT gen_random_uuid(),
         "token"      VARCHAR   NOT NULL,
         "user_id"    UUID      NOT NULL,
@@ -24,6 +24,6 @@ export class CreateRefreshTokensTable1745798401000
   }
 
   async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP TABLE "refresh_tokens"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "refresh_tokens"`);
   }
 }
