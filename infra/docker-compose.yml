@@ -104,6 +104,7 @@ services:
     environment:
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
       NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      AUTH_TRUST_HOST: "true"
     ports:
       - '3000:3000'
     networks:
