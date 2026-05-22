@@ -29,6 +29,7 @@ import {
       useFactory: (config: ConfigService) => ({
         type: 'postgres' as const,
         url: config.get<string>('DATABASE_URL'),
+        ssl: false,
         entities: [
           User,
           RefreshToken,
