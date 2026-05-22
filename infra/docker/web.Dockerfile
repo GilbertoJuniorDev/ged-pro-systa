@@ -9,6 +9,7 @@ COPY packages/@ged/ui/package.json ./packages/@ged/ui/
 COPY packages/@ged/types/package.json ./packages/@ged/types/
 COPY packages/@ged/utils/package.json ./packages/@ged/utils/
 COPY packages/@ged/config/package.json ./packages/@ged/config/
+COPY packages/@ged/database/package.json ./packages/@ged/database/
 
 RUN pnpm install --frozen-lockfile --filter=web...
 
@@ -22,8 +23,13 @@ COPY --from=deps /app ./
 # Sobrepõe com código-fonte (node_modules excluído via .dockerignore)
 COPY . .
 
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_BUILD_STANDALONE=true
-RUN pnpm --filter=web build
+RUN pnpm --filter=@ged/database build \
+ && pnpm --filter=@ged/types build \
+ && pnpm --filter=@ged/utils build \
+ && pnpm --filter=web build
 
 # ─── Stage 3: runner ─────────────────────────────────────────────────────────
 FROM node:22-alpine AS runner

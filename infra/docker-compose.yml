@@ -1,5 +1,3 @@
-version: '3.9'
-
 services:
   db:
     image: postgres:17-alpine
@@ -9,8 +7,6 @@ services:
       POSTGRES_USER: ${DB_USER:-ged_user}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-ged_password}
       POSTGRES_DB: ${DB_NAME:-ged_systa}
-    ports:
-      - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -25,8 +21,6 @@ services:
     image: redis:7-alpine
     container_name: ged-redis
     restart: unless-stopped
-    ports:
-      - '6379:6379'
     volumes:
       - redis_data:/data
     networks:
@@ -41,8 +35,6 @@ services:
     image: mongo:7
     container_name: ged-mongo
     restart: unless-stopped
-    ports:
-      - '27017:27017'
     volumes:
       - mongo_data:/data/db
     networks:
@@ -78,21 +70,38 @@ services:
       JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-7d}
       STORAGE_DRIVER: ${STORAGE_DRIVER:-local}
       STORAGE_LOCAL_PATH: ${STORAGE_LOCAL_PATH:-./uploads}
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_SECURE: ${MAIL_SECURE:-false}
+      MAIL_USER: ${MAIL_USER:-}
+      MAIL_PASS: ${MAIL_PASS:-}
+      MAIL_FROM: ${MAIL_FROM:-noreply@ged.systa.com.br}
+      APP_URL: ${APP_URL:-https://ged.systa.com.br}
     ports:
       - '3333:3333'
+    volumes:
+      - uploads_data:/app/uploads
     networks:
       - ged-network
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:3333/system/health || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
 
   web:
     build:
       context: ..
       dockerfile: infra/docker/web.Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
     container_name: ged-web
     restart: unless-stopped
     depends_on:
-      - api
+      api:
+        condition: service_healthy
     environment:
-      NEXT_PUBLIC_API_URL: http://api:3333
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
       NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
     ports:
@@ -117,6 +126,7 @@ volumes:
   postgres_data:
   redis_data:
   mongo_data:
+  uploads_data:
 
 networks:
   ged-network:

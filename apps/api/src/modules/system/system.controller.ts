@@ -8,6 +8,7 @@ import {
 import { ROLE } from '@ged/database';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { Public } from '../../common/decorators/public.decorator';
 import { SystemService } from './system.service';
 import {
   SystemVersionDto,
@@ -19,6 +20,14 @@ import {
 @Controller('system')
 export class SystemController {
   constructor(private readonly systemService: SystemService) {}
+
+  @Get('health')
+  @Public()
+  @ApiOperation({ summary: 'Health check do serviço' })
+  @ApiResponse({ status: 200, description: 'Serviço disponível' })
+  health(): { status: string } {
+    return { status: 'ok' };
+  }
 
   @Get('version')
   @ApiOperation({ summary: 'Retorna a versão do sistema' })
