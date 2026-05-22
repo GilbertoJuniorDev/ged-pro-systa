@@ -1,10 +1,19 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
+import type { RedisClientType } from 'redis';
 import {
   ErrorLogsRepository,
   type ErrorLogFilter,
   type PaginatedErrorLogs,
 } from './error-logs.repository';
 import type { CreateErrorLogData } from './dto/create-error-log.dto';
+import { ERROR_LOG_LEVEL } from './schemas/error-log.schema';
+import { MailService } from '../mail/mail.service';
+import {
+  SystemSettingsService,
+  SYSTEM_SETTING_KEYS,
+} from '../system-settings/system-settings.service';
+
+export const ERROR_LOGS_REDIS_CLIENT = 'ERROR_LOGS_REDIS_CLIENT';
 
 const SENSITIVE_KEYS = new Set([
   'password',
@@ -16,6 +25,9 @@ const SENSITIVE_KEYS = new Set([
   'cookie',
   'secret',
 ]);
+
+/** Throttle TTL in seconds — 1 alert per unique error key per window. */
+const ALERT_THROTTLE_SECONDS = 300;
 
 function sanitize(value: unknown, depth = 0): unknown {
   if (depth > 4 || value === null || value === undefined) return value;
@@ -40,11 +52,20 @@ function sanitize(value: unknown, depth = 0): unknown {
 export class ErrorLogsService {
   private readonly logger = new Logger(ErrorLogsService.name);
 
-  constructor(private readonly repository: ErrorLogsRepository) {}
+  constructor(
+    private readonly repository: ErrorLogsRepository,
+    private readonly mailService: MailService,
+    private readonly systemSettingsService: SystemSettingsService,
+    @Optional()
+    @Inject(ERROR_LOGS_REDIS_CLIENT)
+    private readonly redisClient: RedisClientType | null,
+  ) {}
 
   /**
    * Persiste um log de erro. Fail-safe: nunca lança — falhas são apenas
    * registradas no logger nativo do Nest para não quebrar o caller.
+   * Para erros críticos (error | fatal), envia alerta por e-mail com
+   * throttle de 5 minutos por tipo de erro (via Redis).
    */
   async log(data: CreateErrorLogData): Promise<void> {
     try {
@@ -60,9 +81,76 @@ export class ErrorLogsService {
         `Falha ao persistir error log: ${err instanceof Error ? err.message : String(err)}`,
       );
     }
+
+    const isCritical =
+      data.level === ERROR_LOG_LEVEL.ERROR ||
+      data.level === ERROR_LOG_LEVEL.FATAL;
+
+    if (!isCritical) return;
+
+    try {
+      const alertEmail = await this.systemSettingsService.get(
+        SYSTEM_SETTING_KEYS.ERROR_ALERT_EMAIL,
+      );
+      if (!alertEmail) return;
+
+      void this.sendAlertEmail(alertEmail, data);
+    } catch (err) {
+      this.logger.error(
+        `Falha ao obter e-mail de alerta de erro: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
   }
 
   findAll(filter: ErrorLogFilter): Promise<PaginatedErrorLogs> {
     return this.repository.findAll(filter);
+  }
+
+  private async sendAlertEmail(
+    to: string,
+    data: CreateErrorLogData,
+  ): Promise<void> {
+    try {
+      const throttleKey = `error:alert:${data.level}:${data.code ?? data.statusCode ?? 'unknown'}`;
+      const throttled = await this.isThrottled(throttleKey);
+      if (throttled) return;
+
+      await this.mailService.sendCriticalErrorAlert(to, {
+        level: data.level,
+        statusCode: data.statusCode,
+        code: data.code,
+        source: data.source,
+        message: data.message,
+        method: data.method,
+        url: data.url,
+        userId: data.userId,
+        requestId: data.requestId,
+        stack: data.stack,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (err) {
+      this.logger.error(
+        `Falha ao enviar alerta de erro crítico: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
+  }
+
+  /**
+   * Verifica e aplica throttle via Redis SET NX EX.
+   * Fail-open: se Redis não estiver disponível, retorna false (envia o e-mail).
+   */
+  private async isThrottled(key: string): Promise<boolean> {
+    if (!this.redisClient) return false;
+    try {
+      const result = await this.redisClient.set(key, '1', {
+        NX: true,
+        EX: ALERT_THROTTLE_SECONDS,
+      });
+      // result === 'OK' means key was set (first occurrence) → not throttled
+      return result === null;
+    } catch {
+      // Redis unavailable → fail-open (allow email)
+      return false;
+    }
   }
 }

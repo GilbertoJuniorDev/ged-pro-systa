@@ -38,7 +38,16 @@ STORAGE_LOCAL_PATH=./uploads
 # AWS_ACCESS_KEY_ID=
 # AWS_SECRET_ACCESS_KEY=
 
+# ─── E-mail (SMTP) ───────────────────────────────────────────────────────────
+MAIL_HOST=localhost        # MailHog em dev; ex: smtp.sendgrid.net em prod
+MAIL_PORT=1025             # 1025 MailHog | 587 STARTTLS | 465 SSL
+MAIL_SECURE=false          # true apenas para porta 465 (SSL direto)
+MAIL_USER=                 # vazio para MailHog
+MAIL_PASS=                 # vazio para MailHog
+MAIL_FROM=noreply@ged.local
+
 # ─── Aplicação ────────────────────────────────────────────────────────────────
+APP_URL=http://localhost:3000
 NODE_ENV=development
 PORT=3333
 ```

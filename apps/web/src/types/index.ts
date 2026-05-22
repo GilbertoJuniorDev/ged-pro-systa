@@ -41,6 +41,27 @@ export type {
 } from '@ged/types';
 export { SUBSCRIPTION_STATUS } from '@ged/types';
 
+export interface SystemVersionDto {
+  readonly appName: string;
+  readonly version: string;
+  readonly environment: string;
+  readonly buildDate: string;
+}
+
+export interface DependencyInfo {
+  readonly name: string;
+  readonly version: string;
+  readonly license: string;
+}
+
+export interface AdminSystemVersionDto extends SystemVersionDto {
+  readonly nodeVersion: string;
+  readonly dbVersion: string;
+  readonly dbStatus: 'online' | 'offline';
+  readonly redisStatus: 'online' | 'offline';
+  readonly dependencies: readonly DependencyInfo[];
+}
+
 export interface LoginFormData {
   email: string;
   password: string;

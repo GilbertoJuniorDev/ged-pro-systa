@@ -29,6 +29,23 @@ const MODULE_SEEDS: ReadonlyArray<ModuleSeed> = [
       },
     ],
   },
+  {
+    nome: 'Configurações',
+    slug: 'settings',
+    descricao: 'Configurações do sistema',
+    icone: 'Settings',
+    ordem: 200,
+    permissions: [
+      {
+        nome: 'SETTINGS_VIEW',
+        descricao: 'Visualizar configurações do sistema',
+      },
+      {
+        nome: 'SETTINGS_EDIT',
+        descricao: 'Editar configurações do sistema',
+      },
+    ],
+  },
 ];
 
 export async function seedPermissions(dataSource: DataSource): Promise<void> {

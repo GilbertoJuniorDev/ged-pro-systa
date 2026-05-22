@@ -1,7 +1,12 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { NavLinkButton } from '@/components/ui/nav-link-button';
 import { useErrorLogs } from '@/hooks/use-error-logs';
+import {
+  useSystemSetting,
+  useUpdateSystemSetting,
+} from '@/hooks/use-system-settings';
 
 function formatTime(isoString: string): string {
   return new Date(isoString).toLocaleTimeString('pt-BR', {
@@ -17,6 +22,24 @@ function truncate(value: string, max: number): string {
 export function ErrorLogsCard() {
   const { data, isLoading } = useErrorLogs({ limit: 2, page: 1 });
   const logs = data?.data ?? [];
+
+  const { data: settingData, isLoading: isSettingLoading } =
+    useSystemSetting('error_alert_email');
+  const updateSetting = useUpdateSystemSetting('error_alert_email');
+
+  const [emailInput, setEmailInput] = useState('');
+
+  useEffect(() => {
+    if (settingData !== undefined) {
+      setEmailInput(settingData.value ?? '');
+    }
+  }, [settingData]);
+
+  function handleSaveEmail(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const trimmed = emailInput.trim();
+    updateSetting.mutate(trimmed.length > 0 ? trimmed : null);
+  }
 
   return (
     <div className="flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:border-slate-300 hover:shadow-lg dark:border-slate-700 dark:bg-slate-900 dark:hover:border-slate-600">
@@ -67,6 +90,36 @@ export function ErrorLogsCard() {
           </div>
         ))}
       </div>
+
+      <form onSubmit={handleSaveEmail} className="mb-4 space-y-2">
+        <label
+          htmlFor="error-alert-email"
+          className="block text-xs font-medium text-slate-600 dark:text-slate-400"
+        >
+          E-mail para alertas críticos
+        </label>
+        <div className="flex gap-2">
+          <input
+            id="error-alert-email"
+            type="email"
+            value={emailInput}
+            onChange={(e) => setEmailInput(e.target.value)}
+            disabled={isSettingLoading || updateSetting.isPending}
+            placeholder="admin@empresa.com"
+            className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-rose-400 focus:outline-none focus:ring-1 focus:ring-rose-400 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+          />
+          <button
+            type="submit"
+            disabled={isSettingLoading || updateSetting.isPending}
+            className="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-rose-700 disabled:opacity-50"
+          >
+            {updateSetting.isPending ? 'Salvando…' : 'Salvar'}
+          </button>
+        </div>
+        <p className="text-[11px] text-slate-400 dark:text-slate-500">
+          Deixe em branco para desabilitar os alertas por e-mail.
+        </p>
+      </form>
 
       <div className="mt-auto">
         <NavLinkButton

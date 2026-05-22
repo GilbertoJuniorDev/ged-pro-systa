@@ -14,10 +14,15 @@ import { MailService } from './mail.service';
         transport: {
           host: config.getOrThrow<string>('MAIL_HOST'),
           port: config.getOrThrow<number>('MAIL_PORT'),
-          auth: {
-            user: config.get<string>('MAIL_USER'),
-            pass: config.get<string>('MAIL_PASS'),
-          },
+          secure: config.get<boolean>('MAIL_SECURE') ?? false,
+          ...(config.get<string>('MAIL_USER')
+            ? {
+                auth: {
+                  user: config.get<string>('MAIL_USER'),
+                  pass: config.get<string>('MAIL_PASS'),
+                },
+              }
+            : {}),
         },
         defaults: {
           from: config.getOrThrow<string>('MAIL_FROM'),

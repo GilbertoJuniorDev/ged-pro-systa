@@ -17,4 +17,5 @@ export {
   type SubscriptionStatus,
 } from './entities/subscription.entity';
 export { SubscriptionPayment } from './entities/subscription-payment.entity';
+export { SystemSetting } from './entities/system-setting.entity';
 

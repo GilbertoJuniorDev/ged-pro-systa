@@ -14,6 +14,8 @@ import { AuditLogsModule } from './modules/audit-logs/audit-logs.module';
 import { ErrorLogsModule } from './modules/error-logs/error-logs.module';
 import { CompanyModule } from './modules/company/company.module';
 import { SubscriptionModule } from './modules/subscription/subscription.module';
+import { SystemModule } from './modules/system/system.module';
+import { SystemSettingsModule } from './modules/system-settings/system-settings.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { PermissionsGuard } from './common/guards/permissions.guard';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
@@ -36,6 +38,8 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
     ErrorLogsModule,
     CompanyModule,
     SubscriptionModule,
+    SystemModule,
+    SystemSettingsModule,
   ],
   providers: [
     {

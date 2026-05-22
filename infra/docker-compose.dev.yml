@@ -80,6 +80,7 @@ services:
       MAIL_PORT: 1025
       MAIL_USER: ''
       MAIL_PASS: ''
+      MAIL_SECURE: 'false'
       MAIL_FROM: ${MAIL_FROM:-noreply@ged.local}
       APP_URL: ${APP_URL:-http://localhost:3000}
       # Necessário no Windows: Docker Desktop não propaga eventos de FS nativos
@@ -127,6 +128,8 @@ services:
       NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
       # Necessário no Windows: Next.js usa watchpack para HMR
       WATCHPACK_POLLING: 'true'
+      HTTP_PROXY: ${HTTP_PROXY:-http://127.0.0.1:8888}
+      HTTPS_PROXY: ${HTTPS_PROXY:-http://127.0.0.1:8888}
     ports:
       - '3000:3000'
     volumes:

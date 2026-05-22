@@ -15,7 +15,7 @@ import { RenameTableNamesToEnglish1746500000000 } from './1746500000000-RenameTa
 import { CreateCompanyAndSubscription1746600000000 } from './1746600000000-CreateCompanyAndSubscription';
 import { AddCompanyRelationsAndCnae1746700000000 } from './1746700000000-AddCompanyRelationsAndCnae';
 import { CreateSubscriptionPaymentsTable1747000000000 } from './1747000000000-CreateSubscriptionPaymentsTable';
-
+import { CreateSystemSettingsTable1747200000000 } from './1747200000000-CreateSystemSettingsTable';
 const DATABASE_URL = process.env['DATABASE_URL'];
 
 if (!DATABASE_URL) {
@@ -40,10 +40,11 @@ const dataSource = new DataSource({
     CreateModulosTable1746403200006,
     AddModuloIdToPermissoes1746403200007,
     RenameTableNamesToEnglish1746500000000,
-    CreateCompanyAndSubscription1746600000000,  
+    CreateCompanyAndSubscription1746600000000,
     AddCompanyRelationsAndCnae1746700000000,
     CreateSubscriptionPaymentsTable1747000000000,
-
+    CreateSystemSettingsTable1747200000000, 
+  
   ],
   migrationsTableName: 'migrations',
 });

@@ -15,11 +15,16 @@ const envSchema = z.object({
   MAIL_USER: z.string().default(''),
   MAIL_PASS: z.string().default(''),
   MAIL_FROM: z.string().min(1).default('noreply@ged.local'),
+  MAIL_SECURE: z
+    .string()
+    .default('false')
+    .transform((v) => v === 'true'),
   APP_URL: z.string().url().default('http://localhost:3000'),
   MONGO_URL: z
     .string()
     .min(1)
     .default('mongodb://localhost:27017/ged_logs'),
+  REDIS_URL: z.string().url().default('redis://localhost:6379'),
 });
 
 export type Env = z.infer<typeof envSchema>;

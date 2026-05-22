@@ -18,6 +18,7 @@ import {
   Company,
   Subscription,
   SubscriptionPayment,
+  SystemSetting,
 } from '@ged/database';
 
 @Module({
@@ -44,6 +45,7 @@ import {
           Company,
           Subscription,
           SubscriptionPayment,
+          SystemSetting,
         ],
         synchronize: false,
         migrationsRun: true,
