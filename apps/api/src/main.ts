@@ -54,7 +54,7 @@ async function bootstrap() {
   const port = process.env.PORT ?? 3333;
   await app.listen(port);
 
-  if (process.env.NODE_ENV !== 'production') {
+  if (process.env.NODE_ENV !== 'production' || process.env.SEED_ADMIN === 'true') {
     const dataSource = app.get(DataSource);
     await seedAdmin(dataSource);
     await seedPermissions(dataSource);
