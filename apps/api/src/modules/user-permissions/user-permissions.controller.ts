@@ -70,6 +70,13 @@ export class UserPermissionsController {
       acao: 'ASSIGN_PERMISSION',
       entidade: 'UserPermission',
       entidadeId: up.id,
+      dadosAnteriores: null,
+      dadosNovos: {
+        id: up.id,
+        usuarioId: up.usuarioId,
+        permissaoId: up.permissaoId,
+        permissaoNome: (up.permissao as { nome: string }).nome ?? '',
+      },
       ipCliente: req.ip ?? null,
       userAgent: req.headers['user-agent'] ?? null,
     });
@@ -99,6 +106,8 @@ export class UserPermissionsController {
       acao: 'REVOKE_PERMISSION',
       entidade: 'UserPermission',
       entidadeId: permissionId,
+      dadosAnteriores: { usuarioId: userId, permissaoId: permissionId },
+      dadosNovos: null,
       ipCliente: req.ip ?? null,
       userAgent: req.headers['user-agent'] ?? null,
     });

@@ -31,6 +31,8 @@ export class CompanyEmailsService {
       acao: 'company.email.created',
       entidade: 'email',
       entidadeId: created.id,
+      dadosAnteriores: null,
+      dadosNovos: { id: created.id, endereco: created.endereco, tipo: created.tipo },
     });
     return created;
   }
@@ -50,6 +52,8 @@ export class CompanyEmailsService {
       acao: 'company.email.updated',
       entidade: 'email',
       entidadeId: updated.id,
+      dadosAnteriores: { id: existing.id, endereco: existing.endereco, tipo: existing.tipo },
+      dadosNovos: { id: updated.id, endereco: updated.endereco, tipo: updated.tipo },
     });
     return updated;
   }
@@ -65,6 +69,8 @@ export class CompanyEmailsService {
       acao: 'company.email.deleted',
       entidade: 'email',
       entidadeId: id,
+      dadosAnteriores: { id: existing.id, endereco: existing.endereco, tipo: existing.tipo },
+      dadosNovos: null,
     });
   }
 }

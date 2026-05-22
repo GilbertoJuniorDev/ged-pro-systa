@@ -31,6 +31,8 @@ export class CompanyPhonesService {
       acao: 'company.phone.created',
       entidade: 'phone',
       entidadeId: created.id,
+      dadosAnteriores: null,
+      dadosNovos: { id: created.id, numero: created.numero, tipo: created.tipo },
     });
     return created;
   }
@@ -50,6 +52,8 @@ export class CompanyPhonesService {
       acao: 'company.phone.updated',
       entidade: 'phone',
       entidadeId: updated.id,
+      dadosAnteriores: { id: existing.id, numero: existing.numero, tipo: existing.tipo },
+      dadosNovos: { id: updated.id, numero: updated.numero, tipo: updated.tipo },
     });
     return updated;
   }
@@ -65,6 +69,8 @@ export class CompanyPhonesService {
       acao: 'company.phone.deleted',
       entidade: 'phone',
       entidadeId: id,
+      dadosAnteriores: { id: existing.id, numero: existing.numero, tipo: existing.tipo },
+      dadosNovos: null,
     });
   }
 }

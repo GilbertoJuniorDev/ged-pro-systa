@@ -53,4 +53,8 @@ export class AuditLogsRepository {
     const [data, total] = await qb.getManyAndCount();
     return { data, total };
   }
+
+  hasLogsByUser(userId: string): Promise<boolean> {
+    return this.repo.existsBy({ usuarioId: userId });
+  }
 }

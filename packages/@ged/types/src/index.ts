@@ -103,6 +103,8 @@ export interface AuditLogDto {
   readonly entidadeId: string | null;
   readonly ipCliente: string | null;
   readonly userAgent: string | null;
+  readonly dadosAnteriores: Record<string, unknown> | null;
+  readonly dadosNovos: Record<string, unknown> | null;
   readonly createdAt: string;
 }
 

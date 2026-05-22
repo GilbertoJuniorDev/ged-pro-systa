@@ -50,6 +50,8 @@ export class SubscriptionService {
         acao: 'subscription.updated',
         entidade: 'subscription',
         entidadeId: updated.id,
+        dadosAnteriores: { id: existing.id, status: existing.status, valor: existing.valor },
+        dadosNovos: { id: updated.id, status: updated.status, valor: updated.valor },
       });
       return updated;
     }
@@ -60,6 +62,8 @@ export class SubscriptionService {
       acao: 'subscription.created',
       entidade: 'subscription',
       entidadeId: created.id,
+      dadosAnteriores: null,
+      dadosNovos: { id: created.id, status: created.status, valor: created.valor },
     });
     return created;
   }
@@ -106,6 +110,8 @@ export class SubscriptionService {
       acao: 'subscription.payment_recorded',
       entidade: 'subscription',
       entidadeId: updated.id,
+      dadosAnteriores: { id: current.id, status: current.status, lastPaymentDate: current.lastPaymentDate, nextBillingDate: current.nextBillingDate },
+      dadosNovos: { id: updated.id, status: updated.status, lastPaymentDate: updated.lastPaymentDate, nextBillingDate: updated.nextBillingDate },
     });
 
     return updated;
@@ -128,6 +134,8 @@ export class SubscriptionService {
       acao: 'subscription.status_changed',
       entidade: 'subscription',
       entidadeId: updated.id,
+      dadosAnteriores: { id: current.id, status: current.status },
+      dadosNovos: { id: updated.id, status: updated.status },
     });
     return updated;
   }

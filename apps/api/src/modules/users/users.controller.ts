@@ -70,6 +70,8 @@ export class UsersController {
       acao: 'CRIAR_USUARIO',
       entidade: 'User',
       entidadeId: user.id,
+      dadosAnteriores: null,
+      dadosNovos: { id: user.id, name: user.name, email: user.email, role: user.role, isActive: user.isActive },
       ipCliente: req.ip ?? null,
       userAgent: req.headers['user-agent'] ?? null,
     });
@@ -107,12 +109,17 @@ export class UsersController {
     @Param('id') id: string,
     @Body() dto: UpdateUserDto,
   ): Promise<UserResponseDto> {
+    const userBefore = await this.usersService.findById(id);
     const user = await this.usersService.update(id, dto);
     void this.auditLogsService.log({
       usuarioId: (req.user as { sub: string } | undefined)?.sub ?? null,
       acao: 'ATUALIZAR_USUARIO',
       entidade: 'User',
       entidadeId: user.id,
+      dadosAnteriores: userBefore
+        ? { id: userBefore.id, name: userBefore.name, email: userBefore.email, role: userBefore.role, isActive: userBefore.isActive }
+        : null,
+      dadosNovos: { id: user.id, name: user.name, email: user.email, role: user.role, isActive: user.isActive },
       ipCliente: req.ip ?? null,
       userAgent: req.headers['user-agent'] ?? null,
     });
@@ -152,12 +159,17 @@ export class UsersController {
     @Param('id') id: string,
     @CurrentUser() currentUser: JwtPayload,
   ): Promise<void> {
+    const userBefore = await this.usersService.findById(id);
     await this.usersService.remove(id, currentUser.sub);
     void this.auditLogsService.log({
       usuarioId: currentUser.sub,
       acao: 'DELETAR_USUARIO',
       entidade: 'User',
       entidadeId: id,
+      dadosAnteriores: userBefore
+        ? { id: userBefore.id, name: userBefore.name, email: userBefore.email, role: userBefore.role, isActive: userBefore.isActive }
+        : null,
+      dadosNovos: null,
       ipCliente: req.ip ?? null,
       userAgent: req.headers['user-agent'] ?? null,
     });

@@ -83,6 +83,8 @@ export class PermissionsController {
       acao: 'CREATE_PERMISSION',
       entidade: 'Permission',
       entidadeId: p.id,
+      dadosAnteriores: null,
+      dadosNovos: { id: p.id, nome: p.nome, descricao: p.descricao, moduloId: p.moduloId },
       ipCliente: req.ip ?? null,
       userAgent: req.headers['user-agent'] ?? null,
     });
@@ -98,12 +100,15 @@ export class PermissionsController {
     @Param('id') id: string,
     @Body() dto: UpdatePermissionDto,
   ): Promise<PermissionResponseDto> {
+    const before = await this.permissionsService.findById(id);
     const p = await this.permissionsService.update(id, dto);
     void this.auditLogsService.log({
       usuarioId: currentUser.sub,
       acao: 'UPDATE_PERMISSION',
       entidade: 'Permission',
       entidadeId: p.id,
+      dadosAnteriores: { id: before.id, nome: before.nome, descricao: before.descricao, moduloId: before.moduloId },
+      dadosNovos: { id: p.id, nome: p.nome, descricao: p.descricao, moduloId: p.moduloId },
       ipCliente: req.ip ?? null,
       userAgent: req.headers['user-agent'] ?? null,
     });
@@ -119,12 +124,15 @@ export class PermissionsController {
     @CurrentUser() currentUser: JwtPayload,
     @Param('id') id: string,
   ): Promise<void> {
+    const before = await this.permissionsService.findById(id);
     await this.permissionsService.remove(id);
     void this.auditLogsService.log({
       usuarioId: currentUser.sub,
       acao: 'DELETE_PERMISSION',
       entidade: 'Permission',
       entidadeId: id,
+      dadosAnteriores: { id: before.id, nome: before.nome, descricao: before.descricao, moduloId: before.moduloId },
+      dadosNovos: null,
       ipCliente: req.ip ?? null,
       userAgent: req.headers['user-agent'] ?? null,
     });

@@ -49,6 +49,8 @@ export class CompanyCnaesService {
       acao: 'company.cnae.created',
       entidade: 'cnae',
       entidadeId: created.id,
+      dadosAnteriores: null,
+      dadosNovos: { id: created.id, codigo: created.codigo, descricao: created.descricao, principal: created.principal },
     });
     return created;
   }
@@ -81,6 +83,8 @@ export class CompanyCnaesService {
       acao: 'company.cnae.updated',
       entidade: 'cnae',
       entidadeId: updated.id,
+      dadosAnteriores: { id: existing.id, codigo: existing.codigo, descricao: existing.descricao, principal: existing.principal },
+      dadosNovos: { id: updated.id, codigo: updated.codigo, descricao: updated.descricao, principal: updated.principal },
     });
     return updated;
   }
@@ -96,6 +100,8 @@ export class CompanyCnaesService {
       acao: 'company.cnae.deleted',
       entidade: 'cnae',
       entidadeId: id,
+      dadosAnteriores: { id: existing.id, codigo: existing.codigo, descricao: existing.descricao, principal: existing.principal },
+      dadosNovos: null,
     });
   }
 }

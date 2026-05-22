@@ -15,4 +15,8 @@ export class AuditLogsService {
   findAll(filter: AuditLogFilter): Promise<PaginatedAuditLogs> {
     return this.auditLogsRepository.findAll(filter);
   }
+
+  hasLogsByUser(userId: string): Promise<boolean> {
+    return this.auditLogsRepository.hasLogsByUser(userId);
+  }
 }

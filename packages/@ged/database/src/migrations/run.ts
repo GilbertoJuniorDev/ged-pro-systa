@@ -16,6 +16,7 @@ import { CreateCompanyAndSubscription1746600000000 } from './1746600000000-Creat
 import { AddCompanyRelationsAndCnae1746700000000 } from './1746700000000-AddCompanyRelationsAndCnae';
 import { CreateSubscriptionPaymentsTable1747000000000 } from './1747000000000-CreateSubscriptionPaymentsTable';
 import { CreateSystemSettingsTable1747200000000 } from './1747200000000-CreateSystemSettingsTable';
+import { AddDiffColumnsToAuditLogs1748200000000 } from './1748200000000-AddDiffColumnsToAuditLogs';
 const DATABASE_URL = process.env['DATABASE_URL'];
 
 if (!DATABASE_URL) {
@@ -43,7 +44,8 @@ const dataSource = new DataSource({
     CreateCompanyAndSubscription1746600000000,
     AddCompanyRelationsAndCnae1746700000000,
     CreateSubscriptionPaymentsTable1747000000000,
-    CreateSystemSettingsTable1747200000000, 
+    CreateSystemSettingsTable1747200000000,
+    AddDiffColumnsToAuditLogs1748200000000,
   
   ],
   migrationsTableName: 'migrations',

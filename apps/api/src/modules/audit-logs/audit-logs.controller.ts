@@ -39,6 +39,8 @@ export class AuditLogsController {
             entidadeId: log.entidadeId,
             ipCliente: log.ipCliente,
             userAgent: log.userAgent,
+            dadosAnteriores: log.dadosAnteriores,
+            dadosNovos: log.dadosNovos,
             createdAt: log.createdAt,
           }),
       ),

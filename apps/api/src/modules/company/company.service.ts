@@ -48,6 +48,10 @@ export class CompanyService {
       acao: existing ? 'company.updated' : 'company.created',
       entidade: 'company',
       entidadeId: saved.id,
+      dadosAnteriores: existing
+        ? { id: existing.id, cnpj: existing.cnpj, razaoSocial: existing.razaoSocial, nomeFantasia: existing.nomeFantasia, matriz: existing.matriz }
+        : null,
+      dadosNovos: { id: saved.id, cnpj: saved.cnpj, razaoSocial: saved.razaoSocial, nomeFantasia: saved.nomeFantasia, matriz: saved.matriz },
     });
 
     return saved;

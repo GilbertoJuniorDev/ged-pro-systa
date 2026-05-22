@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, Inject, NotFoundException } from '@nestjs/common';
 import type { User } from '@ged/database';
+import { AuditLogsService } from '../audit-logs/audit-logs.service';
 import type {
   IUserRepository,
   CreateUserData,
@@ -13,6 +14,7 @@ export class UsersService {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: IUserRepository,
+    private readonly auditLogsService: AuditLogsService,
   ) {}
 
   findByEmail(email: string): Promise<User | null> {
@@ -47,6 +49,12 @@ export class UsersService {
     }
     const user = await this.userRepository.findById(id);
     if (!user) throw new NotFoundException('Usuário não encontrado');
+    const hasActions = await this.auditLogsService.hasLogsByUser(id);
+    if (hasActions) {
+      throw new BadRequestException(
+        'Usuário possui ações registradas no sistema. Use a desativação em vez da exclusão.',
+      );
+    }
     return this.userRepository.remove(id);
   }
 

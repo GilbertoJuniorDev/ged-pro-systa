@@ -35,6 +35,12 @@ export class AuditLog {
   @Column({ name: 'user_agent', type: 'varchar', nullable: true })
   userAgent!: string | null;
 
+  @Column({ name: 'dados_anteriores', type: 'jsonb', nullable: true })
+  dadosAnteriores!: Record<string, unknown> | null;
+
+  @Column({ name: 'dados_novos', type: 'jsonb', nullable: true })
+  dadosNovos!: Record<string, unknown> | null;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 }

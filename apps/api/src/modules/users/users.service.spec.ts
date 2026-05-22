@@ -1,6 +1,7 @@
 import { Test } from '@nestjs/testing';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { UsersService, USER_REPOSITORY } from './users.service';
+import { AuditLogsService } from '../audit-logs/audit-logs.service';
 import type { IUserRepository, CreateUserData } from './interfaces/user-repository.interface';
 import type { User } from '@ged/database';
 
@@ -23,6 +24,7 @@ function makeUser(overrides: Partial<User> = {}): User {
 describe('UsersService', () => {
   let service: UsersService;
   let mockRepository: jest.Mocked<IUserRepository>;
+  let mockAuditLogsService: { hasLogsByUser: jest.Mock };
 
   beforeEach(async () => {
     mockRepository = {
@@ -36,10 +38,15 @@ describe('UsersService', () => {
       setActive: jest.fn(),
     };
 
+    mockAuditLogsService = {
+      hasLogsByUser: jest.fn(),
+    };
+
     const module = await Test.createTestingModule({
       providers: [
         UsersService,
         { provide: USER_REPOSITORY, useValue: mockRepository },
+        { provide: AuditLogsService, useValue: mockAuditLogsService },
       ],
     }).compile();
 
@@ -145,10 +152,21 @@ describe('UsersService', () => {
   describe('remove', () => {
     it('should remove user when found and not self', async () => {
       mockRepository.findById.mockResolvedValue(makeUser());
+      mockAuditLogsService.hasLogsByUser.mockResolvedValue(false);
       mockRepository.remove.mockResolvedValue(undefined);
 
       await expect(service.remove('user-uuid-1', 'admin-uuid')).resolves.toBeUndefined();
       expect(mockRepository.remove).toHaveBeenCalledWith('user-uuid-1');
+    });
+
+    it('should throw BadRequestException when user has audit logs', async () => {
+      mockRepository.findById.mockResolvedValue(makeUser());
+      mockAuditLogsService.hasLogsByUser.mockResolvedValue(true);
+
+      await expect(service.remove('user-uuid-1', 'admin-uuid')).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(mockRepository.remove).not.toHaveBeenCalled();
     });
 
     it('should throw BadRequestException when removing own account', async () => {

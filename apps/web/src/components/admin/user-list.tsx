@@ -159,7 +159,131 @@ export function UserList() {
         {!users?.length ? (
           <div className="p-8 text-center text-slate-500 text-sm">Nenhum usuário cadastrado.</div>
         ) : (
-          <div className="overflow-x-auto">
+          <>
+            {/* Mobile card list */}
+            <div className="block sm:hidden divide-y divide-slate-800/60">
+              {users.map((user) => {
+                const isSelf = user.id === currentUserId;
+                const isToggling = togglingId === user.id;
+
+                return (
+                  <div key={user.id} className="px-4 py-4 flex flex-col gap-3">
+                    {/* Top row: avatar + info + role */}
+                    <div className="flex items-center gap-3">
+                      <UserInitials name={user.name} />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium text-slate-200 truncate">
+                          {user.name}
+                          {isSelf && (
+                            <span className="ml-2 text-xs text-slate-500">(você)</span>
+                          )}
+                        </p>
+                        <p className="text-xs text-slate-500 truncate">{user.email}</p>
+                      </div>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium flex-shrink-0 ${ROLE_COLORS[user.role] ?? ROLE_COLORS.VIEWER}`}
+                      >
+                        {ROLE_LABELS[user.role] ?? user.role}
+                      </span>
+                    </div>
+
+                    {/* Middle row: status */}
+                    <div>
+                      <span
+                        className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          user.isActive
+                            ? 'bg-emerald-500/15 text-emerald-300 ring-1 ring-emerald-500/30'
+                            : 'bg-slate-700 text-slate-400 ring-1 ring-slate-600'
+                        }`}
+                      >
+                        <span
+                          className={`h-1.5 w-1.5 rounded-full ${user.isActive ? 'bg-emerald-400' : 'bg-slate-500'}`}
+                        />
+                        {user.isActive ? 'Ativo' : 'Inativo'}
+                      </span>
+                    </div>
+
+                    {/* Bottom row: actions */}
+                    <div className="flex items-center justify-between border-t border-slate-800/60 pt-3">
+                      <Link
+                        href={`/admin/users/${user.id}`}
+                        aria-label="Ver detalhes"
+                        className="p-2 rounded-lg text-slate-400 hover:text-cyan-400 hover:bg-cyan-500/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                        </svg>
+                      </Link>
+
+                      <button
+                        type="button"
+                        onClick={() => setPermissoesUser(user)}
+                        aria-label="Gerenciar permissões"
+                        className="p-2 rounded-lg text-slate-400 hover:text-violet-400 hover:bg-violet-500/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+                        </svg>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setEditingUser(user)}
+                        disabled={isSelf && user.role === ROLE.ADMIN}
+                        aria-label="Editar usuário"
+                        className="p-2 rounded-lg text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
+                        </svg>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleToggleActive(user)}
+                        disabled={isSelf || isToggling}
+                        aria-label={user.isActive ? 'Desativar usuário' : 'Ativar usuário'}
+                        className={`p-2 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ${
+                          user.isActive
+                            ? 'text-slate-400 hover:text-amber-400 hover:bg-amber-500/10'
+                            : 'text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10'
+                        }`}
+                      >
+                        {isToggling ? (
+                          <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                          </svg>
+                        ) : user.isActive ? (
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                          </svg>
+                        ) : (
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        )}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setDeletingUser(user)}
+                        disabled={isSelf}
+                        aria-label="Excluir usuário"
+                        className="p-2 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Desktop table */}
+            <div className="hidden sm:block overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-slate-800 bg-slate-800/40">
@@ -304,7 +428,8 @@ export function UserList() {
                 })}
               </tbody>
             </table>
-          </div>
+            </div>
+          </>
         )}
       </div>
 
