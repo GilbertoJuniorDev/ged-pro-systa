@@ -6,6 +6,7 @@ import type { AuthUser } from '@/types';
 import type { AuthTokensResponse, MeResponseDto, Role } from '@ged/types';
 
 const config: NextAuthConfig = {
+  trustHost: true,
   providers: [
     CredentialsProvider({
       name: 'credentials',
