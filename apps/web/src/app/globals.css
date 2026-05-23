@@ -36,6 +36,42 @@
   100% { width: 90%; }
 }
 
+/* ─── Scrollbar ─────────────────────────────────────────── */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.dark * {
+  scrollbar-color: #334155 transparent;
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 100px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #4f46e5;
+}
+
 /* ─── Utility classes ────────────────────────────────────── */
 @layer utilities {
   .animate-fade-in  { animation: fadeIn  0.35s ease-out both; }
@@ -87,4 +123,10 @@
   .delay-75  { animation-delay: 75ms;  }
   .delay-150 { animation-delay: 150ms; }
   .delay-225 { animation-delay: 225ms; }
+
+  /* Hide scrollbar visual while keeping scroll functional */
+  .scrollbar-none {
+    scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
+  }
 }

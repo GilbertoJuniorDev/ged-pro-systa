@@ -98,6 +98,8 @@ services:
       context: ..
       dockerfile: infra/docker/web.Dockerfile
       args:
+        # URL pública da API acessível pelo browser (ex: https://api.gedpro.systa.com.br)
+        # Baked no bundle Next.js em build-time — nunca usar http://api:3333 (hostname Docker interno)
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
     container_name: ged-web
     restart: unless-stopped
