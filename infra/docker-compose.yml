@@ -76,8 +76,10 @@ services:
       MAIL_SECURE: ${MAIL_SECURE:-false}
       MAIL_USER: ${MAIL_USER:-}
       MAIL_PASS: ${MAIL_PASS:-}
-      MAIL_FROM: ${MAIL_FROM:-noreply@ged.systa.com.br}
-      APP_URL: ${APP_URL:-https://ged.systa.com.br}
+      MAIL_FROM: ${MAIL_FROM:-noreply@ged.local}
+      # APP_URL = URL pública do FRONTEND (ex: https://gedpro.systa.com.br)
+      # Usado pelo CORS da API — deve bater exatamente com a origin enviada pelo browser
+      APP_URL: ${APP_URL}
     ports:
       - '3333:3333'
     volumes:
