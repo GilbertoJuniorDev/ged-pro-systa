@@ -62,7 +62,7 @@ services:
       retries: 5
 
   api:
-    image: ${API_IMAGE:?API_IMAGE obrigatório — ex: ghcr.io/owner/ged-api:latest}
+    image: "${API_IMAGE:?Variavel API_IMAGE nao definida}"
     container_name: ged-api
     restart: unless-stopped
     depends_on:
@@ -107,7 +107,7 @@ services:
 
   web:
     # NEXT_PUBLIC_API_URL já está embutido na imagem (baked em build-time pelo CI)
-    image: ${WEB_IMAGE:?WEB_IMAGE obrigatório — ex: ghcr.io/owner/ged-web:latest}
+    image: "${WEB_IMAGE:?Variavel WEB_IMAGE nao definida}"
     container_name: ged-web
     restart: unless-stopped
     depends_on:
