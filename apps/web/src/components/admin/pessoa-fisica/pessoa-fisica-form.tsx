@@ -38,7 +38,15 @@ export function PessoaFisicaForm({ userId, existingData }: Props) {
     reset,
     control,
     formState: { errors },
-  } = useForm<FormData>({ resolver: zodResolver(schema) });
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      nome: '',
+      sobrenome: '',
+      cpf: '',
+      dataNascimento: '',
+    },
+  });
 
   useEffect(() => {
     if (existingData) {

@@ -22,7 +22,7 @@ const editSchema = z.object({
 
 type EditFormData = z.infer<typeof editSchema>;
 
-type TabId = 'dados' | 'permissoes' | 'pessoa-fisica';
+type TabId = 'pessoa-fisica' | 'permissoes' | 'credenciais';
 
 interface TabButtonProps {
   id: TabId;
@@ -187,24 +187,24 @@ interface Props {
 }
 
 export function UserDetailClient({ user }: Props) {
-  const [activeTab, setActiveTab] = useState<TabId>('dados');
+  const [activeTab, setActiveTab] = useState<TabId>('pessoa-fisica');
 
   return (
     <div>
       {/* Tabs */}
       <div className="flex gap-2 mb-6">
-        <TabButton id="dados" label="Dados" active={activeTab === 'dados'} onClick={setActiveTab} />
+        <TabButton id="pessoa-fisica" label="Pessoa Física (Dados)" active={activeTab === 'pessoa-fisica'} onClick={setActiveTab} />
         <TabButton id="permissoes" label="Permissões" active={activeTab === 'permissoes'} onClick={setActiveTab} />
-        <TabButton id="pessoa-fisica" label="Pessoa Física" active={activeTab === 'pessoa-fisica'} onClick={setActiveTab} />
+        <TabButton id="credenciais" label="Credenciais" active={activeTab === 'credenciais'} onClick={setActiveTab} />
       </div>
 
       {/* Conteúdo */}
       <div className="bg-slate-900 rounded-2xl border border-slate-700 p-6">
-        {activeTab === 'dados' && <DadosTab user={user} />}
+        {activeTab === 'pessoa-fisica' && <PessoaFisicaTab userId={user.id} />}
         {activeTab === 'permissoes' && (
           <UsuarioPermissoesContent userId={user.id} />
         )}
-        {activeTab === 'pessoa-fisica' && <PessoaFisicaTab userId={user.id} />}
+        {activeTab === 'credenciais' && <DadosTab user={user} />}
       </div>
     </div>
   );
