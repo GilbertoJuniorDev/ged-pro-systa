@@ -4,11 +4,10 @@ on:
   push:
     branches:
       - main
-      - develop
 
 # Nunca cancelar um deploy em andamento — aguarda o anterior terminar
 concurrency:
-  group: cd-${{ github.ref }}
+  group: cd-production
   cancel-in-progress: false
 
 jobs:
@@ -22,7 +21,6 @@ jobs:
 
     outputs:
       sha-short: ${{ steps.sha.outputs.short }}
-      env-tag: ${{ steps.env-tag.outputs.tag }}
       image-api: ${{ steps.image-names.outputs.api }}
       image-web: ${{ steps.image-names.outputs.web }}
 
@@ -40,16 +38,6 @@ jobs:
           OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           echo "api=ghcr.io/${OWNER}/ged-api" >> $GITHUB_OUTPUT
           echo "web=ghcr.io/${OWNER}/ged-web" >> $GITHUB_OUTPUT
-
-      # main → latest | develop → staging
-      - name: Determine environment tag
-        id: env-tag
-        run: |
-          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            echo "tag=latest" >> $GITHUB_OUTPUT
-          else
-            echo "tag=staging" >> $GITHUB_OUTPUT
-          fi
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -69,14 +57,13 @@ jobs:
           file: infra/docker/api.Dockerfile
           push: true
           tags: |
-            ${{ steps.image-names.outputs.api }}:${{ steps.env-tag.outputs.tag }}
+            ${{ steps.image-names.outputs.api }}:latest
             ${{ steps.image-names.outputs.api }}:sha-${{ steps.sha.outputs.short }}
-          # Reutiliza layers de builds anteriores do mesmo ambiente
-          cache-from: type=gha,scope=api-${{ steps.env-tag.outputs.tag }}
-          cache-to: type=gha,mode=max,scope=api-${{ steps.env-tag.outputs.tag }}
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,mode=max,scope=api
 
       # ── Web ──────────────────────────────────────────────────────────────────
-      # NEXT_PUBLIC_API_URL é "baked" no bundle em build-time — imagens distintas por ambiente
+      # NEXT_PUBLIC_API_URL é "baked" no bundle em build-time
       - name: Build and push Web image
         uses: docker/build-push-action@v6
         with:
@@ -84,70 +71,18 @@ jobs:
           file: infra/docker/web.Dockerfile
           push: true
           tags: |
-            ${{ steps.image-names.outputs.web }}:${{ steps.env-tag.outputs.tag }}
+            ${{ steps.image-names.outputs.web }}:latest
             ${{ steps.image-names.outputs.web }}:sha-${{ steps.sha.outputs.short }}
           build-args: |
-            NEXT_PUBLIC_API_URL=${{ steps.env-tag.outputs.tag == 'latest' && secrets.NEXT_PUBLIC_API_URL_PRODUCTION || secrets.NEXT_PUBLIC_API_URL_STAGING }}
-          cache-from: type=gha,scope=web-${{ steps.env-tag.outputs.tag }}
-          cache-to: type=gha,mode=max,scope=web-${{ steps.env-tag.outputs.tag }}
-
-  # ─── Deploy Staging ──────────────────────────────────────────────────────────
-  deploy-staging:
-    name: Deploy → Staging
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/develop'
-    # Requer environment "staging" configurado no GitHub (Settings → Environments)
-    # Permite adicionar reviewers ou regras de proteção neste ambiente se necessário
-    environment: staging
-
-    steps:
-      - uses: actions/checkout@v4
-
-      # Garante que o servidor sempre execute a versão mais recente do compose
-      - name: Copiar docker-compose.prod.yml para servidor de staging
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SSH_HOST_STAGING }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT }}
-          source: 'infra/docker-compose.prod.yml'
-          target: ${{ secrets.DEPLOY_PATH_STAGING }}
-          strip_components: 1
-
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.SSH_HOST_STAGING }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT }}
-          # Pré-requisito no servidor: ~/.docker/config.json configurado
-          # com PAT (read:packages) para autenticação no GHCR.
-          # Setup único: echo TOKEN | docker login ghcr.io -u USERNAME --password-stdin
-          script: |
-            set -e
-            cd ${{ secrets.DEPLOY_PATH_STAGING }}
-
-            API_IMAGE="${{ needs.build-and-push.outputs.image-api }}:staging"
-            WEB_IMAGE="${{ needs.build-and-push.outputs.image-web }}:staging"
-
-            docker pull "$API_IMAGE"
-            docker pull "$WEB_IMAGE"
-
-            API_IMAGE="$API_IMAGE" WEB_IMAGE="$WEB_IMAGE" \
-              docker compose -f docker-compose.prod.yml up -d --remove-orphans
-
-            # Remove imagens não referenciadas para liberar espaço em disco
-            docker image prune -f
+            NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,mode=max,scope=web
 
   # ─── Deploy Production ───────────────────────────────────────────────────────
   deploy-production:
     name: Deploy → Production
     needs: build-and-push
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
     # Configure o environment "production" em Settings → Environments
     # com required reviewers para aprovação manual antes do deploy
     environment: production
@@ -155,7 +90,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Copiar docker-compose.prod.yml para servidor de produção
+      - name: Copiar docker-compose.prod.yml para servidor
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SSH_HOST_PRODUCTION }}
