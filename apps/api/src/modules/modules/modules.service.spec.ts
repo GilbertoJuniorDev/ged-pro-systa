@@ -1,4 +1,4 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test, type TestingModule } from '@nestjs/testing';
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { ModulesService, MODULE_REPOSITORY } from './modules.service';
 import type { IModuleRepository } from './interfaces/module-repository.interface';

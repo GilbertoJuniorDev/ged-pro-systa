@@ -1,5 +1,5 @@
 import { of } from 'rxjs';
-import { ExecutionContext, CallHandler } from '@nestjs/common';
+import { type ExecutionContext, type CallHandler } from '@nestjs/common';
 import { TransformInterceptor } from './transform.interceptor';
 
 describe('TransformInterceptor', () => {

@@ -26,8 +26,8 @@ COPY . .
 ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_BUILD_STANDALONE=true
-RUN pnpm --filter=@ged/database build \
- && pnpm --filter=@ged/types build \
+RUN pnpm --filter=@ged/types build \
+ && pnpm --filter=@ged/database build \
  && pnpm --filter=@ged/utils build \
  && pnpm --filter=web build
 

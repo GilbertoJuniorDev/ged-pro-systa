@@ -5,8 +5,6 @@ import {
   useContext,
   useEffect,
   useState,
-  type Dispatch,
-  type SetStateAction,
 } from 'react';
 import { usePathname } from 'next/navigation';
 

@@ -22,7 +22,7 @@ function DeleteConfirm({ permissao, onConfirm, onCancel, isPending }: DeleteConf
       <div className="bg-slate-900 border border-slate-700 rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6">
         <p className="text-slate-100 font-semibold mb-1">Remover permissão?</p>
         <p className="text-slate-400 text-sm mb-6">
-          A permissão <span className="text-slate-200 font-medium">"{permissao.nome}"</span> será removida
+          A permissão <span className="text-slate-200 font-medium">&quot;{permissao.nome}&quot;</span> será removida
           e todos os usuários perderão este acesso.
         </p>
         <div className="flex gap-3 justify-end">

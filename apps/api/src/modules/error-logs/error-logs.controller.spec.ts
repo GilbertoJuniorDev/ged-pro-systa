@@ -8,7 +8,7 @@ import {
   ERROR_LOG_LEVEL,
   ERROR_LOG_SOURCE,
 } from './schemas/error-log.schema';
-import { CreateClientErrorLogDto } from './dto/create-error-log.dto';
+import { type CreateClientErrorLogDto } from './dto/create-error-log.dto';
 import type { QueryErrorLogDto } from './dto/query-error-log.dto';
 
 describe('ErrorLogsController', () => {

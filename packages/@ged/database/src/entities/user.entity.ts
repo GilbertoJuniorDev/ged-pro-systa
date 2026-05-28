@@ -7,15 +7,9 @@ import {
   OneToMany,
   OneToOne,
 } from 'typeorm';
+import { ROLE, type Role } from '@ged/types';
 
-
-export const ROLE = {
-  ADMIN: 'ADMIN',
-  MANAGER: 'MANAGER',
-  VIEWER: 'VIEWER',
-} as const;
-
-export type Role = (typeof ROLE)[keyof typeof ROLE];
+export { ROLE, type Role } from '@ged/types';
 
 @Entity('users')
 export class User {

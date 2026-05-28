@@ -1,6 +1,10 @@
-import type { Role } from '@ged/database';
+export const ROLE = {
+  ADMIN: 'ADMIN',
+  MANAGER: 'MANAGER',
+  VIEWER: 'VIEWER',
+} as const;
 
-export { ROLE, type Role } from '@ged/database';
+export type Role = (typeof ROLE)[keyof typeof ROLE];
 
 export interface JwtPayload {
   sub: string;

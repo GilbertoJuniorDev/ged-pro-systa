@@ -1,9 +1,8 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { ExecutionContext, ForbiddenException } from '@nestjs/common';
+import { Test, type TestingModule } from '@nestjs/testing';
+import { type ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { PermissionsGuard, USER_PERMISSIONS_SERVICE } from './permissions.guard';
 import type { IPermissionChecker } from './permissions.guard';
-import { PERMISSIONS_KEY } from '../decorators/permissions.decorator';
 import { ROLE } from '@ged/database';
 import type { JwtPayload } from '@ged/types';
 

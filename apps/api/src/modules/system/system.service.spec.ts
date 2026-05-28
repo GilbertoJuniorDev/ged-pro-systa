@@ -1,16 +1,6 @@
 import { Test, type TestingModule } from '@nestjs/testing';
 import { getDataSourceToken } from '@nestjs/typeorm';
 import { SystemService, REDIS_CLIENT } from './system.service';
-import type { SystemVersionDto } from './dto/system-version.dto';
-
-function makeVersionDto(): SystemVersionDto {
-  return {
-    appName: 'GED Pro',
-    version: '0.0.1',
-    environment: 'test',
-    buildDate: expect.any(String) as unknown as string,
-  };
-}
 
 describe('SystemService', () => {
   let service: SystemService;

@@ -31,9 +31,9 @@ COPY packages/@ged/database/src ./packages/@ged/database/src
 COPY packages/@ged/database/tsconfig.json ./packages/@ged/database/
 
 # Compila os pacotes de tipos compartilhados (main/types apontam para dist/)
-# @ged/database precisa ser compilado primeiro pois @ged/types depende dele
-RUN pnpm --filter=@ged/database build \
- && pnpm --filter=@ged/types build \
+# @ged/types precisa ser compilado primeiro pois @ged/database depende dele
+RUN pnpm --filter=@ged/types build \
+ && pnpm --filter=@ged/database build \
  && pnpm --filter=@ged/utils build
 
 CMD ["pnpm", "--filter=web", "dev"]

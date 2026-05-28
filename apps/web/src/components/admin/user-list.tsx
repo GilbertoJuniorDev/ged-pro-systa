@@ -92,7 +92,7 @@ function DeleteConfirmDialog({ user, onConfirm, onCancel, isPending }: DeleteCon
 export function UserList() {
   const { data: session } = useSession();
   const { data: users, isLoading, isError } = useUsers();
-  const { mutateAsync: toggleActive, isPending: isTogglingId } = useToggleUserActive();
+  const { mutateAsync: toggleActive } = useToggleUserActive();
   const { mutateAsync: deleteUser, isPending: isDeleting } = useDeleteUser();
 
   const [editingUser, setEditingUser] = useState<UserDto | null>(null);

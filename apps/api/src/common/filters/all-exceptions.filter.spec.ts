@@ -1,12 +1,12 @@
 import {
-  ArgumentsHost,
+  type ArgumentsHost,
   HttpException,
   HttpStatus,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { AllExceptionsFilter } from './all-exceptions.filter';
-import { ErrorLogsService } from '../../modules/error-logs/error-logs.service';
+import { type ErrorLogsService } from '../../modules/error-logs/error-logs.service';
 import {
   ERROR_LOG_LEVEL,
   ERROR_LOG_SOURCE,

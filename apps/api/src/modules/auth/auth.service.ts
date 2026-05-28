@@ -54,7 +54,7 @@ export class AuthService {
     const passwordMatches = await bcrypt.compare(password, user.passwordHash);
     if (!passwordMatches) return null;
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+     
     const { passwordHash: _removed, ...result } = user;
     return result as Omit<User, 'passwordHash'>;
   }

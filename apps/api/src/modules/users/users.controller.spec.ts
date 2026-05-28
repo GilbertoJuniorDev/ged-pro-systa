@@ -1,4 +1,4 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test, type TestingModule } from '@nestjs/testing';
 import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { ROLE } from '@ged/database';
 import type { User } from '@ged/database';
@@ -7,9 +7,9 @@ import type { HttpRequest } from '../../common/interfaces/http-request.interface
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
 import { UsersController } from './users.controller';
 import { UsersService, USER_REPOSITORY } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { ToggleUserStatusDto } from './dto/toggle-user-status.dto';
+import { type CreateUserDto } from './dto/create-user.dto';
+import { type UpdateUserDto } from './dto/update-user.dto';
+import { type ToggleUserStatusDto } from './dto/toggle-user-status.dto';
 import { CreateUserWithProfileUseCase } from './use-cases/create-user-with-profile.use-case';
 
 const makeUser = (overrides: Partial<User> = {}): User =>

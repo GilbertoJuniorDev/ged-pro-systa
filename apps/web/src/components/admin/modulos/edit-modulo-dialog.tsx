@@ -55,8 +55,8 @@ export function EditModuloDialog({ modulo, onClose }: Props) {
         payload: {
           nome: data.nome,
           slug: data.slug,
-          descricao: data.descricao || null,
-          icone: data.icone || null,
+          descricao: data.descricao ?? null,
+          icone: data.icone ?? null,
           ordem: data.ordem,
           isActive: data.isActive,
         },

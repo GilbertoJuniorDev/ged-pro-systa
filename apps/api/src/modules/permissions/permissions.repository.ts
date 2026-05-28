@@ -17,7 +17,7 @@ export class PermissionsRepository implements IPermissionRepository {
 
   findAll(): Promise<Permission[]> {
     return this.repo.find({
-      relations: { modulo: true } as Record<string, boolean>,
+      relations: { modulo: true },
       order: { nome: 'ASC' },
     });
   }
@@ -25,7 +25,7 @@ export class PermissionsRepository implements IPermissionRepository {
   findById(id: string): Promise<Permission | null> {
     return this.repo.findOne({
       where: { id },
-      relations: { modulo: true } as Record<string, boolean>,
+      relations: { modulo: true },
     });
   }
 

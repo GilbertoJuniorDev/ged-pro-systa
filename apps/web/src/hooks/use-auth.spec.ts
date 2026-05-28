@@ -1,4 +1,5 @@
 import { renderHook } from '@testing-library/react';
+import type { Session } from 'next-auth';
 import { useAuth } from './use-auth';
 
 jest.mock('next-auth/react', () => ({
@@ -17,7 +18,7 @@ describe('useAuth', () => {
   it('should return isAuthenticated true when session is active', () => {
     mockUseSession.mockReturnValue({
       data: {
-        user: { id: 'u1', email: 'user@test.com', name: 'User', accessToken: 'tok' } as unknown as import('next-auth').Session['user'],
+        user: { id: 'u1', email: 'user@test.com', name: 'User', accessToken: 'tok' } as unknown as Session['user'],
         expires: '2099-01-01',
       },
       status: 'authenticated',
