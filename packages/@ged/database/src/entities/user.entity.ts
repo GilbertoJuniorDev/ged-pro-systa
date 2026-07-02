@@ -28,7 +28,7 @@ export class User {
   @Column({
     name: 'role',
     type: 'enum',
-    enum: ['ADMIN', 'MANAGER', 'VIEWER'],
+    enum: ['ADMIN', 'MANAGER', 'VIEWER', 'SUPER_ADMIN'],
     default: ROLE.VIEWER,
   })
   role!: Role;
@@ -50,6 +50,9 @@ export class User {
 
   @OneToMany('UserPermission', 'usuario')
   usuarioPermissoes!: unknown[];
+
+  @OneToMany('UserDepartment', 'usuario')
+  usuarioDepartamentos!: unknown[];
 
   @OneToMany('AuditLog', 'usuario')
   auditLogs!: unknown[];

@@ -5,6 +5,8 @@ applyTo: "packages/@ged/database/**"
 
 # Database — TypeORM Entities (packages/@ged/database/)
 
+> ⚠️ **Fonte canônica: [`AGENTS.md`](../../AGENTS.md) e [`packages/@ged/database/CLAUDE.md`](../../packages/@ged/database/CLAUDE.md).** Atenção: enums são `const object + as const` (**não `enum` nativo**); entidades `Document`/`Category` ainda não existem. Em conflito, vale o código.
+
 ## Localização das Entidades
 
 ```

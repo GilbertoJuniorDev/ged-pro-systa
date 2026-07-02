@@ -41,7 +41,7 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
       if (result?.error) {
         toast.error('Credenciais inválidas. Verifique seu e-mail e senha.');
       } else {
-        router.push('/');
+        router.push('/selecionar-departamento');
       }
     });
   }

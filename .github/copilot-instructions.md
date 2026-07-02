@@ -1,5 +1,7 @@
 # GED Pro — Project Guidelines
 
+> ⚠️ **Fonte canônica: [`AGENTS.md`](../AGENTS.md).** Este arquivo tem seções desatualizadas (ex.: Next.js 16.2 — real 15.3). As regras de TypeScript/nomenclatura seguem válidas; para stack e estrutura reais, valem `AGENTS.md` e o código.
+
 **GED Pro** é um Sistema de Gerenciamento Eletrônico de Documentos corporativo.
 Monorepo: pnpm + Turborepo · Next.js 16.2 (frontend) · NestJS 11 (backend) · PostgreSQL 17 · Redis 7 · Docker.
 

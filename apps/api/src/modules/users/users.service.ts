@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { ROLE } from '@ged/database';
 import type { User } from '@ged/database';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
 import type {
@@ -49,6 +50,9 @@ export class UsersService {
     }
     const user = await this.userRepository.findById(id);
     if (!user) throw new NotFoundException('Usuário não encontrado');
+    if (user.role === ROLE.SUPER_ADMIN) {
+      throw new BadRequestException('Não é possível remover/desativar o Super Admin');
+    }
     const hasActions = await this.auditLogsService.hasLogsByUser(id);
     if (hasActions) {
       throw new BadRequestException(
@@ -64,6 +68,9 @@ export class UsersService {
     }
     const user = await this.userRepository.findById(id);
     if (!user) throw new NotFoundException('Usuário não encontrado');
+    if (user.role === ROLE.SUPER_ADMIN) {
+      throw new BadRequestException('Não é possível remover/desativar o Super Admin');
+    }
     return this.userRepository.setActive(id, isActive);
   }
 }

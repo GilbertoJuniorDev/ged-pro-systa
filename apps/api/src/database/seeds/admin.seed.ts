@@ -16,10 +16,10 @@ export async function seedAdmin(dataSource: DataSource): Promise<void> {
     name: 'Administrador',
     email: ADMIN_EMAIL,
     passwordHash,
-    role: ROLE.ADMIN,
+    role: ROLE.SUPER_ADMIN,
     isActive: true,
   });
 
   await userRepo.save(admin);
-  console.log(`[Seed] Usuário admin criado: ${ADMIN_EMAIL}`);
+  console.log(`[Seed] Usuário super-admin criado: ${ADMIN_EMAIL}`);
 }

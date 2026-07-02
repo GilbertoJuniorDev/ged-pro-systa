@@ -38,7 +38,7 @@ export class SubscriptionController {
   @Put()
   @HttpCode(HttpStatus.OK)
   @UseGuards(RolesGuard)
-  @Roles(ROLE.ADMIN)
+  @Roles(ROLE.SUPER_ADMIN)
   @ApiOperation({ summary: 'Create or update the singleton Subscription' })
   async upsert(
     @Body() dto: UpsertSubscriptionDto,
@@ -59,7 +59,7 @@ export class SubscriptionController {
   @Post('suspend')
   @HttpCode(HttpStatus.OK)
   @UseGuards(RolesGuard)
-  @Roles(ROLE.ADMIN)
+  @Roles(ROLE.SUPER_ADMIN)
   @ApiOperation({ summary: 'Suspend subscription' })
   async suspend(@CurrentUser() user: JwtPayload): Promise<SubscriptionResponseDto> {
     return new SubscriptionResponseDto(await this.subscriptionService.suspend(user.sub));
@@ -68,7 +68,7 @@ export class SubscriptionController {
   @Post('reactivate')
   @HttpCode(HttpStatus.OK)
   @UseGuards(RolesGuard)
-  @Roles(ROLE.ADMIN)
+  @Roles(ROLE.SUPER_ADMIN)
   @ApiOperation({ summary: 'Reactivate subscription' })
   async reactivate(
     @CurrentUser() user: JwtPayload,
@@ -79,7 +79,7 @@ export class SubscriptionController {
   @Post('cancel')
   @HttpCode(HttpStatus.OK)
   @UseGuards(RolesGuard)
-  @Roles(ROLE.ADMIN)
+  @Roles(ROLE.SUPER_ADMIN)
   @ApiOperation({ summary: 'Cancel subscription' })
   async cancel(@CurrentUser() user: JwtPayload): Promise<SubscriptionResponseDto> {
     return new SubscriptionResponseDto(await this.subscriptionService.cancel(user.sub));
@@ -88,7 +88,7 @@ export class SubscriptionController {
   @Post('record-payment')
   @HttpCode(HttpStatus.OK)
   @UseGuards(RolesGuard)
-  @Roles(ROLE.ADMIN)
+  @Roles(ROLE.SUPER_ADMIN)
   @ApiOperation({ summary: 'Register a payment' })
   async recordPayment(
     @Body() dto: RecordPaymentDto,
@@ -104,7 +104,7 @@ export class SubscriptionController {
 
   @Get('payments')
   @UseGuards(RolesGuard)
-  @Roles(ROLE.ADMIN)
+  @Roles(ROLE.SUPER_ADMIN)
   @ApiOperation({ summary: 'List all recorded payments' })
   async listPayments(): Promise<SubscriptionPaymentResponseDto[]> {
     const sub = await this.subscriptionService.getSingleton();

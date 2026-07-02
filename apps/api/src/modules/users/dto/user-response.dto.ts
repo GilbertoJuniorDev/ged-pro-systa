@@ -7,6 +7,7 @@ export class UserResponseDto {
   readonly role!: Role;
   readonly isActive!: boolean;
   readonly createdAt!: Date;
+  readonly departamentoIds!: string[];
 
   constructor(partial: UserResponseDto) {
     Object.assign(this, partial);

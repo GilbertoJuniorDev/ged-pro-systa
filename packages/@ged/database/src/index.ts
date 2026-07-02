@@ -9,6 +9,8 @@ export { Cnae } from './entities/cnae.entity';
 export { Module } from './entities/module.entity';
 export { Permission } from './entities/permission.entity';
 export { UserPermission } from './entities/user-permission.entity';
+export { Department } from './entities/department.entity';
+export { UserDepartment } from './entities/user-department.entity';
 export { AuditLog } from './entities/audit-log.entity';
 export { Company } from './entities/company.entity';
 export {

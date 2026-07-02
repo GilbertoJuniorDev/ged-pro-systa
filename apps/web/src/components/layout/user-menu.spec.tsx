@@ -5,6 +5,11 @@ import { UserMenu } from './user-menu';
 
 jest.mock('next-auth/react', () => ({
   signOut: jest.fn(),
+  useSession: jest.fn().mockReturnValue({ update: jest.fn() }),
+}));
+
+jest.mock('next/navigation', () => ({
+  useRouter: jest.fn().mockReturnValue({ push: jest.fn() }),
 }));
 
 const mockSignOut = signOut as jest.MockedFunction<typeof signOut>;

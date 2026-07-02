@@ -1,9 +1,12 @@
+import type { Role } from '@ged/types';
+
 export interface NavItem {
   readonly label: string;
   readonly href: string;
   readonly iconPaths: readonly string[];
   readonly moduloSlug?: string | null;
   readonly children?: readonly NavItem[];
+  readonly requiredRole?: Role | readonly Role[];
 }
 
 export const NAV_ITEMS: readonly NavItem[] = [
@@ -84,9 +87,18 @@ export const ADMIN_NAV_ITEMS: readonly NavItem[] = [
         ],
       },
       {
+        label: 'Departamentos',
+        href: '/admin/departamentos',
+        moduloSlug: null,
+        iconPaths: [
+          'M3 21h18M5 21V7l8-4v18M19 21V11l-6-4M9 9v.01M9 12v.01M9 15v.01',
+        ],
+      },
+      {
         label: 'Audit Logs',
         href: '/admin/audit-logs',
         moduloSlug: null,
+        requiredRole: 'SUPER_ADMIN',
         iconPaths: [
           'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01',
         ],

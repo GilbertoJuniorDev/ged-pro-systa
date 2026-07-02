@@ -4,7 +4,7 @@ import { ROLE } from '@ged/database';
 import type { Role } from '@ged/types';
 import { CreatePhysicalPersonDto } from '../../physical-person/dto/create-physical-person.dto';
 
-const ALLOWED_ROLES = [ROLE.MANAGER, ROLE.VIEWER] as const;
+const ALLOWED_ROLES = [ROLE.ADMIN, ROLE.MANAGER, ROLE.VIEWER] as const;
 
 export class CreateUserDto {
   @IsString()
@@ -30,4 +30,9 @@ export class CreateUserDto {
   @IsArray()
   @IsUUID('4', { each: true })
   readonly permissaoIds?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsUUID('4', { each: true })
+  readonly departamentoIds?: string[];
 }

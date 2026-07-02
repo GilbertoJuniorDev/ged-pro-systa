@@ -1,5 +1,6 @@
 import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { ROLE } from '@ged/database';
 import type { JwtPayload } from '@ged/types';
 import { ROLES_KEY } from '../decorators/roles.decorator';
 import type { Role } from '@ged/types';
@@ -23,6 +24,11 @@ export class RolesGuard implements CanActivate {
 
     if (!user) {
       throw new ForbiddenException('Acesso negado');
+    }
+
+    // SUPER_ADMIN tem bypass total
+    if (user.role === ROLE.SUPER_ADMIN) {
+      return true;
     }
 
     const hasRole = requiredRoles.includes(user.role);

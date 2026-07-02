@@ -25,8 +25,11 @@ import { Public } from '../../common/decorators/public.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import type { JwtPayload, MeResponseDto } from '@ged/types';
+import { ROLE } from '@ged/database';
 import { UserPermissionsService } from '../user-permissions/user-permissions.service';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
+import { DepartmentsService } from '../departments/departments.service';
+import { UserDepartmentsService } from '../user-departments/user-departments.service';
 
 @ApiTags('auth')
 @UseGuards(JwtAuthGuard)
@@ -36,6 +39,8 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly userPermissionsService: UserPermissionsService,
     private readonly auditLogsService: AuditLogsService,
+    private readonly departmentsService: DepartmentsService,
+    private readonly userDepartmentsService: UserDepartmentsService,
   ) {}
 
   @Public()
@@ -126,7 +131,18 @@ export class AuthController {
       ),
     ];
 
-    return { ...user, permissoes, modulos: moduloSlugs };
+    const departamentos =
+      user.role === ROLE.SUPER_ADMIN
+        ? (await this.departmentsService.findAllActive()).map((department) => ({
+            id: department.id,
+            nome: department.nome,
+          }))
+        : (await this.userDepartmentsService.findByUserId(user.sub)).map((ud) => ({
+            id: ud.departamento.id,
+            nome: ud.departamento.nome,
+          }));
+
+    return { ...user, permissoes, modulos: moduloSlugs, departamentos };
   }
 
   @Public()

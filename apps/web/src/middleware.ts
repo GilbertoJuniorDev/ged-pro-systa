@@ -29,7 +29,7 @@ export default auth((req) => {
 
   if (session && nextUrl.pathname.startsWith(ADMIN_ROUTES_PREFIX)) {
     const role = (session.user as { role?: string } | undefined)?.role;
-    if (role !== 'ADMIN') {
+    if (role !== 'ADMIN' && role !== 'SUPER_ADMIN') {
       return NextResponse.redirect(new URL('/', nextUrl));
     }
   }
@@ -42,7 +42,12 @@ export default auth((req) => {
       nextUrl.pathname === prefix || nextUrl.pathname.startsWith(prefix + '/'),
     )?.[1];
 
-    if (requiredModulo && role !== 'ADMIN' && !modulos.includes(requiredModulo)) {
+    if (
+      requiredModulo &&
+      role !== 'ADMIN' &&
+      role !== 'SUPER_ADMIN' &&
+      !modulos.includes(requiredModulo)
+    ) {
       return NextResponse.redirect(new URL('/', nextUrl));
     }
   }

@@ -7,8 +7,27 @@ jest.mock('next/navigation', () => ({
   useRouter: jest.fn(),
 }));
 
+jest.mock('next-auth/react', () => ({
+  useSession: jest.fn().mockReturnValue({
+    data: { user: { role: 'ADMIN', accessToken: 'test-token' } },
+    status: 'authenticated',
+  }),
+}));
+
 jest.mock('../../hooks/use-create-user', () => ({
   useCreateUser: jest.fn(),
+}));
+
+jest.mock('../../hooks/use-departments', () => ({
+  useDepartments: jest.fn().mockReturnValue({ data: [] }),
+}));
+
+jest.mock('../../hooks/use-modules', () => ({
+  useModules: jest.fn().mockReturnValue({ data: [] }),
+}));
+
+jest.mock('../../hooks/use-permission-management', () => ({
+  usePermissionsManagement: jest.fn().mockReturnValue({ data: [] }),
 }));
 
 const mockRefresh = jest.fn();
