@@ -29,6 +29,8 @@ export class SubscriptionController {
   constructor(private readonly subscriptionService: SubscriptionService) {}
 
   @Get()
+  @UseGuards(RolesGuard)
+  @Roles(ROLE.SUPER_ADMIN)
   @ApiOperation({ summary: 'Get the singleton Subscription' })
   async findOne(): Promise<SubscriptionResponseDto> {
     const sub = await this.subscriptionService.getSingleton();

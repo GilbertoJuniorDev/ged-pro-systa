@@ -3,7 +3,7 @@ import type { Request } from 'express';
 import { ErrorLogsController } from './error-logs.controller';
 import { ErrorLogsService } from './error-logs.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { PermissionsGuard } from '../../common/guards/permissions.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
 import {
   ERROR_LOG_LEVEL,
   ERROR_LOG_SOURCE,
@@ -30,7 +30,7 @@ describe('ErrorLogsController', () => {
     })
       .overrideGuard(JwtAuthGuard)
       .useValue({ canActivate: () => true })
-      .overrideGuard(PermissionsGuard)
+      .overrideGuard(RolesGuard)
       .useValue({ canActivate: () => true })
       .compile();
 

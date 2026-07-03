@@ -28,7 +28,8 @@ export function UserMenu({ user, departamentos }: UserMenuProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const { update } = useSession();
   const router = useRouter();
-  const canSwitchDepartment = (departamentos?.length ?? 0) > 0 || user.role === 'SUPER_ADMIN';
+  const canSwitchDepartment =
+    (departamentos?.length ?? 0) > 0 || user.role === 'SUPER_ADMIN' || user.role === 'ADMIN';
 
   async function handleSwitchDepartment() {
     setIsOpen(false);

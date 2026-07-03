@@ -24,7 +24,7 @@ import { ModuleResponseDto } from './dto/module-response.dto';
 @ApiBearerAuth()
 @Controller('modules')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(ROLE.ADMIN)
+@Roles(ROLE.SUPER_ADMIN)
 export class ModulesController {
   constructor(private readonly modulesService: ModulesService) {}
 

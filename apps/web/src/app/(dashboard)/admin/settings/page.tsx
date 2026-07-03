@@ -33,7 +33,7 @@ export default async function AdminSettingsPage() {
         {isSuperAdmin && <BackupCard />}
         {isSuperAdmin && <ActivityLogsCard />}
         {isSuperAdmin && <ErrorLogsCard />}
-        <ModulesCard />
+        {isSuperAdmin && <ModulesCard />}
         <DepartmentsCard />
         <UserPermissionsCard />
         <PerformanceMonitor />

@@ -95,14 +95,32 @@ describe('UsersService', () => {
   });
 
   describe('findAll', () => {
-    it('should return all users', async () => {
-      const users = [makeUser(), makeUser({ id: 'user-uuid-2', email: 'other@ged.local' })];
+    it('should return all users when caller is SUPER_ADMIN', async () => {
+      const users = [
+        makeUser(),
+        makeUser({ id: 'user-uuid-2', email: 'other@ged.local' }),
+        makeUser({ id: 'user-uuid-3', email: 'super@ged.local', role: ROLE.SUPER_ADMIN }),
+      ];
       mockRepository.findAll.mockResolvedValue(users);
 
-      const result = await service.findAll();
+      const result = await service.findAll(ROLE.SUPER_ADMIN);
+
+      expect(result).toHaveLength(3);
+      expect(mockRepository.findAll).toHaveBeenCalled();
+    });
+
+    it('should filter out SUPER_ADMIN users when caller is not SUPER_ADMIN', async () => {
+      const users = [
+        makeUser(),
+        makeUser({ id: 'user-uuid-2', email: 'other@ged.local' }),
+        makeUser({ id: 'user-uuid-3', email: 'super@ged.local', role: ROLE.SUPER_ADMIN }),
+      ];
+      mockRepository.findAll.mockResolvedValue(users);
+
+      const result = await service.findAll(ROLE.ADMIN);
 
       expect(result).toHaveLength(2);
-      expect(mockRepository.findAll).toHaveBeenCalled();
+      expect(result.some((user) => user.role === ROLE.SUPER_ADMIN)).toBe(false);
     });
   });
 

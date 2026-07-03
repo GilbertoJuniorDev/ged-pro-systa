@@ -74,6 +74,7 @@ export const ADMIN_NAV_ITEMS: readonly NavItem[] = [
         label: 'Módulos',
         href: '/admin/modulos',
         moduloSlug: null,
+        requiredRole: 'SUPER_ADMIN',
         iconPaths: [
           'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z',
         ],
@@ -82,6 +83,7 @@ export const ADMIN_NAV_ITEMS: readonly NavItem[] = [
         label: 'Permissões',
         href: '/admin/permissoes',
         moduloSlug: null,
+        requiredRole: 'SUPER_ADMIN',
         iconPaths: [
           'M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z',
         ],

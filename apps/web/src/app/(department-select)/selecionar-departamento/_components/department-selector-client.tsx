@@ -146,7 +146,7 @@ export function DepartmentSelectorClient({
       </div>
 
       {/* Escape hatch — apenas SUPER_ADMIN */}
-      {role === 'SUPER_ADMIN' && (
+      {(role === 'SUPER_ADMIN' || role === 'ADMIN') && (
         <div className="relative z-10 flex justify-end px-6 pb-6 sm:px-10">
           <button
             type="button"

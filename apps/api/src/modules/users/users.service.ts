@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { ROLE } from '@ged/database';
 import type { User } from '@ged/database';
+import type { Role } from '@ged/types';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
 import type {
   IUserRepository,
@@ -26,8 +27,12 @@ export class UsersService {
     return this.userRepository.findById(id);
   }
 
-  findAll(): Promise<User[]> {
-    return this.userRepository.findAll();
+  async findAll(currentUserRole: Role): Promise<User[]> {
+    const users = await this.userRepository.findAll();
+    if (currentUserRole !== ROLE.SUPER_ADMIN) {
+      return users.filter((user) => user.role !== ROLE.SUPER_ADMIN);
+    }
+    return users;
   }
 
   create(data: CreateUserData): Promise<User> {

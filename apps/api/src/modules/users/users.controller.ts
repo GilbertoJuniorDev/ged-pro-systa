@@ -42,8 +42,8 @@ export class UsersController {
 
   @Get()
   @Roles(ROLE.ADMIN)
-  async findAll(): Promise<UserResponseDto[]> {
-    const users = await this.usersService.findAll();
+  async findAll(@CurrentUser() currentUser: JwtPayload): Promise<UserResponseDto[]> {
+    const users = await this.usersService.findAll(currentUser.role);
     const departmentsByUser = await this.userDepartmentsService.findByUserIds(
       users.map((user) => user.id),
     );

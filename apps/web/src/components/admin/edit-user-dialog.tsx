@@ -4,6 +4,7 @@ import { useEffect, useMemo } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 import { ROLE } from '@ged/types';
 import type { UserDto } from '@/types';
@@ -15,7 +16,7 @@ import { ROLE_LABELS } from '@/lib/role-labels';
 
 const editUserSchema = z.object({
   name: z.string().min(2, 'Nome deve ter ao menos 2 caracteres'),
-  role: z.enum([ROLE.ADMIN, ROLE.MANAGER, ROLE.VIEWER]),
+  role: z.enum([ROLE.ADMIN, ROLE.MANAGER, ROLE.VIEWER]).optional(),
   departamentoIds: z.array(z.string().uuid()),
 });
 
@@ -27,9 +28,10 @@ interface EditUserDialogProps {
 }
 
 export function EditUserDialog({ user, onClose }: EditUserDialogProps) {
-  const { data: session } = useSession();
+  const { data: session, update } = useSession();
   const { mutateAsync, isPending } = useUpdateUser();
   const { data: departamentosRaw } = useDepartments();
+  const router = useRouter();
 
   const actingRole = session?.user?.role;
 
@@ -46,8 +48,7 @@ export function EditUserDialog({ user, onClose }: EditUserDialogProps) {
     [departamentosRaw],
   );
 
-  const safeRole = (role: UserDto['role']) =>
-    (assignableRoles as readonly string[]).includes(role) ? (role as EditUserFormData['role']) : ROLE.VIEWER;
+  const canEditRole = (assignableRoles as readonly string[]).includes(user.role);
 
   const {
     register,
@@ -59,7 +60,7 @@ export function EditUserDialog({ user, onClose }: EditUserDialogProps) {
     resolver: zodResolver(editUserSchema),
     defaultValues: {
       name: user.name,
-      role: safeRole(user.role),
+      role: canEditRole ? (user.role as EditUserFormData['role']) : undefined,
       departamentoIds: [...user.departamentoIds],
     },
   });
@@ -67,7 +68,7 @@ export function EditUserDialog({ user, onClose }: EditUserDialogProps) {
   useEffect(() => {
     reset({
       name: user.name,
-      role: safeRole(user.role),
+      role: canEditRole ? (user.role as EditUserFormData['role']) : undefined,
       departamentoIds: [...user.departamentoIds],
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -76,8 +77,19 @@ export function EditUserDialog({ user, onClose }: EditUserDialogProps) {
   const onSubmit = async (data: EditUserFormData) => {
     await mutateAsync({
       id: user.id,
-      payload: { name: data.name, role: data.role, departamentoIds: data.departamentoIds },
+      payload: {
+        name: data.name,
+        ...(canEditRole ? { role: data.role } : {}),
+        departamentoIds: data.departamentoIds,
+      },
     });
+
+    const currentUserId = (session?.user as { sub?: string } | undefined)?.sub;
+    if (currentUserId === user.id) {
+      await update();
+      router.refresh();
+    }
+
     onClose();
   };
 
@@ -129,19 +141,25 @@ export function EditUserDialog({ user, onClose }: EditUserDialogProps) {
             <label htmlFor="edit-role" className="block text-sm font-medium text-slate-300 mb-1.5">
               Função
             </label>
-            <Controller
-              name="role"
-              control={control}
-              render={({ field }) => (
-                <Combobox
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  placeholder="Selecionar função…"
-                  error={!!errors.role}
-                  options={assignableRoles.map((role) => ({ value: role, label: ROLE_LABELS[role] ?? role }))}
-                />
-              )}
-            />
+            {canEditRole ? (
+              <Controller
+                name="role"
+                control={control}
+                render={({ field }) => (
+                  <Combobox
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    placeholder="Selecionar função…"
+                    error={!!errors.role}
+                    options={assignableRoles.map((role) => ({ value: role, label: ROLE_LABELS[role] ?? role }))}
+                  />
+                )}
+              />
+            ) : (
+              <div className="w-full bg-slate-800/50 border border-slate-700 text-slate-400 rounded-lg px-3.5 py-2.5 text-sm">
+                {ROLE_LABELS[user.role] ?? user.role}
+              </div>
+            )}
             {errors.role && (
               <p className="mt-1.5 text-xs text-rose-400">{errors.role.message}</p>
             )}

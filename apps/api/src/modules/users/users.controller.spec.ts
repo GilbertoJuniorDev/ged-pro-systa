@@ -201,13 +201,14 @@ describe('UsersController', () => {
     it('should return list of all users as UserResponseDto', async () => {
       const users = [makeUser(), makeUser({ id: 'uuid-2', email: 'other@example.com' })];
       jest.spyOn(usersService, 'findAll').mockResolvedValue(users);
+      const currentUser = makeJwtPayload();
 
-      const result = await controller.findAll();
+      const result = await controller.findAll(currentUser);
 
       expect(result).toHaveLength(2);
       expect(result[0]).not.toHaveProperty('passwordHash');
       expect(result[0].departamentoIds).toEqual([]);
-      expect(usersService.findAll).toHaveBeenCalled();
+      expect(usersService.findAll).toHaveBeenCalledWith(ROLE.ADMIN);
       expect(userDepartmentsService.findByUserIds).toHaveBeenCalledWith(['uuid-1', 'uuid-2']);
     });
   });

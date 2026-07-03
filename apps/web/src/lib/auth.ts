@@ -61,16 +61,6 @@ const config: NextAuthConfig = {
         return token;
       }
 
-      if (
-        trigger === 'update' &&
-        session &&
-        ('selectedDepartmentId' in session || 'viewMode' in session)
-      ) {
-        token.selectedDepartmentId = session.selectedDepartmentId;
-        token.viewMode = session.viewMode;
-        return token;
-      }
-
       if (trigger === 'update') {
         try {
           const meData = await apiClient.get<MeResponseDto>('/auth/me', {
@@ -82,6 +72,12 @@ const config: NextAuthConfig = {
         } catch {
           // mantém permissões existentes se a re-busca falhar
         }
+
+        if (session && ('selectedDepartmentId' in session || 'viewMode' in session)) {
+          token.selectedDepartmentId = session.selectedDepartmentId;
+          token.viewMode = session.viewMode;
+        }
+
         return token;
       }
 

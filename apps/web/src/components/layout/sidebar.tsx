@@ -37,6 +37,12 @@ function AccordionItem({ item, pathname, pendingHref, onLinkClick }: AccordionIt
     (item.children != null &&
       item.children.some((c) => pathname === c.href || pathname.startsWith(c.href + '/')));
 
+  const [isOpen, setIsOpen] = useState<boolean>(isParentActive);
+
+  useEffect(() => {
+    if (isParentActive) setIsOpen(true);
+  }, [isParentActive]);
+
   if (!item.children || item.children.length === 0) {
     const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
     const isPending = pendingHref === item.href;
@@ -68,30 +74,51 @@ function AccordionItem({ item, pathname, pendingHref, onLinkClick }: AccordionIt
 
   return (
     <div>
-      <Link
-        href={item.href}
-        onClick={() => onLinkClick(item.href)}
-        className={`flex items-center px-3 py-2.5 rounded-lg font-medium transition-all duration-200 ease-in-out ${
+      <div
+        className={`flex items-center rounded-lg font-medium transition-all duration-200 ease-in-out ${
           isParentActive
             ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400'
             : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'
         }`}
       >
-        {isPending ? (
-          <Spinner size="sm" className="mr-3 text-indigo-400" />
-        ) : (
-          <svg className="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            {item.iconPaths.map((d, i) => (
-              <path key={i} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
-            ))}
+        <Link
+          href={item.href}
+          onClick={() => onLinkClick(item.href)}
+          className="flex min-w-0 flex-1 items-center px-3 py-2.5"
+        >
+          {isPending ? (
+            <Spinner size="sm" className="mr-3 text-indigo-400" />
+          ) : (
+            <svg className="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              {item.iconPaths.map((d, i) => (
+                <path key={i} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
+              ))}
+            </svg>
+          )}
+          <span className="truncate">{item.label}</span>
+        </Link>
+        <button
+          type="button"
+          onClick={() => setIsOpen((prev) => !prev)}
+          aria-expanded={isOpen}
+          aria-label={isOpen ? `Recolher ${item.label}` : `Expandir ${item.label}`}
+          className="shrink-0 rounded-md p-2.5 pr-3 text-slate-400 transition-colors hover:text-indigo-600 dark:text-slate-500 dark:hover:text-indigo-400"
+        >
+          <svg
+            className={`h-4 w-4 transition-transform duration-200 ease-in-out ${isOpen ? 'rotate-180' : ''}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
-        )}
-        {item.label}
-      </Link>
+        </button>
+      </div>
 
       <div
         className={`grid transition-all duration-300 ease-in-out ${
-          isParentActive ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+          isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
         }`}
       >
         <div className="overflow-hidden">
@@ -234,8 +261,11 @@ export function Sidebar({
 
           {canSeeAdminNav && (
             <>
-              <div className="pt-4 pb-2 px-3 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-600">
-                Sistema
+              <div className="mt-4 flex items-center gap-2 px-3 pb-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-600">
+                  Sistema
+                </span>
+                <span className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
               </div>
               {visibleAdminNavItems.map((item) => (
                 <AccordionItem
