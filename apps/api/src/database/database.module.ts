@@ -53,7 +53,7 @@ import {
           SystemSetting,
         ],
         synchronize: false,
-        migrationsRun: true,
+        migrationsRun: false,
         logging: config.get<string>('NODE_ENV') === 'development',
         migrations: [
           join(dirname(require.resolve('@ged/database')), 'migrations', '*.js'),

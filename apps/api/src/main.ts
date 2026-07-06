@@ -6,11 +6,14 @@ import { randomUUID } from 'crypto';
 import type { NextFunction, Request, Response } from 'express';
 import { AppModule } from './app.module';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
+import { runMigrationsWithLock } from './database/run-migrations-with-lock';
 import { seedAdmin } from './database/seeds/admin.seed';
 import { seedPermissions } from './database/seeds/permissions.seed';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  await runMigrationsWithLock(app.get(DataSource));
 
   const allowedOrigins = (process.env.APP_URL ?? 'http://localhost:3000')
     .split(',')
