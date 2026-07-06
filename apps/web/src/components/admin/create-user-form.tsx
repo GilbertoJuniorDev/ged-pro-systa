@@ -4,15 +4,18 @@ import { useMemo } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { z } from 'zod';
 import { ROLE } from '@ged/types';
 import { useCreateUser } from '../../hooks/use-create-user';
 import { useModules } from '../../hooks/use-modules';
 import { usePermissionsManagement } from '../../hooks/use-permission-management';
+import { useDepartments } from '../../hooks/use-departments';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Combobox } from '@/components/ui/combobox';
 import { PasswordStrengthBar, PasswordStrengthCriteria } from '@/components/ui/password-strength';
+import { ROLE_LABELS } from '@/lib/role-labels';
 
 const pessoaFisicaSchema = z.object({
   nome: z.string().min(2, 'Nome deve ter ao menos 2 caracteres'),
@@ -27,9 +30,10 @@ const createUserSchema = z
     email: z.string().email('E-mail inválido'),
     password: z.string().min(8, 'Senha deve ter ao menos 8 caracteres'),
     confirmPassword: z.string(),
-    role: z.enum([ROLE.MANAGER, ROLE.VIEWER]),
+    role: z.enum([ROLE.ADMIN, ROLE.MANAGER, ROLE.VIEWER]),
     pessoaFisica: pessoaFisicaSchema,
     permissaoIds: z.array(z.string().uuid()),
+    departamentoIds: z.array(z.string().uuid()),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'As senhas não coincidem',
@@ -40,9 +44,21 @@ type CreateUserFormData = z.infer<typeof createUserSchema>;
 
 export function CreateUserForm() {
   const router = useRouter();
+  const { data: session } = useSession();
   const { mutateAsync, isPending } = useCreateUser();
   const { data: modulosRaw } = useModules();
   const { data: permissoesRaw } = usePermissionsManagement();
+  const { data: departamentosRaw } = useDepartments();
+
+  const actingRole = session?.user?.role;
+
+  const assignableRoles = useMemo(
+    () =>
+      actingRole === ROLE.SUPER_ADMIN
+        ? [ROLE.ADMIN, ROLE.MANAGER, ROLE.VIEWER]
+        : [ROLE.MANAGER, ROLE.VIEWER],
+    [actingRole],
+  );
 
   const modulos = useMemo(
     () => (modulosRaw ?? []).filter((m) => m.isActive).sort((a, b) => a.ordem - b.ordem),
@@ -61,6 +77,11 @@ export function CreateUserForm() {
     return map;
   }, [permissoesRaw]);
 
+  const departamentos = useMemo(
+    () => (departamentosRaw ?? []).filter((d) => d.isActive).sort((a, b) => a.nome.localeCompare(b.nome)),
+    [departamentosRaw],
+  );
+
   const {
     register,
     handleSubmit,
@@ -71,7 +92,7 @@ export function CreateUserForm() {
     formState: { errors },
   } = useForm<CreateUserFormData>({
     resolver: zodResolver(createUserSchema),
-    defaultValues: { role: ROLE.VIEWER, permissaoIds: [] },
+    defaultValues: { role: ROLE.VIEWER, permissaoIds: [], departamentoIds: [] },
   });
 
   const selectedIds = watch('permissaoIds') ?? [];
@@ -97,6 +118,8 @@ export function CreateUserForm() {
       role: data.role,
       pessoaFisica: data.pessoaFisica,
       permissaoIds: data.permissaoIds && data.permissaoIds.length > 0 ? data.permissaoIds : undefined,
+      departamentoIds:
+        data.departamentoIds && data.departamentoIds.length > 0 ? data.departamentoIds : undefined,
     });
     reset();
     router.push('/admin/users');
@@ -274,6 +297,28 @@ export function CreateUserForm() {
               <p className="mt-1.5 text-xs text-rose-400">{errors.confirmPassword.message}</p>
             )}
           </div>
+
+          <div>
+            <label htmlFor="role" className="block text-sm font-medium text-slate-300 mb-1.5">
+              Função
+            </label>
+            <Controller
+              name="role"
+              control={control}
+              render={({ field }) => (
+                <Combobox
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  placeholder="Selecionar função…"
+                  error={!!errors.role}
+                  options={assignableRoles.map((role) => ({ value: role, label: ROLE_LABELS[role] ?? role }))}
+                />
+              )}
+            />
+            {errors.role && (
+              <p className="mt-1.5 text-xs text-rose-400">{errors.role.message}</p>
+            )}
+          </div>
         </div>
       </div>
 
@@ -425,6 +470,56 @@ export function CreateUserForm() {
               <p className="text-xs text-slate-500 italic text-center py-2 col-span-full">
                 Nenhum módulo ou permissão cadastrado.
               </p>
+            )}
+          </div>
+        )}
+      />
+
+      {/* Departamentos */}
+      <div className="pt-1">
+        <hr className="border-slate-700 mb-4" />
+        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-4">
+          Departamentos <span className="text-slate-600 font-normal normal-case">(opcional)</span>
+        </p>
+      </div>
+
+      <Controller
+        control={control}
+        name="departamentoIds"
+        render={({ field }) => (
+          <div className="rounded-lg border border-slate-700 bg-slate-800/50 overflow-hidden">
+            {departamentos.length === 0 ? (
+              <p className="text-xs text-slate-500 italic text-center py-4">
+                Nenhum departamento cadastrado.
+              </p>
+            ) : (
+              <div className="px-4 py-3 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2">
+                {departamentos.map((departamento) => {
+                  const isChecked = (field.value ?? []).includes(departamento.id);
+                  return (
+                    <label
+                      key={departamento.id}
+                      className="flex items-start gap-3 cursor-pointer group"
+                    >
+                      <Checkbox
+                        className="mt-0.5"
+                        checked={isChecked}
+                        onChange={(e) => {
+                          const current = field.value ?? [];
+                          if (e.target.checked) {
+                            field.onChange([...current, departamento.id]);
+                          } else {
+                            field.onChange(current.filter((id) => id !== departamento.id));
+                          }
+                        }}
+                      />
+                      <span className="text-sm text-slate-300 group-hover:text-slate-100 transition-colors leading-tight">
+                        {departamento.nome}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
             )}
           </div>
         )}

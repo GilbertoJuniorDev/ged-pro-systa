@@ -19,6 +19,9 @@ interface SidebarProps {
   };
   readonly isOpen: boolean;
   readonly onClose: () => void;
+  readonly viewMode?: 'department' | 'admin' | null;
+  readonly selectedDepartmentId?: string | null;
+  readonly departamentos?: readonly { id: string; nome: string }[];
 }
 
 interface AccordionItemProps {
@@ -33,6 +36,12 @@ function AccordionItem({ item, pathname, pendingHref, onLinkClick }: AccordionIt
     pathname === item.href ||
     (item.children != null &&
       item.children.some((c) => pathname === c.href || pathname.startsWith(c.href + '/')));
+
+  const [isOpen, setIsOpen] = useState<boolean>(isParentActive);
+
+  useEffect(() => {
+    if (isParentActive) setIsOpen(true);
+  }, [isParentActive]);
 
   if (!item.children || item.children.length === 0) {
     const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
@@ -65,30 +74,51 @@ function AccordionItem({ item, pathname, pendingHref, onLinkClick }: AccordionIt
 
   return (
     <div>
-      <Link
-        href={item.href}
-        onClick={() => onLinkClick(item.href)}
-        className={`flex items-center px-3 py-2.5 rounded-lg font-medium transition-all duration-200 ease-in-out ${
+      <div
+        className={`flex items-center rounded-lg font-medium transition-all duration-200 ease-in-out ${
           isParentActive
             ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400'
             : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'
         }`}
       >
-        {isPending ? (
-          <Spinner size="sm" className="mr-3 text-indigo-400" />
-        ) : (
-          <svg className="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            {item.iconPaths.map((d, i) => (
-              <path key={i} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
-            ))}
+        <Link
+          href={item.href}
+          onClick={() => onLinkClick(item.href)}
+          className="flex min-w-0 flex-1 items-center px-3 py-2.5"
+        >
+          {isPending ? (
+            <Spinner size="sm" className="mr-3 text-indigo-400" />
+          ) : (
+            <svg className="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              {item.iconPaths.map((d, i) => (
+                <path key={i} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
+              ))}
+            </svg>
+          )}
+          <span className="truncate">{item.label}</span>
+        </Link>
+        <button
+          type="button"
+          onClick={() => setIsOpen((prev) => !prev)}
+          aria-expanded={isOpen}
+          aria-label={isOpen ? `Recolher ${item.label}` : `Expandir ${item.label}`}
+          className="shrink-0 rounded-md p-2.5 pr-3 text-slate-400 transition-colors hover:text-indigo-600 dark:text-slate-500 dark:hover:text-indigo-400"
+        >
+          <svg
+            className={`h-4 w-4 transition-transform duration-200 ease-in-out ${isOpen ? 'rotate-180' : ''}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
-        )}
-        {item.label}
-      </Link>
+        </button>
+      </div>
 
       <div
         className={`grid transition-all duration-300 ease-in-out ${
-          isParentActive ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+          isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
         }`}
       >
         <div className="overflow-hidden">
@@ -127,16 +157,38 @@ function AccordionItem({ item, pathname, pendingHref, onLinkClick }: AccordionIt
   );
 }
 
-export function Sidebar({ user, isOpen, onClose }: SidebarProps) {
+function matchesRequiredRole(requiredRole: NavItem['requiredRole'], role?: string): boolean {
+  if (requiredRole == null) return true;
+  const allowedRoles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
+  return allowedRoles.some((allowedRole) => allowedRole === role);
+}
+
+export function Sidebar({
+  user,
+  isOpen,
+  onClose,
+  viewMode,
+  selectedDepartmentId,
+  departamentos,
+}: SidebarProps) {
   const [pendingHref, setPendingHref] = useState<string | null>(null);
   const pathname = usePathname();
   const { startNavigation } = useNavigation();
   const { hasModuleAccess } = usePermissions();
-  const isAdmin = user.role === 'ADMIN';
+  const canSeeAdminNav = user.role === 'ADMIN' || user.role === 'SUPER_ADMIN';
 
   const visibleNavItems = NAV_ITEMS.filter(
     (item) => item.moduloSlug == null || hasModuleAccess(item.moduloSlug),
   );
+
+  const visibleAdminNavItems = ADMIN_NAV_ITEMS.filter((item) =>
+    matchesRequiredRole(item.requiredRole, user.role),
+  ).map((item) => ({
+    ...item,
+    children: item.children?.filter((child) => matchesRequiredRole(child.requiredRole, user.role)),
+  }));
+
+  const currentDepartmentName = departamentos?.find((d) => d.id === selectedDepartmentId)?.nome;
 
   useEffect(() => {
     setPendingHref(null);
@@ -172,46 +224,50 @@ export function Sidebar({ user, isOpen, onClose }: SidebarProps) {
         </div>
 
         <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1 scrollbar-none">
-          {visibleNavItems.map((item) => {
-            const isActive = pathname === item.href;
-            const isPendingItem = pendingHref === item.href;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => handleLinkClick(item.href)}
-                className={`flex items-center px-3 py-2.5 rounded-lg font-medium transition-all duration-200 ease-in-out ${
-                  isActive
-                    ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400'
-                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'
-                }`}
-              >
-                {isPendingItem ? (
-                  <Spinner size="sm" className="mr-3 text-indigo-400" />
-                ) : (
-                  <svg
-                    className="w-5 h-5 mr-3"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                  >
-                    {item.iconPaths.map((d, i) => (
-                      <path key={i} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
-                    ))}
-                  </svg>
-                )}
-                {item.label}
-              </Link>
-            );
-          })}
+          {viewMode !== 'admin' &&
+            visibleNavItems.map((item) => {
+              const isActive = pathname === item.href;
+              const isPendingItem = pendingHref === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => handleLinkClick(item.href)}
+                  className={`flex items-center px-3 py-2.5 rounded-lg font-medium transition-all duration-200 ease-in-out ${
+                    isActive
+                      ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400'
+                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'
+                  }`}
+                >
+                  {isPendingItem ? (
+                    <Spinner size="sm" className="mr-3 text-indigo-400" />
+                  ) : (
+                    <svg
+                      className="w-5 h-5 mr-3"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                    >
+                      {item.iconPaths.map((d, i) => (
+                        <path key={i} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
+                      ))}
+                    </svg>
+                  )}
+                  {item.label}
+                </Link>
+              );
+            })}
 
-          {isAdmin && (
+          {canSeeAdminNav && (
             <>
-              <div className="pt-4 pb-2 px-3 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-600">
-                Sistema
+              <div className="mt-4 flex items-center gap-2 px-3 pb-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-600">
+                  Sistema
+                </span>
+                <span className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
               </div>
-              {ADMIN_NAV_ITEMS.map((item) => (
+              {visibleAdminNavItems.map((item) => (
                 <AccordionItem
                   key={item.href}
                   item={item}
@@ -228,7 +284,37 @@ export function Sidebar({ user, isOpen, onClose }: SidebarProps) {
           <div className="flex justify-end px-1">
             <ThemeToggle />
           </div>
-          <UserMenu user={user} />
+          {(currentDepartmentName != null || viewMode === 'admin') && (
+            <div className="flex items-center gap-1.5 px-2 text-[11px] text-slate-500 dark:text-slate-500">
+              <svg
+                className="h-3 w-3 shrink-0 opacity-70"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                {viewMode === 'admin' ? (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                  />
+                ) : (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2M19 21H5m0 0H3m8-14h.01M11 11h.01M11 15h.01M7 11h.01M7 15h.01M15 11h.01M15 15h.01"
+                  />
+                )}
+              </svg>
+              <span className="truncate">
+                {viewMode === 'admin' ? 'Visualização Admin' : currentDepartmentName}
+              </span>
+            </div>
+          )}
+          <UserMenu user={user} departamentos={departamentos} />
         </div>
       </aside>
 

@@ -5,6 +5,8 @@ applyTo: "apps/api/**"
 
 # Backend — NestJS (apps/api/)
 
+> ⚠️ **Fonte canônica: [`AGENTS.md`](../../AGENTS.md) e [`apps/api/CLAUDE.md`](../../apps/api/CLAUDE.md).** As seções CQRS, Adapter de Storage, Domain Events e o módulo `documents` abaixo são **arquitetura-alvo, ainda não implementada**. Em conflito, vale o código.
+
 ## Camadas da Clean Architecture
 
 ```

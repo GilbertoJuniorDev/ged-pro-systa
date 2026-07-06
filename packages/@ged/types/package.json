@@ -10,10 +10,10 @@
     "lint": "eslint \"src/**/*.ts\"",
     "clean": "rm -rf dist"
   },
-  "dependencies": {
-    "@ged/database": "workspace:*"
-  },
+  "dependencies": {},
   "devDependencies": {
+    "@ged/config": "workspace:*",
+    "eslint": "^9.0.0",
     "typescript": "^5.5.0"
   }
 }

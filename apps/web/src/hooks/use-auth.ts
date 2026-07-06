@@ -11,6 +11,9 @@ interface AuthSessionUser {
   sub?: string;
   accessToken?: string;
   role?: Role;
+  departamentos?: { id: string; nome: string }[];
+  selectedDepartmentId?: string | null;
+  viewMode?: 'department' | 'admin' | null;
 }
 
 export function useAuth() {

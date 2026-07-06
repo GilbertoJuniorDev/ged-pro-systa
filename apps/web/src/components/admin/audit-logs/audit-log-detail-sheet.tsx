@@ -90,8 +90,8 @@ export function AuditLogDetailSheet({ log, onClose }: Props) {
     return () => window.removeEventListener('keydown', onKey);
   }, [isOpen, onClose]);
 
-  const hasDiff = log !== null && (log.dadosAnteriores !== null || log.dadosNovos !== null);
-  const diff = hasDiff ? buildDiff(log!.dadosAnteriores, log!.dadosNovos) : [];
+  const diff = log !== null ? buildDiff(log.dadosAnteriores, log.dadosNovos) : [];
+  const hasDiff = diff.length > 0;
   const changedCount = diff.filter((d) => d.kind !== 'unchanged').length;
 
   return (

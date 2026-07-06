@@ -1,9 +1,8 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { ExecutionContext, ForbiddenException } from '@nestjs/common';
+import { Test, type TestingModule } from '@nestjs/testing';
+import { type ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { PermissionsGuard, USER_PERMISSIONS_SERVICE } from './permissions.guard';
 import type { IPermissionChecker } from './permissions.guard';
-import { PERMISSIONS_KEY } from '../decorators/permissions.decorator';
 import { ROLE } from '@ged/database';
 import type { JwtPayload } from '@ged/types';
 
@@ -51,12 +50,21 @@ describe('PermissionsGuard', () => {
     expect(mockChecker.hasPermission).not.toHaveBeenCalled();
   });
 
-  it('should return true for ADMIN regardless of permissions', async () => {
+  it('should return true for SUPER_ADMIN regardless of permissions', async () => {
     reflector.getAllAndOverride.mockReturnValue(['documents:delete']);
-    const ctx = makeContext({ sub: 'admin-1', role: ROLE.ADMIN, email: 'a@b.com' });
+    const ctx = makeContext({ sub: 'super-admin-1', role: ROLE.SUPER_ADMIN, email: 'a@b.com' });
 
     await expect(guard.canActivate(ctx)).resolves.toBe(true);
     expect(mockChecker.hasPermission).not.toHaveBeenCalled();
+  });
+
+  it('should NOT bypass for ADMIN and should go through hasPermission check', async () => {
+    reflector.getAllAndOverride.mockReturnValue(['documents:delete']);
+    mockChecker.hasPermission.mockResolvedValue(true);
+    const ctx = makeContext({ sub: 'admin-1', role: ROLE.ADMIN, email: 'a@b.com' });
+
+    await expect(guard.canActivate(ctx)).resolves.toBe(true);
+    expect(mockChecker.hasPermission).toHaveBeenCalledTimes(1);
   });
 
   it('should return true when VIEWER has all required permissions', async () => {

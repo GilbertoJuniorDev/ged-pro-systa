@@ -29,6 +29,8 @@ function makeAuditLog(overrides: Partial<AuditLogDto> = {}): AuditLogDto {
     entidadeId: 'doc-uuid-1',
     ipCliente: '127.0.0.1',
     userAgent: 'Mozilla/5.0',
+    dadosAnteriores: null,
+    dadosNovos: null,
     createdAt: '2026-01-01T00:00:00.000Z',
     ...overrides,
   };

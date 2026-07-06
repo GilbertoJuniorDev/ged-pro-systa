@@ -11,9 +11,10 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import type { Request } from 'express';
+import { ROLE } from '@ged/database';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { PermissionsGuard } from '../../common/guards/permissions.guard';
-import { Permissions } from '../../common/decorators/permissions.decorator';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
 import { Public } from '../../common/decorators/public.decorator';
 import { ErrorLogsService } from './error-logs.service';
 import { QueryErrorLogDto } from './dto/query-error-log.dto';
@@ -53,8 +54,8 @@ export class ErrorLogsController {
   constructor(private readonly errorLogsService: ErrorLogsService) {}
 
   @Get()
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @Permissions('LOGS_VIEW')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(ROLE.SUPER_ADMIN)
   async findAll(
     @Query() query: QueryErrorLogDto,
   ): Promise<PaginatedErrorLogResponseDto> {

@@ -13,6 +13,10 @@ import { AuthController } from '@/modules/auth/auth.controller';
 import { JwtStrategy } from '@/modules/auth/strategies/jwt.strategy';
 import { UsersService, USER_REPOSITORY } from '@/modules/users/users.service';
 import { MailService } from '@/modules/mail/mail.service';
+import { UserPermissionsService } from '@/modules/user-permissions/user-permissions.service';
+import { AuditLogsService } from '@/modules/audit-logs/audit-logs.service';
+import { DepartmentsService } from '@/modules/departments/departments.service';
+import { UserDepartmentsService } from '@/modules/user-departments/user-departments.service';
 import { TransformInterceptor } from '@/common/interceptors/transform.interceptor';
 import { HttpExceptionFilter } from '@/common/filters/http-exception.filter';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
@@ -53,6 +57,10 @@ describe('AuthController (integration)', () => {
     delete: jest.Mock;
   };
   let mockMailService: jest.Mocked<Pick<MailService, 'sendPasswordReset'>>;
+  let mockUserPermissionsService: jest.Mocked<Pick<UserPermissionsService, 'findByUserId'>>;
+  let mockAuditLogsService: jest.Mocked<Pick<AuditLogsService, 'log'>>;
+  let mockDepartmentsService: jest.Mocked<Pick<DepartmentsService, 'findAllActive'>>;
+  let mockUserDepartmentsService: jest.Mocked<Pick<UserDepartmentsService, 'findByUserId'>>;
   let jwtService: JwtService;
 
   beforeAll(async () => {
@@ -81,6 +89,22 @@ describe('AuthController (integration)', () => {
       sendPasswordReset: jest.fn().mockResolvedValue(undefined),
     };
 
+    mockUserPermissionsService = {
+      findByUserId: jest.fn().mockResolvedValue([]),
+    };
+
+    mockAuditLogsService = {
+      log: jest.fn().mockResolvedValue(undefined),
+    };
+
+    mockDepartmentsService = {
+      findAllActive: jest.fn().mockResolvedValue([]),
+    };
+
+    mockUserDepartmentsService = {
+      findByUserId: jest.fn().mockResolvedValue([]),
+    };
+
     const moduleRef: TestingModule = await Test.createTestingModule({
       imports: [
         ConfigModule.forRoot({
@@ -107,6 +131,10 @@ describe('AuthController (integration)', () => {
         { provide: getRepositoryToken(RefreshToken), useValue: mockRefreshTokenRepo },
         { provide: getRepositoryToken(PasswordResetToken), useValue: mockPasswordResetTokenRepo },
         { provide: MailService, useValue: mockMailService },
+        { provide: UserPermissionsService, useValue: mockUserPermissionsService },
+        { provide: AuditLogsService, useValue: mockAuditLogsService },
+        { provide: DepartmentsService, useValue: mockDepartmentsService },
+        { provide: UserDepartmentsService, useValue: mockUserDepartmentsService },
         { provide: APP_GUARD, useClass: JwtAuthGuard },
         Reflector,
       ],

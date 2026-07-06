@@ -3,6 +3,13 @@ import { NextResponse } from 'next/server';
 
 const PUBLIC_ROUTES = ['/login', '/reset-password'];
 const ADMIN_ROUTES_PREFIX = '/admin';
+const SUPER_ADMIN_ROUTES_PREFIX = [
+  '/admin/modulos',
+  '/admin/permissoes',
+  '/admin/audit-logs',
+  '/admin/assinatura',
+  '/admin/logs',
+];
 
 /**
  * Mapeamento de prefixo de rota → slug do módulo exigido.
@@ -29,7 +36,14 @@ export default auth((req) => {
 
   if (session && nextUrl.pathname.startsWith(ADMIN_ROUTES_PREFIX)) {
     const role = (session.user as { role?: string } | undefined)?.role;
-    if (role !== 'ADMIN') {
+    if (role !== 'ADMIN' && role !== 'SUPER_ADMIN') {
+      return NextResponse.redirect(new URL('/', nextUrl));
+    }
+  }
+
+  if (session && SUPER_ADMIN_ROUTES_PREFIX.some((prefix) => nextUrl.pathname === prefix || nextUrl.pathname.startsWith(prefix + '/'))) {
+    const role = (session.user as { role?: string } | undefined)?.role;
+    if (role !== 'SUPER_ADMIN') {
       return NextResponse.redirect(new URL('/', nextUrl));
     }
   }
@@ -42,7 +56,12 @@ export default auth((req) => {
       nextUrl.pathname === prefix || nextUrl.pathname.startsWith(prefix + '/'),
     )?.[1];
 
-    if (requiredModulo && role !== 'ADMIN' && !modulos.includes(requiredModulo)) {
+    if (
+      requiredModulo &&
+      role !== 'ADMIN' &&
+      role !== 'SUPER_ADMIN' &&
+      !modulos.includes(requiredModulo)
+    ) {
       return NextResponse.redirect(new URL('/', nextUrl));
     }
   }

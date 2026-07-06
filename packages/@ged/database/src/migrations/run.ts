@@ -17,6 +17,10 @@ import { AddCompanyRelationsAndCnae1746700000000 } from './1746700000000-AddComp
 import { CreateSubscriptionPaymentsTable1747000000000 } from './1747000000000-CreateSubscriptionPaymentsTable';
 import { CreateSystemSettingsTable1747200000000 } from './1747200000000-CreateSystemSettingsTable';
 import { AddDiffColumnsToAuditLogs1748200000000 } from './1748200000000-AddDiffColumnsToAuditLogs';
+import { CreateDepartmentsTable1782950400000 } from './1782950400000-CreateDepartmentsTable';
+import { CreateUserDepartmentsTable1782950400001 } from './1782950400001-CreateUserDepartmentsTable';
+import { AddSuperAdminToUsersRoleEnum1782950400002 } from './1782950400002-AddSuperAdminToUsersRoleEnum';
+import { UpgradeSeedAdminToSuperAdmin1782950400003 } from './1782950400003-UpgradeSeedAdminToSuperAdmin';
 const DATABASE_URL = process.env['DATABASE_URL'];
 
 if (!DATABASE_URL) {
@@ -46,7 +50,10 @@ const dataSource = new DataSource({
     CreateSubscriptionPaymentsTable1747000000000,
     CreateSystemSettingsTable1747200000000,
     AddDiffColumnsToAuditLogs1748200000000,
-  
+    CreateDepartmentsTable1782950400000,
+    CreateUserDepartmentsTable1782950400001,
+    AddSuperAdminToUsersRoleEnum1782950400002,
+    UpgradeSeedAdminToSuperAdmin1782950400003,
   ],
   migrationsTableName: 'migrations',
 });

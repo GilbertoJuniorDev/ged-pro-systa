@@ -2,7 +2,9 @@ import { renderHook } from '@testing-library/react';
 import { useSession } from 'next-auth/react';
 import { usePermissions } from './use-permissions';
 
-jest.mock('next-auth/react');
+jest.mock('next-auth/react', () => ({
+  useSession: jest.fn(),
+}));
 
 const mockedUseSession = useSession as jest.Mock;
 
@@ -98,6 +100,20 @@ describe('usePermissions', () => {
     const { result } = renderHook(() => usePermissions());
 
     expect(result.current.hasModuleAccess('documentos')).toBe(true);
+    expect(result.current.hasModuleAccess('qualquer-modulo')).toBe(true);
+  });
+
+  it('should return true for hasPermission and hasModuleAccess when role is SUPER_ADMIN (bypass)', () => {
+    mockedUseSession.mockReturnValue({
+      data: {
+        user: { role: 'SUPER_ADMIN', permissoes: [], modulos: [] },
+      },
+      status: 'authenticated',
+    });
+
+    const { result } = renderHook(() => usePermissions());
+
+    expect(result.current.hasPermission('QUALQUER_PERMISSAO')).toBe(true);
     expect(result.current.hasModuleAccess('qualquer-modulo')).toBe(true);
   });
 

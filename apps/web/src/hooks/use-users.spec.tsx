@@ -39,6 +39,7 @@ function makeUserDto(overrides: Partial<UserDto> = {}): UserDto {
     role: 'VIEWER',
     isActive: true,
     createdAt: '2026-01-01T00:00:00.000Z',
+    departamentoIds: [],
     ...overrides,
   };
 }

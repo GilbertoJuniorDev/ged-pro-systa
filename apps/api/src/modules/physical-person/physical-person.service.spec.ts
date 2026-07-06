@@ -1,4 +1,4 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test, type TestingModule } from '@nestjs/testing';
 import { ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import {
   PhysicalPersonService,
@@ -9,7 +9,7 @@ import {
 import type { IPhysicalPersonRepository } from './interfaces/physical-person-repository.interface';
 import type { IAddressRepository } from './interfaces/address-repository.interface';
 import type { IPhoneRepository } from './interfaces/phone-repository.interface';
-import type { Address, PhysicalPerson, Phone } from '@ged/database';
+import type { Address, PhysicalPerson } from '@ged/database';
 
 const mockPf = (overrides: Partial<PhysicalPerson> = {}): PhysicalPerson =>
   ({

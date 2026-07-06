@@ -37,6 +37,7 @@ const config: NextAuthConfig = {
             expiresIn: response.expiresIn,
             permissoes: meData.permissoes,
             modulos: meData.modulos,
+            departamentos: meData.departamentos as { id: string; nome: string }[],
           } satisfies AuthUser;
         } catch (error: unknown) {
           const message = error instanceof Error ? error.message : String(error);
@@ -47,7 +48,7 @@ const config: NextAuthConfig = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user, trigger }) {
+    async jwt({ token, user, trigger, session }) {
       if (trigger === 'signIn' && user) {
         const authUser = user as AuthUser;
         token.accessToken = authUser.accessToken;
@@ -55,6 +56,7 @@ const config: NextAuthConfig = {
         token.role = authUser.role;
         token.permissoes = authUser.permissoes;
         token.modulos = authUser.modulos;
+        token.departamentos = authUser.departamentos;
         token.expiresAt = Date.now() + authUser.expiresIn * 1000;
         return token;
       }
@@ -66,9 +68,16 @@ const config: NextAuthConfig = {
           });
           token.permissoes = meData.permissoes;
           token.modulos = meData.modulos;
+          token.departamentos = meData.departamentos;
         } catch {
           // mantém permissões existentes se a re-busca falhar
         }
+
+        if (session && ('selectedDepartmentId' in session || 'viewMode' in session)) {
+          token.selectedDepartmentId = session.selectedDepartmentId;
+          token.viewMode = session.viewMode;
+        }
+
         return token;
       }
 
@@ -100,6 +109,9 @@ const config: NextAuthConfig = {
         role: token.role as string,
         permissoes: (token.permissoes ?? []) as string[],
         modulos: (token.modulos ?? []) as string[],
+        departamentos: (token.departamentos ?? []) as { id: string; nome: string }[],
+        selectedDepartmentId: token.selectedDepartmentId as string | null | undefined,
+        viewMode: token.viewMode as 'department' | 'admin' | null | undefined,
       };
       return session;
     },

@@ -26,7 +26,7 @@ export default async function RootLayout({
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <body className={inter.className}>
-        <SessionProvider session={session}>
+        <SessionProvider session={session} refetchOnWindowFocus={false}>
           <ThemeProvider>
             <QueryProvider>
               <NavigationProvider>{children}</NavigationProvider>

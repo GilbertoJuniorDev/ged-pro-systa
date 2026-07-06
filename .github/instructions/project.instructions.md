@@ -4,6 +4,8 @@ description: "Visão geral da arquitetura do GED Pro e índice para instruções
 
 # GED Pro — Índice de Instruções
 
+> ⚠️ **Fonte canônica: [`AGENTS.md`](../../AGENTS.md).** O bloco histórico ao final (arquitetura completa) é **aspiracional** — descreve Next 16.2, CQRS, storage adapters e `enum` nativo que **não existem** no código. Para a realidade, use `AGENTS.md` e os `CLAUDE.md` de cada pacote.
+
 > Este arquivo é o ponto de entrada. Para guias detalhados, consulte as instruções especializadas abaixo.
 
 ## Instruções Especializadas (.instructions.md)

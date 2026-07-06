@@ -22,7 +22,7 @@ function DeleteConfirm({ modulo, onConfirm, onCancel, isPending }: DeleteConfirm
       <div className="bg-slate-900 border border-slate-700 rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6">
         <p className="text-slate-100 font-semibold mb-1">Remover módulo?</p>
         <p className="text-slate-400 text-sm mb-6">
-          O módulo <span className="text-slate-200 font-medium">"{modulo.nome}"</span> será removido.
+          O módulo <span className="text-slate-200 font-medium">&quot;{modulo.nome}&quot;</span> será removido.
           As permissões associadas perderão o vínculo com este módulo.
         </p>
         <div className="flex gap-3 justify-end">

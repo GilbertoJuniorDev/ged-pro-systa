@@ -1,6 +1,8 @@
-import { IsIn, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsArray, IsIn, IsOptional, IsString, IsUUID, MinLength } from 'class-validator';
 import { ROLE } from '@ged/database';
 import type { Role } from '@ged/types';
+
+const ALLOWED_ROLES = [ROLE.ADMIN, ROLE.MANAGER, ROLE.VIEWER] as const;
 
 export class UpdateUserDto {
   @IsOptional()
@@ -9,6 +11,11 @@ export class UpdateUserDto {
   readonly name?: string;
 
   @IsOptional()
-  @IsIn([ROLE.MANAGER, ROLE.VIEWER])
+  @IsIn(ALLOWED_ROLES)
   readonly role?: Role;
+
+  @IsOptional()
+  @IsArray()
+  @IsUUID('4', { each: true })
+  readonly departamentoIds?: string[];
 }

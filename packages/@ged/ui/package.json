@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc",
     "type-check": "tsc --noEmit",
-    "lint": "eslint \"src/**/*.tsx\" \"src/**/*.ts\"",
+    "lint": "eslint --no-error-on-unmatched-pattern \"src/**/*.tsx\" \"src/**/*.ts\"",
     "clean": "rm -rf dist"
   },
   "peerDependencies": {
@@ -20,9 +20,11 @@
     "lucide-react": "^0.400.0"
   },
   "devDependencies": {
+    "@ged/config": "workspace:*",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "typescript": "^5.5.0",
-    "tailwindcss": "^4.0.0"
+    "eslint": "^9.0.0",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.5.0"
   }
 }

@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { signOut } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 interface UserMenuProps {
   readonly user: {
@@ -9,6 +10,7 @@ interface UserMenuProps {
     readonly email?: string | null;
     readonly role?: string;
   };
+  readonly departamentos?: readonly { id: string; nome: string }[];
 }
 
 function getInitials(name?: string | null): string {
@@ -21,9 +23,19 @@ function getInitials(name?: string | null): string {
     .join('');
 }
 
-export function UserMenu({ user }: UserMenuProps) {
+export function UserMenu({ user, departamentos }: UserMenuProps) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { update } = useSession();
+  const router = useRouter();
+  const canSwitchDepartment =
+    (departamentos?.length ?? 0) > 0 || user.role === 'SUPER_ADMIN' || user.role === 'ADMIN';
+
+  async function handleSwitchDepartment() {
+    setIsOpen(false);
+    await update({ selectedDepartmentId: null, viewMode: null });
+    router.push('/selecionar-departamento');
+  }
 
   useEffect(() => {
     function handleMouseDown(event: MouseEvent) {
@@ -73,6 +85,24 @@ export function UserMenu({ user }: UserMenuProps) {
             <p className="text-sm font-medium text-slate-900 dark:text-slate-200">{user.name}</p>
             <p className="text-xs text-slate-500">{user.email}</p>
           </div>
+          {canSwitchDepartment && (
+            <button
+              role="menuitem"
+              type="button"
+              onClick={handleSwitchDepartment}
+              className="mt-1 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700"
+            >
+              <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 7h12m0 0l-4-4m4 4l-4 4M16 17H4m0 0l4 4m-4-4l4-4"
+                />
+              </svg>
+              Trocar Departamento
+            </button>
+          )}
           <button
             role="menuitem"
             type="button"

@@ -1,5 +1,6 @@
 import { Test } from '@nestjs/testing';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { ROLE } from '@ged/database';
 import { UsersService, USER_REPOSITORY } from './users.service';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
 import type { IUserRepository, CreateUserData } from './interfaces/user-repository.interface';
@@ -94,14 +95,32 @@ describe('UsersService', () => {
   });
 
   describe('findAll', () => {
-    it('should return all users', async () => {
-      const users = [makeUser(), makeUser({ id: 'user-uuid-2', email: 'other@ged.local' })];
+    it('should return all users when caller is SUPER_ADMIN', async () => {
+      const users = [
+        makeUser(),
+        makeUser({ id: 'user-uuid-2', email: 'other@ged.local' }),
+        makeUser({ id: 'user-uuid-3', email: 'super@ged.local', role: ROLE.SUPER_ADMIN }),
+      ];
       mockRepository.findAll.mockResolvedValue(users);
 
-      const result = await service.findAll();
+      const result = await service.findAll(ROLE.SUPER_ADMIN);
+
+      expect(result).toHaveLength(3);
+      expect(mockRepository.findAll).toHaveBeenCalled();
+    });
+
+    it('should filter out SUPER_ADMIN users when caller is not SUPER_ADMIN', async () => {
+      const users = [
+        makeUser(),
+        makeUser({ id: 'user-uuid-2', email: 'other@ged.local' }),
+        makeUser({ id: 'user-uuid-3', email: 'super@ged.local', role: ROLE.SUPER_ADMIN }),
+      ];
+      mockRepository.findAll.mockResolvedValue(users);
+
+      const result = await service.findAll(ROLE.ADMIN);
 
       expect(result).toHaveLength(2);
-      expect(mockRepository.findAll).toHaveBeenCalled();
+      expect(result.some((user) => user.role === ROLE.SUPER_ADMIN)).toBe(false);
     });
   });
 
@@ -182,6 +201,15 @@ describe('UsersService', () => {
       await expect(service.remove('nonexistent', 'admin-uuid')).rejects.toThrow(NotFoundException);
       expect(mockRepository.remove).not.toHaveBeenCalled();
     });
+
+    it('should throw BadRequestException when removing a SUPER_ADMIN target', async () => {
+      mockRepository.findById.mockResolvedValue(makeUser({ role: ROLE.SUPER_ADMIN }));
+
+      await expect(service.remove('super-admin-uuid', 'admin-uuid')).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(mockRepository.remove).not.toHaveBeenCalled();
+    });
   });
 
   describe('setActive', () => {
@@ -208,6 +236,15 @@ describe('UsersService', () => {
 
       await expect(service.setActive('nonexistent', false, 'admin-uuid')).rejects.toThrow(
         NotFoundException,
+      );
+      expect(mockRepository.setActive).not.toHaveBeenCalled();
+    });
+
+    it('should throw BadRequestException when deactivating a SUPER_ADMIN target', async () => {
+      mockRepository.findById.mockResolvedValue(makeUser({ role: ROLE.SUPER_ADMIN }));
+
+      await expect(service.setActive('super-admin-uuid', false, 'admin-uuid')).rejects.toThrow(
+        BadRequestException,
       );
       expect(mockRepository.setActive).not.toHaveBeenCalled();
     });

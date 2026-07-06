@@ -1,11 +1,11 @@
-import { Reflector } from '@nestjs/core';
-import { ExecutionContext } from '@nestjs/common';
+import { type Reflector } from '@nestjs/core';
+import { type ExecutionContext } from '@nestjs/common';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 
 function makeExecutionContext(
-  handlerMetadata: boolean | undefined,
-  classMetadata: boolean | undefined,
+  _handlerMetadata: boolean | undefined,
+  _classMetadata: boolean | undefined,
 ): ExecutionContext {
   return {
     getHandler: () => ({ name: 'testHandler' }),

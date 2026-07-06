@@ -1,17 +1,23 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 import { ROLE } from '@ged/types';
 import type { UserDto } from '@/types';
 import { useUpdateUser } from '@/hooks/use-users';
+import { useDepartments } from '@/hooks/use-departments';
 import { Combobox } from '@/components/ui/combobox';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ROLE_LABELS } from '@/lib/role-labels';
 
 const editUserSchema = z.object({
   name: z.string().min(2, 'Nome deve ter ao menos 2 caracteres'),
-  role: z.enum([ROLE.MANAGER, ROLE.VIEWER]),
+  role: z.enum([ROLE.ADMIN, ROLE.MANAGER, ROLE.VIEWER]).optional(),
+  departamentoIds: z.array(z.string().uuid()),
 });
 
 type EditUserFormData = z.infer<typeof editUserSchema>;
@@ -22,7 +28,27 @@ interface EditUserDialogProps {
 }
 
 export function EditUserDialog({ user, onClose }: EditUserDialogProps) {
+  const { data: session, update } = useSession();
   const { mutateAsync, isPending } = useUpdateUser();
+  const { data: departamentosRaw } = useDepartments();
+  const router = useRouter();
+
+  const actingRole = session?.user?.role;
+
+  const assignableRoles = useMemo(
+    () =>
+      actingRole === ROLE.SUPER_ADMIN
+        ? [ROLE.ADMIN, ROLE.MANAGER, ROLE.VIEWER]
+        : [ROLE.MANAGER, ROLE.VIEWER],
+    [actingRole],
+  );
+
+  const departamentos = useMemo(
+    () => (departamentosRaw ?? []).filter((d) => d.isActive).sort((a, b) => a.nome.localeCompare(b.nome)),
+    [departamentosRaw],
+  );
+
+  const canEditRole = (assignableRoles as readonly string[]).includes(user.role);
 
   const {
     register,
@@ -34,19 +60,36 @@ export function EditUserDialog({ user, onClose }: EditUserDialogProps) {
     resolver: zodResolver(editUserSchema),
     defaultValues: {
       name: user.name,
-      role: user.role === ROLE.ADMIN ? ROLE.MANAGER : (user.role as 'MANAGER' | 'VIEWER'),
+      role: canEditRole ? (user.role as EditUserFormData['role']) : undefined,
+      departamentoIds: [...user.departamentoIds],
     },
   });
 
   useEffect(() => {
     reset({
       name: user.name,
-      role: user.role === ROLE.ADMIN ? ROLE.MANAGER : (user.role as 'MANAGER' | 'VIEWER'),
+      role: canEditRole ? (user.role as EditUserFormData['role']) : undefined,
+      departamentoIds: [...user.departamentoIds],
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, reset]);
 
   const onSubmit = async (data: EditUserFormData) => {
-    await mutateAsync({ id: user.id, payload: data });
+    await mutateAsync({
+      id: user.id,
+      payload: {
+        name: data.name,
+        ...(canEditRole ? { role: data.role } : {}),
+        departamentoIds: data.departamentoIds,
+      },
+    });
+
+    const currentUserId = (session?.user as { sub?: string } | undefined)?.sub;
+    if (currentUserId === user.id) {
+      await update();
+      router.refresh();
+    }
+
     onClose();
   };
 
@@ -57,7 +100,7 @@ export function EditUserDialog({ user, onClose }: EditUserDialogProps) {
       aria-modal="true"
       aria-labelledby="edit-user-dialog-title"
     >
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl shadow-xl w-full max-w-md mx-4 p-6">
+      <div className="bg-slate-900 border border-slate-700 rounded-2xl shadow-xl w-full max-w-md mx-4 p-6 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 id="edit-user-dialog-title" className="text-lg font-semibold text-slate-100">
@@ -98,25 +141,75 @@ export function EditUserDialog({ user, onClose }: EditUserDialogProps) {
             <label htmlFor="edit-role" className="block text-sm font-medium text-slate-300 mb-1.5">
               Função
             </label>
-            <Controller
-              name="role"
-              control={control}
-              render={({ field }) => (
-                <Combobox
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  placeholder="Selecionar função…"
-                  error={!!errors.role}
-                  options={[
-                    { value: ROLE.VIEWER, label: 'Visualizador' },
-                    { value: ROLE.MANAGER, label: 'Gerente' },
-                  ]}
-                />
-              )}
-            />
+            {canEditRole ? (
+              <Controller
+                name="role"
+                control={control}
+                render={({ field }) => (
+                  <Combobox
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    placeholder="Selecionar função…"
+                    error={!!errors.role}
+                    options={assignableRoles.map((role) => ({ value: role, label: ROLE_LABELS[role] ?? role }))}
+                  />
+                )}
+              />
+            ) : (
+              <div className="w-full bg-slate-800/50 border border-slate-700 text-slate-400 rounded-lg px-3.5 py-2.5 text-sm">
+                {ROLE_LABELS[user.role] ?? user.role}
+              </div>
+            )}
             {errors.role && (
               <p className="mt-1.5 text-xs text-rose-400">{errors.role.message}</p>
             )}
+          </div>
+
+          <div>
+            <p className="block text-sm font-medium text-slate-300 mb-1.5">
+              Departamentos <span className="text-slate-500 font-normal">(opcional)</span>
+            </p>
+            <Controller
+              control={control}
+              name="departamentoIds"
+              render={({ field }) => (
+                <div className="rounded-lg border border-slate-700 bg-slate-800/50 overflow-hidden">
+                  {departamentos.length === 0 ? (
+                    <p className="text-xs text-slate-500 italic text-center py-4">
+                      Nenhum departamento cadastrado.
+                    </p>
+                  ) : (
+                    <div className="px-4 py-3 grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+                      {departamentos.map((departamento) => {
+                        const isChecked = (field.value ?? []).includes(departamento.id);
+                        return (
+                          <label
+                            key={departamento.id}
+                            className="flex items-start gap-3 cursor-pointer group"
+                          >
+                            <Checkbox
+                              className="mt-0.5"
+                              checked={isChecked}
+                              onChange={(e) => {
+                                const current = field.value ?? [];
+                                if (e.target.checked) {
+                                  field.onChange([...current, departamento.id]);
+                                } else {
+                                  field.onChange(current.filter((id) => id !== departamento.id));
+                                }
+                              }}
+                            />
+                            <span className="text-sm text-slate-300 group-hover:text-slate-100 transition-colors leading-tight">
+                              {departamento.nome}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+            />
           </div>
 
           <div className="flex gap-3 pt-2">

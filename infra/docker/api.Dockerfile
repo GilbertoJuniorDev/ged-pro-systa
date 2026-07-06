@@ -22,8 +22,8 @@ COPY --from=deps /app ./
 # Sobrepõe com código-fonte (node_modules excluído via .dockerignore)
 COPY . .
 
-RUN pnpm --filter=@ged/database build \
- && pnpm --filter=@ged/types build \
+RUN pnpm --filter=@ged/types build \
+ && pnpm --filter=@ged/database build \
  && pnpm --filter=@ged/utils build \
  && pnpm --filter=api build
 

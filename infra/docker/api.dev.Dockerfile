@@ -28,8 +28,8 @@ COPY packages/@ged/database/src ./packages/@ged/database/src
 COPY packages/@ged/database/tsconfig.json ./packages/@ged/database/
 
 # Compila os pacotes compartilhados (main aponta para dist/)
-RUN pnpm --filter=@ged/database build \
- && pnpm --filter=@ged/types build \
+RUN pnpm --filter=@ged/types build \
+ && pnpm --filter=@ged/database build \
  && pnpm --filter=@ged/utils build
 
 CMD ["pnpm", "--filter=api", "dev"]

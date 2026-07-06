@@ -11,7 +11,7 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { GENDER, ADDRESS_TYPE, PHONE_TYPE } from '@ged/database';
 import type { JwtPayload } from '@ged/types';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';

@@ -1,5 +1,7 @@
 # GED Pro — Arquitetura do Projeto
 
+> ⚠️ **Fonte canônica para agentes: [`AGENTS.md`](../AGENTS.md).** Este documento é a arquitetura-alvo e contém pontos **desatualizados/aspiracionais** (Next 16.2 → real 15.3; `enum` nativo → `const object`; CQRS/storage adapters/`documents` ainda não implementados). Em conflito, valem `AGENTS.md` e o código.
+
 > Sistema de Gerenciamento Eletrônico de Documentos (GED)
 > Monorepo · pnpm · Turborepo · Docker · Next.js 16.2 · NestJS 11 · React 19
 

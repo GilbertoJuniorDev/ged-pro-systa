@@ -26,6 +26,8 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { ToggleUserStatusDto } from './dto/toggle-user-status.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 import { CreateUserWithProfileUseCase } from './use-cases/create-user-with-profile.use-case';
+import { UpdateUserWithDepartmentsUseCase } from './use-cases/update-user-with-departments.use-case';
+import { UserDepartmentsService } from '../user-departments/user-departments.service';
 
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -33,13 +35,18 @@ export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     private readonly createUserWithProfileUseCase: CreateUserWithProfileUseCase,
+    private readonly updateUserWithDepartmentsUseCase: UpdateUserWithDepartmentsUseCase,
+    private readonly userDepartmentsService: UserDepartmentsService,
     private readonly auditLogsService: AuditLogsService,
   ) {}
 
   @Get()
   @Roles(ROLE.ADMIN)
-  async findAll(): Promise<UserResponseDto[]> {
-    const users = await this.usersService.findAll();
+  async findAll(@CurrentUser() currentUser: JwtPayload): Promise<UserResponseDto[]> {
+    const users = await this.usersService.findAll(currentUser.role);
+    const departmentsByUser = await this.userDepartmentsService.findByUserIds(
+      users.map((user) => user.id),
+    );
     return users.map(
       (user) =>
         new UserResponseDto({
@@ -49,6 +56,9 @@ export class UsersController {
           role: user.role,
           isActive: user.isActive,
           createdAt: user.createdAt,
+          departamentoIds: (departmentsByUser.get(user.id) ?? []).map(
+            (userDepartment) => userDepartment.departamentoId,
+          ),
         }),
     );
   }
@@ -56,17 +66,23 @@ export class UsersController {
   @Post()
   @Roles(ROLE.ADMIN)
   @HttpCode(HttpStatus.CREATED)
-  async create(@Req() req: HttpRequest, @Body() dto: CreateUserDto): Promise<UserResponseDto> {
+  async create(
+    @Req() req: HttpRequest,
+    @Body() dto: CreateUserDto,
+    @CurrentUser() currentUser: JwtPayload,
+  ): Promise<UserResponseDto> {
     const user = await this.createUserWithProfileUseCase.execute({
       name: dto.name,
       email: dto.email,
       password: dto.password,
       role: dto.role,
+      actingUserRole: currentUser.role,
       pessoaFisica: dto.pessoaFisica,
       permissaoIds: dto.permissaoIds,
+      departamentoIds: dto.departamentoIds,
     });
     void this.auditLogsService.log({
-      usuarioId: (req.user as { sub: string } | undefined)?.sub ?? null,
+      usuarioId: currentUser.sub,
       acao: 'CRIAR_USUARIO',
       entidade: 'User',
       entidadeId: user.id,
@@ -82,6 +98,7 @@ export class UsersController {
       role: user.role,
       isActive: user.isActive,
       createdAt: user.createdAt,
+      departamentoIds: dto.departamentoIds ?? [],
     });
   }
 
@@ -92,6 +109,7 @@ export class UsersController {
     if (!user) {
       throw new NotFoundException('Usuário não encontrado');
     }
+    const departamentos = await this.userDepartmentsService.findByUserId(id);
     return new UserResponseDto({
       id: user.id,
       name: user.name,
@@ -99,6 +117,7 @@ export class UsersController {
       role: user.role,
       isActive: user.isActive,
       createdAt: user.createdAt,
+      departamentoIds: departamentos.map((userDepartment) => userDepartment.departamentoId),
     });
   }
 
@@ -108,11 +127,17 @@ export class UsersController {
     @Req() req: HttpRequest,
     @Param('id') id: string,
     @Body() dto: UpdateUserDto,
+    @CurrentUser() currentUser: JwtPayload,
   ): Promise<UserResponseDto> {
     const userBefore = await this.usersService.findById(id);
-    const user = await this.usersService.update(id, dto);
+    const user = await this.updateUserWithDepartmentsUseCase.execute({
+      id,
+      actingUserRole: currentUser.role,
+      data: { name: dto.name, role: dto.role },
+      departamentoIds: dto.departamentoIds,
+    });
     void this.auditLogsService.log({
-      usuarioId: (req.user as { sub: string } | undefined)?.sub ?? null,
+      usuarioId: currentUser.sub,
       acao: 'ATUALIZAR_USUARIO',
       entidade: 'User',
       entidadeId: user.id,
@@ -123,6 +148,7 @@ export class UsersController {
       ipCliente: req.ip ?? null,
       userAgent: req.headers['user-agent'] ?? null,
     });
+    const departamentos = await this.userDepartmentsService.findByUserId(id);
     return new UserResponseDto({
       id: user.id,
       name: user.name,
@@ -130,6 +156,7 @@ export class UsersController {
       role: user.role,
       isActive: user.isActive,
       createdAt: user.createdAt,
+      departamentoIds: departamentos.map((userDepartment) => userDepartment.departamentoId),
     });
   }
 
@@ -141,6 +168,7 @@ export class UsersController {
     @CurrentUser() currentUser: JwtPayload,
   ): Promise<UserResponseDto> {
     const user = await this.usersService.setActive(id, dto.isActive, currentUser.sub);
+    const departamentos = await this.userDepartmentsService.findByUserId(id);
     return new UserResponseDto({
       id: user.id,
       name: user.name,
@@ -148,6 +176,7 @@ export class UsersController {
       role: user.role,
       isActive: user.isActive,
       createdAt: user.createdAt,
+      departamentoIds: departamentos.map((userDepartment) => userDepartment.departamentoId),
     });
   }
 

@@ -7,6 +7,7 @@ import { MongoDatabaseModule } from './database/mongo-database.module';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ModulesModule } from './modules/modules/modules.module';
+import { DepartmentsModule } from './modules/departments/departments.module';
 import { PermissionsModule } from './modules/permissions/permissions.module';
 import { UserPermissionsModule } from './modules/user-permissions/user-permissions.module';
 import { PhysicalPersonModule } from './modules/physical-person/physical-person.module';
@@ -31,6 +32,7 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
     UsersModule,
     AuthModule,
     ModulesModule,
+    DepartmentsModule,
     PermissionsModule,
     UserPermissionsModule,
     PhysicalPersonModule,

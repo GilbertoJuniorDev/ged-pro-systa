@@ -1,6 +1,11 @@
-import type { Role } from '@ged/database';
+export const ROLE = {
+  ADMIN: 'ADMIN',
+  MANAGER: 'MANAGER',
+  SUPER_ADMIN: 'SUPER_ADMIN',
+  VIEWER: 'VIEWER',
+} as const;
 
-export { ROLE, type Role } from '@ged/database';
+export type Role = (typeof ROLE)[keyof typeof ROLE];
 
 export interface JwtPayload {
   sub: string;
@@ -27,11 +32,13 @@ export interface UserDto {
   readonly role: Role;
   readonly isActive: boolean;
   readonly createdAt: string;
+  readonly departamentoIds: readonly string[];
 }
 
 export interface UpdateUserPayload {
   readonly name?: string;
-  readonly role?: Extract<Role, 'MANAGER' | 'VIEWER'>;
+  readonly role?: Extract<Role, 'ADMIN' | 'MANAGER' | 'VIEWER'>;
+  readonly departamentoIds?: readonly string[];
 }
 
 export interface PermissaoDto {
@@ -58,6 +65,21 @@ export interface ModuloDto {
 }
 
 export type ModuleDto = ModuloDto;
+
+export interface DepartmentDto {
+  readonly id: string;
+  readonly nome: string;
+  readonly descricao: string | null;
+  readonly isActive: boolean;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+export interface UpsertDepartmentInput {
+  readonly nome: string;
+  readonly descricao?: string | null;
+  readonly isActive?: boolean;
+}
 
 export interface PessoaFisicaDto {
   readonly id: string;
@@ -129,6 +151,7 @@ export interface PaginatedResult<T> {
 export interface MeResponseDto extends JwtPayload {
   readonly permissoes: string[];
   readonly modulos: string[];
+  readonly departamentos: ReadonlyArray<Pick<DepartmentDto, 'id' | 'nome'>>;
 }
 
 // ── Company (Pessoa Jurídica) — singleton ─────────────────────────────

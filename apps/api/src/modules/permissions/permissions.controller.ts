@@ -52,7 +52,7 @@ function toResponseDto(p: {
 @ApiBearerAuth()
 @Controller('permissions')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(ROLE.ADMIN)
+@Roles(ROLE.SUPER_ADMIN)
 export class PermissionsController {
   constructor(
     private readonly permissionsService: PermissionsService,

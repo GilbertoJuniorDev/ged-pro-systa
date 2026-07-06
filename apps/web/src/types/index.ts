@@ -9,6 +9,8 @@ export type {
   PermissionDto,
   ModuloDto,
   ModuleDto,
+  DepartmentDto,
+  UpsertDepartmentInput,
   PessoaFisicaDto,
   PhysicalPersonDto,
   EnderecoDto,
@@ -90,6 +92,7 @@ export interface AuthUser {
   expiresIn: AuthTokensResponse['expiresIn'];
   permissoes: string[];
   modulos: string[];
+  departamentos: { id: string; nome: string }[];
 }
 
 // next-auth module augmentation — expõe campos customizados em session.user
@@ -106,6 +109,9 @@ declare module 'next-auth' {
       expiresIn?: number;
       permissoes?: string[];
       modulos?: string[];
+      departamentos?: { id: string; nome: string }[];
+      selectedDepartmentId?: string | null;
+      viewMode?: 'department' | 'admin' | null;
     };
   }
 }

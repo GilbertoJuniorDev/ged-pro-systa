@@ -12,6 +12,7 @@ interface CreateUserPayload {
   readonly password: string;
   readonly role?: string;
   readonly permissaoIds?: readonly string[];
+  readonly departamentoIds?: readonly string[];
   readonly pessoaFisica: {
     readonly nome: string;
     readonly sobrenome: string;

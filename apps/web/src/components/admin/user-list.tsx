@@ -6,19 +6,15 @@ import { useSession } from 'next-auth/react';
 import { ROLE } from '@ged/types';
 import type { UserDto } from '@/types';
 import { useUsers, useToggleUserActive, useDeleteUser } from '@/hooks/use-users';
+import { ROLE_LABELS } from '@/lib/role-labels';
 import { EditUserDialog } from './edit-user-dialog';
 import { UsuarioPermissoesModal } from './usuario-permissoes/usuario-permissoes-modal';
-
-const ROLE_LABELS: Record<string, string> = {
-  ADMIN: 'Admin',
-  MANAGER: 'Gerente',
-  VIEWER: 'Visualizador',
-};
 
 const ROLE_COLORS: Record<string, string> = {
   ADMIN: 'bg-violet-500/15 text-violet-300 ring-1 ring-violet-500/30',
   MANAGER: 'bg-indigo-500/15 text-indigo-300 ring-1 ring-indigo-500/30',
   VIEWER: 'bg-slate-700 text-slate-300 ring-1 ring-slate-600',
+  SUPER_ADMIN: 'bg-fuchsia-500/15 text-fuchsia-300 ring-1 ring-fuchsia-500/30',
 };
 
 function UserInitials({ name }: { name: string }) {
@@ -92,7 +88,7 @@ function DeleteConfirmDialog({ user, onConfirm, onCancel, isPending }: DeleteCon
 export function UserList() {
   const { data: session } = useSession();
   const { data: users, isLoading, isError } = useUsers();
-  const { mutateAsync: toggleActive, isPending: isTogglingId } = useToggleUserActive();
+  const { mutateAsync: toggleActive } = useToggleUserActive();
   const { mutateAsync: deleteUser, isPending: isDeleting } = useDeleteUser();
 
   const [editingUser, setEditingUser] = useState<UserDto | null>(null);
@@ -229,7 +225,7 @@ export function UserList() {
                       <button
                         type="button"
                         onClick={() => setEditingUser(user)}
-                        disabled={isSelf && user.role === ROLE.ADMIN}
+                        disabled={isSelf && (user.role === ROLE.ADMIN || user.role === ROLE.SUPER_ADMIN)}
                         aria-label="Editar usuário"
                         className="p-2 rounded-lg text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                       >
@@ -372,7 +368,7 @@ export function UserList() {
                           <button
                             type="button"
                             onClick={() => setEditingUser(user)}
-                            disabled={isSelf && user.role === ROLE.ADMIN}
+                            disabled={isSelf && (user.role === ROLE.ADMIN || user.role === ROLE.SUPER_ADMIN)}
                             aria-label="Editar usuário"
                             className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                           >

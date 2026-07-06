@@ -19,6 +19,10 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
     redirect('/login');
   }
 
+  if (!session.user?.viewMode && !session.user?.selectedDepartmentId) {
+    redirect('/selecionar-departamento');
+  }
+
   const user: SessionUser = {
     name: session.user?.name,
     email: session.user?.email,
@@ -26,7 +30,12 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
   };
 
   return (
-    <DashboardShell user={user}>
+    <DashboardShell
+      user={user}
+      viewMode={session.user?.viewMode}
+      selectedDepartmentId={session.user?.selectedDepartmentId}
+      departamentos={session.user?.departamentos}
+    >
       {children}
     </DashboardShell>
   );

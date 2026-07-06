@@ -54,7 +54,7 @@ describe('Sidebar', () => {
   it('should render all navigation links', () => {
     mockUsePathname.mockReturnValue('/');
 
-    render(<Sidebar user={defaultUser} />);
+    render(<Sidebar user={defaultUser} isOpen={false} onClose={jest.fn()} />);
 
     expect(screen.getByText('Dashboard')).toBeInTheDocument();
     expect(screen.getByText('Documentos')).toBeInTheDocument();
@@ -64,31 +64,41 @@ describe('Sidebar', () => {
   it('should apply active styles to the current route link', () => {
     mockUsePathname.mockReturnValue('/');
 
-    render(<Sidebar user={defaultUser} />);
+    render(<Sidebar user={defaultUser} isOpen={false} onClose={jest.fn()} />);
 
     const dashboardLink = screen.getByText('Dashboard').closest('a');
     expect(dashboardLink).toHaveClass('bg-indigo-50');
   });
 
-  it('should toggle sidebar visibility when mobile open button is clicked', () => {
+  it('should reflect the isOpen prop in the sidebar translate classes', () => {
     mockUsePathname.mockReturnValue('/');
 
-    render(<Sidebar user={defaultUser} />);
+    const { rerender } = render(<Sidebar user={defaultUser} isOpen={false} onClose={jest.fn()} />);
 
     const aside = screen.getByRole('complementary');
     expect(aside.className).toContain('-translate-x-full');
 
-    const openButton = screen.getByLabelText('Abrir menu');
-    fireEvent.click(openButton);
+    rerender(<Sidebar user={defaultUser} isOpen onClose={jest.fn()} />);
 
     expect(aside.className).not.toContain('-translate-x-full');
     expect(aside.className).toContain('translate-x-0');
   });
 
+  it('should call onClose when the mobile close button is clicked', () => {
+    mockUsePathname.mockReturnValue('/');
+    const onClose = jest.fn();
+
+    render(<Sidebar user={defaultUser} isOpen onClose={onClose} />);
+
+    fireEvent.click(screen.getByLabelText('Fechar menu'));
+
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
   it('should render UserMenu component in the footer', () => {
     mockUsePathname.mockReturnValue('/');
 
-    render(<Sidebar user={defaultUser} />);
+    render(<Sidebar user={defaultUser} isOpen={false} onClose={jest.fn()} />);
 
     expect(screen.getByLabelText('Alternar tema')).toBeInTheDocument();
     expect(screen.getByTestId('user-menu-mock')).toBeInTheDocument();

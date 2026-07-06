@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { auth } from '@/lib/auth';
 import { GoogleDriveCard } from './_components/google-drive-card';
 import { BackupCard } from './_components/backup-card';
 import { ActivityLogsCard } from './_components/activity-logs-card';
@@ -8,12 +9,16 @@ import { UserPermissionsCard } from './_components/user-permissions-card';
 import { PerformanceMonitor } from './_components/performance-monitor';
 import { CompanyCard } from './_components/company-card';
 import { SubscriptionCard } from './_components/subscription-card';
+import { DepartmentsCard } from './_components/departments-card';
 
 export const metadata: Metadata = {
   title: 'Configurações Admin — GED Pro',
 };
 
-export default function AdminSettingsPage() {
+export default async function AdminSettingsPage() {
+  const session = await auth();
+  const isSuperAdmin = session?.user?.role === 'SUPER_ADMIN';
+
   return (
     <main className="flex-1 overflow-y-auto bg-slate-50 p-4 sm:p-6 lg:p-8 dark:bg-slate-950">
       <div className="mb-8">
@@ -23,16 +28,16 @@ export default function AdminSettingsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <CompanyCard />
-        <SubscriptionCard />
-        <GoogleDriveCard />
-        <BackupCard />
-        <ActivityLogsCard />
-        <ErrorLogsCard />
-        <ModulesCard />
+        {isSuperAdmin && <SubscriptionCard />}
+        {isSuperAdmin && <GoogleDriveCard />}
+        {isSuperAdmin && <BackupCard />}
+        {isSuperAdmin && <ActivityLogsCard />}
+        {isSuperAdmin && <ErrorLogsCard />}
+        {isSuperAdmin && <ModulesCard />}
+        <DepartmentsCard />
         <UserPermissionsCard />
         <PerformanceMonitor />
       </div>
     </main>
   );
 }
-

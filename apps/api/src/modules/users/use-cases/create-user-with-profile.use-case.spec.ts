@@ -1,8 +1,8 @@
-import { BadRequestException, ConflictException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { getDataSourceToken } from '@nestjs/typeorm';
 import type { DataSource, EntityManager } from 'typeorm';
-import { Permission, PhysicalPerson, User, UserPermission } from '@ged/database';
+import { Department, Permission, PhysicalPerson, ROLE, User, UserDepartment, UserPermission } from '@ged/database';
 import { CreateUserWithProfileUseCase } from './create-user-with-profile.use-case';
 
 jest.mock('bcrypt', () => ({
@@ -22,6 +22,7 @@ const mockCreateData = {
   email: 'ana@test.com',
   password: 'Password123',
   role: 'VIEWER' as const,
+  actingUserRole: ROLE.ADMIN,
   pessoaFisica: mockPfData,
 };
 
@@ -169,6 +170,81 @@ describe('CreateUserWithProfileUseCase', () => {
       await expect(
         useCase.execute({ ...mockCreateData, permissaoIds: [validId, invalidId] }),
       ).rejects.toThrow(new BadRequestException('Uma ou mais permissões não encontradas'));
+    });
+  });
+
+  describe('role assignability', () => {
+    it('should throw ForbiddenException when an ADMIN actor tries to assign the ADMIN role', async () => {
+      await expect(
+        useCase.execute({ ...mockCreateData, role: ROLE.ADMIN, actingUserRole: ROLE.ADMIN }),
+      ).rejects.toThrow(
+        new ForbiddenException('Você não tem permissão para atribuir esta função'),
+      );
+      expect(mockDataSource.transaction).not.toHaveBeenCalled();
+    });
+
+    it('should allow a SUPER_ADMIN actor to assign the ADMIN role', async () => {
+      const result = await useCase.execute({
+        ...mockCreateData,
+        role: ROLE.ADMIN,
+        actingUserRole: ROLE.SUPER_ADMIN,
+      });
+
+      expect(result).toMatchObject({ id: 'uuid-1' });
+    });
+
+    it('should allow an ADMIN actor to assign the MANAGER role', async () => {
+      const result = await useCase.execute({
+        ...mockCreateData,
+        role: ROLE.MANAGER,
+        actingUserRole: ROLE.ADMIN,
+      });
+
+      expect(result).toMatchObject({ id: 'uuid-1' });
+    });
+  });
+
+  describe('departamentoIds', () => {
+    it('should create user without department links when departamentoIds is not provided', async () => {
+      const result = await useCase.execute(mockCreateData);
+
+      expect(mockManager.findBy).not.toHaveBeenCalledWith(Department, expect.anything());
+      expect(result).toMatchObject({ id: 'uuid-1' });
+      // save called only for User and PessoaFisica
+      expect(mockManager.save).toHaveBeenCalledTimes(2);
+    });
+
+    it('should create usuario-departamentos records atomically when departamentoIds are valid', async () => {
+      const deptId1 = 'ccc00000-0000-4000-c000-000000000001';
+      const deptId2 = 'ccc00000-0000-4000-c000-000000000002';
+      const mockDepartamentos = [
+        { id: deptId1, nome: 'Financeiro' } as Department,
+        { id: deptId2, nome: 'RH' } as Department,
+      ];
+      mockManager.findBy = jest.fn().mockResolvedValue(mockDepartamentos);
+
+      await useCase.execute({ ...mockCreateData, departamentoIds: [deptId1, deptId2] });
+
+      expect(mockManager.findBy).toHaveBeenCalledWith(Department, expect.objectContaining({}));
+      // save called for User, PessoaFisica, and UsuarioDepartamento[]
+      expect(mockManager.save).toHaveBeenCalledTimes(3);
+      expect(mockManager.save).toHaveBeenCalledWith(
+        UserDepartment,
+        expect.arrayContaining([
+          expect.objectContaining({ departamentoId: deptId1 }),
+          expect.objectContaining({ departamentoId: deptId2 }),
+        ]),
+      );
+    });
+
+    it('should throw BadRequestException when one or more departamentoIds do not exist', async () => {
+      const validId = 'ccc00000-0000-4000-c000-000000000001';
+      const invalidId = 'ddd00000-0000-4000-d000-000000000002';
+      mockManager.findBy = jest.fn().mockResolvedValue([{ id: validId } as Department]);
+
+      await expect(
+        useCase.execute({ ...mockCreateData, departamentoIds: [validId, invalidId] }),
+      ).rejects.toThrow(new BadRequestException('Um ou mais departamentos não encontrados'));
     });
   });
 });

@@ -1,16 +1,18 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
+import { Test, type TestingModule } from '@nestjs/testing';
+import { BadRequestException, ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { ROLE } from '@ged/database';
-import type { User } from '@ged/database';
+import type { User, UserDepartment } from '@ged/database';
 import type { JwtPayload } from '@ged/types';
 import type { HttpRequest } from '../../common/interfaces/http-request.interface';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
 import { UsersController } from './users.controller';
 import { UsersService, USER_REPOSITORY } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { ToggleUserStatusDto } from './dto/toggle-user-status.dto';
+import { type CreateUserDto } from './dto/create-user.dto';
+import { type UpdateUserDto } from './dto/update-user.dto';
+import { type ToggleUserStatusDto } from './dto/toggle-user-status.dto';
 import { CreateUserWithProfileUseCase } from './use-cases/create-user-with-profile.use-case';
+import { UpdateUserWithDepartmentsUseCase } from './use-cases/update-user-with-departments.use-case';
+import { UserDepartmentsService } from '../user-departments/user-departments.service';
 
 const makeUser = (overrides: Partial<User> = {}): User =>
   ({
@@ -56,6 +58,10 @@ describe('UsersController', () => {
   let controller: UsersController;
   let usersService: jest.Mocked<UsersService>;
   let createUserWithProfileUseCase: jest.Mocked<Pick<CreateUserWithProfileUseCase, 'execute'>>;
+  let updateUserWithDepartmentsUseCase: jest.Mocked<Pick<UpdateUserWithDepartmentsUseCase, 'execute'>>;
+  let userDepartmentsService: jest.Mocked<
+    Pick<UserDepartmentsService, 'findByUserId' | 'findByUserIds'>
+  >;
   let auditLogsService: jest.Mocked<Pick<AuditLogsService, 'log'>>;
 
   beforeEach(async () => {
@@ -74,6 +80,15 @@ describe('UsersController', () => {
       execute: jest.fn(),
     };
 
+    updateUserWithDepartmentsUseCase = {
+      execute: jest.fn(),
+    };
+
+    userDepartmentsService = {
+      findByUserId: jest.fn().mockResolvedValue([]),
+      findByUserIds: jest.fn().mockResolvedValue(new Map<string, UserDepartment[]>()),
+    };
+
     auditLogsService = {
       log: jest.fn().mockResolvedValue(undefined),
     };
@@ -84,6 +99,8 @@ describe('UsersController', () => {
         UsersService,
         { provide: USER_REPOSITORY, useValue: mockRepository },
         { provide: CreateUserWithProfileUseCase, useValue: createUserWithProfileUseCase },
+        { provide: UpdateUserWithDepartmentsUseCase, useValue: updateUserWithDepartmentsUseCase },
+        { provide: UserDepartmentsService, useValue: userDepartmentsService },
         { provide: AuditLogsService, useValue: auditLogsService },
       ],
     }).compile();
@@ -103,17 +120,20 @@ describe('UsersController', () => {
     it('should create a user when email is not taken', async () => {
       createUserWithProfileUseCase.execute.mockResolvedValue(makeUser());
       const dto = makeCreateUserDto();
+      const currentUser = makeJwtPayload();
 
-      const result = await controller.create(makeHttpRequest(), dto);
+      const result = await controller.create(makeHttpRequest(), dto, currentUser);
 
       expect(result.id).toBe('uuid-1');
       expect(result.email).toBe('novo@example.com');
+      expect(result.departamentoIds).toEqual([]);
       expect(result).not.toHaveProperty('passwordHash');
       expect(createUserWithProfileUseCase.execute).toHaveBeenCalledWith(
         expect.objectContaining({
           name: 'Novo Usuário',
           email: 'novo@example.com',
           password: 'Password123',
+          actingUserRole: ROLE.ADMIN,
           pessoaFisica: dto.pessoaFisica,
         }),
       );
@@ -135,10 +155,23 @@ describe('UsersController', () => {
         role: ROLE.MANAGER,
       });
 
-      await controller.create(makeHttpRequest(), dto);
+      await controller.create(makeHttpRequest(), dto, makeJwtPayload());
 
       expect(createUserWithProfileUseCase.execute).toHaveBeenCalledWith(
         expect.objectContaining({ role: ROLE.MANAGER }),
+      );
+    });
+
+    it('should echo the requested departamentoIds in the response', async () => {
+      createUserWithProfileUseCase.execute.mockResolvedValue(makeUser());
+      const deptId = 'dddddddd-0000-4000-a000-000000000001';
+      const dto = makeCreateUserDto({ departamentoIds: [deptId] });
+
+      const result = await controller.create(makeHttpRequest(), dto, makeJwtPayload());
+
+      expect(result.departamentoIds).toEqual([deptId]);
+      expect(createUserWithProfileUseCase.execute).toHaveBeenCalledWith(
+        expect.objectContaining({ departamentoIds: [deptId] }),
       );
     });
 
@@ -149,7 +182,18 @@ describe('UsersController', () => {
         email: 'novo@example.com',
       });
 
-      await expect(controller.create(makeHttpRequest(), dto)).rejects.toThrow(ConflictException);
+      await expect(
+        controller.create(makeHttpRequest(), dto, makeJwtPayload()),
+      ).rejects.toThrow(ConflictException);
+    });
+
+    it('should propagate ForbiddenException when the acting user cannot assign the role', async () => {
+      createUserWithProfileUseCase.execute.mockRejectedValue(new ForbiddenException());
+      const dto = makeCreateUserDto({ role: ROLE.ADMIN });
+
+      await expect(
+        controller.create(makeHttpRequest(), dto, makeJwtPayload()),
+      ).rejects.toThrow(ForbiddenException);
     });
   });
 
@@ -157,32 +201,51 @@ describe('UsersController', () => {
     it('should return list of all users as UserResponseDto', async () => {
       const users = [makeUser(), makeUser({ id: 'uuid-2', email: 'other@example.com' })];
       jest.spyOn(usersService, 'findAll').mockResolvedValue(users);
+      const currentUser = makeJwtPayload();
 
-      const result = await controller.findAll();
+      const result = await controller.findAll(currentUser);
 
       expect(result).toHaveLength(2);
       expect(result[0]).not.toHaveProperty('passwordHash');
-      expect(usersService.findAll).toHaveBeenCalled();
+      expect(result[0].departamentoIds).toEqual([]);
+      expect(usersService.findAll).toHaveBeenCalledWith(ROLE.ADMIN);
+      expect(userDepartmentsService.findByUserIds).toHaveBeenCalledWith(['uuid-1', 'uuid-2']);
     });
   });
 
   describe('update', () => {
     it('should update and return the user', async () => {
       const updated = makeUser({ name: 'Nome Novo', role: ROLE.MANAGER });
-      jest.spyOn(usersService, 'update').mockResolvedValue(updated);
+      updateUserWithDepartmentsUseCase.execute.mockResolvedValue(updated);
 
       const dto: UpdateUserDto = { name: 'Nome Novo', role: ROLE.MANAGER };
-      const result = await controller.update(makeHttpRequest(), 'uuid-1', dto);
+      const currentUser = makeJwtPayload();
+      const result = await controller.update(makeHttpRequest(), 'uuid-1', dto, currentUser);
 
       expect(result.name).toBe('Nome Novo');
       expect(result.role).toBe(ROLE.MANAGER);
-      expect(usersService.update).toHaveBeenCalledWith('uuid-1', dto);
+      expect(updateUserWithDepartmentsUseCase.execute).toHaveBeenCalledWith({
+        id: 'uuid-1',
+        actingUserRole: ROLE.ADMIN,
+        data: { name: 'Nome Novo', role: ROLE.MANAGER },
+        departamentoIds: undefined,
+      });
     });
 
     it('should throw NotFoundException when user does not exist', async () => {
-      jest.spyOn(usersService, 'update').mockRejectedValue(new NotFoundException());
+      updateUserWithDepartmentsUseCase.execute.mockRejectedValue(new NotFoundException());
 
-      await expect(controller.update(makeHttpRequest(), 'nonexistent', {})).rejects.toThrow(NotFoundException);
+      await expect(
+        controller.update(makeHttpRequest(), 'nonexistent', {}, makeJwtPayload()),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should propagate ForbiddenException when the acting user cannot assign the role', async () => {
+      updateUserWithDepartmentsUseCase.execute.mockRejectedValue(new ForbiddenException());
+
+      await expect(
+        controller.update(makeHttpRequest(), 'uuid-1', { role: ROLE.ADMIN }, makeJwtPayload()),
+      ).rejects.toThrow(ForbiddenException);
     });
   });
 

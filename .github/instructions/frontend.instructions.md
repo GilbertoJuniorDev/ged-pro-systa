@@ -5,6 +5,8 @@ applyTo: "apps/web/**"
 
 # Frontend — Next.js 16.2 (apps/web/)
 
+> ⚠️ **Fonte canônica: [`AGENTS.md`](../../AGENTS.md) e [`apps/web/CLAUDE.md`](../../apps/web/CLAUDE.md).** Desatualizado: é Next.js **15.3** (não 16.2), Tailwind **v4 CSS-first** (sem `tailwind.config`), guard via `auth()` no layout (**não há `middleware.ts`**). Em conflito, vale o código.
+
 ## Estrutura de Diretórios
 
 ```
