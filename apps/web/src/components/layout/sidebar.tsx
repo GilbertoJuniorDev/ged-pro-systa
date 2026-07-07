@@ -179,7 +179,12 @@ export function Sidebar({
 
   const visibleNavItems = NAV_ITEMS.filter(
     (item) => item.moduloSlug == null || hasModuleAccess(item.moduloSlug),
-  );
+  ).map((item) => ({
+    ...item,
+    children: item.children?.filter(
+      (child) => child.moduloSlug == null || hasModuleAccess(child.moduloSlug),
+    ),
+  }));
 
   const visibleAdminNavItems = ADMIN_NAV_ITEMS.filter((item) =>
     matchesRequiredRole(item.requiredRole, user.role),
@@ -225,39 +230,15 @@ export function Sidebar({
 
         <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1 scrollbar-none">
           {viewMode !== 'admin' &&
-            visibleNavItems.map((item) => {
-              const isActive = pathname === item.href;
-              const isPendingItem = pendingHref === item.href;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => handleLinkClick(item.href)}
-                  className={`flex items-center px-3 py-2.5 rounded-lg font-medium transition-all duration-200 ease-in-out ${
-                    isActive
-                      ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400'
-                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'
-                  }`}
-                >
-                  {isPendingItem ? (
-                    <Spinner size="sm" className="mr-3 text-indigo-400" />
-                  ) : (
-                    <svg
-                      className="w-5 h-5 mr-3"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      aria-hidden="true"
-                    >
-                      {item.iconPaths.map((d, i) => (
-                        <path key={i} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
-                      ))}
-                    </svg>
-                  )}
-                  {item.label}
-                </Link>
-              );
-            })}
+            visibleNavItems.map((item) => (
+              <AccordionItem
+                key={item.href}
+                item={item}
+                pathname={pathname}
+                pendingHref={pendingHref}
+                onLinkClick={handleLinkClick}
+              />
+            ))}
 
           {canSeeAdminNav && (
             <>

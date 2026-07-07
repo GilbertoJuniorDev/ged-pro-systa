@@ -21,6 +21,9 @@ import { CreateDepartmentsTable1782950400000 } from './1782950400000-CreateDepar
 import { CreateUserDepartmentsTable1782950400001 } from './1782950400001-CreateUserDepartmentsTable';
 import { AddSuperAdminToUsersRoleEnum1782950400002 } from './1782950400002-AddSuperAdminToUsersRoleEnum';
 import { UpgradeSeedAdminToSuperAdmin1782950400003 } from './1782950400003-UpgradeSeedAdminToSuperAdmin';
+import { CreateDocumentSeriesTable1782950400004 } from './1782950400004-CreateDocumentSeriesTable';
+import { CreateDossiesTable1782950400005 } from './1782950400005-CreateDossiesTable';
+import { CreateDocumentsTable1782950400006 } from './1782950400006-CreateDocumentsTable';
 const DATABASE_URL = process.env['DATABASE_URL'];
 
 if (!DATABASE_URL) {
@@ -54,6 +57,9 @@ const dataSource = new DataSource({
     CreateUserDepartmentsTable1782950400001,
     AddSuperAdminToUsersRoleEnum1782950400002,
     UpgradeSeedAdminToSuperAdmin1782950400003,
+    CreateDocumentSeriesTable1782950400004,
+    CreateDossiesTable1782950400005,
+    CreateDocumentsTable1782950400006,
   ],
   migrationsTableName: 'migrations',
 });

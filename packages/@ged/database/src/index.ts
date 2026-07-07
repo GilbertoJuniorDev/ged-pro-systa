@@ -20,4 +20,17 @@ export {
 } from './entities/subscription.entity';
 export { SubscriptionPayment } from './entities/subscription-payment.entity';
 export { SystemSetting } from './entities/system-setting.entity';
+export {
+  DocumentSeries,
+  DESTINACAO_FINAL,
+  type DestinacaoFinal,
+} from './entities/document-series.entity';
+export { Dossie } from './entities/dossie.entity';
+export {
+  Document,
+  CONFIDENCIALIDADE,
+  type Confidencialidade,
+  DOCUMENT_FASE,
+  type DocumentFase,
+} from './entities/document.entity';
 

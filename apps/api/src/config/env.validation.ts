@@ -25,6 +25,11 @@ const envSchema = z.object({
     .min(1)
     .default('mongodb://localhost:27017/ged_logs'),
   REDIS_URL: z.string().url().default('redis://localhost:6379'),
+  GOOGLE_DRIVE_CLIENT_ID: z.string().min(1),
+  GOOGLE_DRIVE_CLIENT_SECRET: z.string().min(1),
+  GOOGLE_DRIVE_REFRESH_TOKEN: z.string().min(1),
+  GOOGLE_DRIVE_FOLDER_ID: z.string().min(1),
+  STORAGE_MAX_FILE_SIZE: z.coerce.number().int().positive().default(26_214_400),
 });
 
 export type Env = z.infer<typeof envSchema>;

@@ -17,6 +17,10 @@ import { CompanyModule } from './modules/company/company.module';
 import { SubscriptionModule } from './modules/subscription/subscription.module';
 import { SystemModule } from './modules/system/system.module';
 import { SystemSettingsModule } from './modules/system-settings/system-settings.module';
+import { StorageModule } from './modules/storage/storage.module';
+import { DocumentSeriesModule } from './modules/document-series/document-series.module';
+import { DossiesModule } from './modules/dossies/dossies.module';
+import { DocumentsModule } from './modules/documents/documents.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { PermissionsGuard } from './common/guards/permissions.guard';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
@@ -42,6 +46,10 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
     SubscriptionModule,
     SystemModule,
     SystemSettingsModule,
+    StorageModule,
+    DocumentSeriesModule,
+    DossiesModule,
+    DocumentsModule,
   ],
   providers: [
     {

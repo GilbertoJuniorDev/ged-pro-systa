@@ -319,3 +319,131 @@ export interface SubscriptionPaymentDto {
   readonly createdAt: string;
 }
 
+// ── GED — Document Series (Classificação/Temporalidade) ────────────────
+
+export const DESTINACAO_FINAL = {
+  GUARDA_PERMANENTE: 'GUARDA_PERMANENTE',
+  ELIMINACAO: 'ELIMINACAO',
+} as const;
+
+export type DestinacaoFinal = (typeof DESTINACAO_FINAL)[keyof typeof DESTINACAO_FINAL];
+
+export interface DocumentSeriesDto {
+  readonly id: string;
+  readonly codigo: string;
+  readonly nome: string;
+  readonly descricao: string | null;
+  readonly prazoCorrenteMeses: number;
+  readonly prazoIntermediarioMeses: number;
+  readonly destinacaoFinal: DestinacaoFinal;
+  readonly baseLegal: string | null;
+  readonly isActive: boolean;
+  readonly departamentoId: string;
+  readonly seriePaiId: string | null;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+export interface UpsertDocumentSeriesInput {
+  readonly codigo: string;
+  readonly nome: string;
+  readonly descricao?: string | null;
+  readonly prazoCorrenteMeses: number;
+  readonly prazoIntermediarioMeses: number;
+  readonly destinacaoFinal: DestinacaoFinal;
+  readonly baseLegal?: string | null;
+  readonly isActive?: boolean;
+  readonly departamentoId: string;
+  readonly seriePaiId?: string | null;
+}
+
+// ── GED — Dossiê ────────────────────────────────────────────────────────
+
+export interface DossieDto {
+  readonly id: string;
+  readonly nome: string;
+  readonly descricao: string | null;
+  readonly isActive: boolean;
+  readonly departamentoId: string;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+export interface UpsertDossieInput {
+  readonly nome: string;
+  readonly descricao?: string | null;
+  readonly isActive?: boolean;
+  readonly departamentoId: string;
+}
+
+// ── GED — Document ──────────────────────────────────────────────────────
+
+export const CONFIDENCIALIDADE = {
+  PUBLICO: 'PUBLICO',
+  INTERNO: 'INTERNO',
+  RESTRITO: 'RESTRITO',
+  CONFIDENCIAL: 'CONFIDENCIAL',
+} as const;
+
+export type Confidencialidade = (typeof CONFIDENCIALIDADE)[keyof typeof CONFIDENCIALIDADE];
+
+export const DOCUMENT_FASE = {
+  CORRENTE: 'CORRENTE',
+  INTERMEDIARIO: 'INTERMEDIARIO',
+} as const;
+
+export type DocumentFase = (typeof DOCUMENT_FASE)[keyof typeof DOCUMENT_FASE];
+
+export interface DocumentDto {
+  readonly id: string;
+  readonly nome: string;
+  readonly descricao: string | null;
+  readonly validade: string | null;
+  readonly confidencialidade: Confidencialidade;
+  readonly departamentoId: string;
+  readonly serieId: string;
+  readonly dossieId: string | null;
+  readonly fase: DocumentFase;
+  readonly faseCorrenteDesde: string;
+  readonly faseIntermediarioDesde: string | null;
+  readonly arquivoNome: string;
+  readonly arquivoMimeType: string;
+  readonly arquivoTamanho: number;
+  readonly isActive: boolean;
+  readonly vencimentoCorrente: string;
+  readonly vencimentoIntermediario: string | null;
+  readonly elegivelTransferencia: boolean;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+export interface UploadDocumentInput {
+  readonly nome: string;
+  readonly descricao?: string | null;
+  readonly validade?: string | null;
+  readonly confidencialidade: Confidencialidade;
+  readonly departamentoId: string;
+  readonly serieId: string;
+  readonly dossieId?: string | null;
+}
+
+export interface UpdateDocumentInput {
+  readonly nome?: string;
+  readonly descricao?: string | null;
+  readonly validade?: string | null;
+  readonly confidencialidade?: Confidencialidade;
+  readonly serieId?: string;
+  readonly dossieId?: string | null;
+  readonly isActive?: boolean;
+}
+
+export interface DocumentQuery {
+  readonly departamentoId?: string;
+  readonly dossieId?: string;
+  readonly serieId?: string;
+  readonly fase?: DocumentFase;
+  readonly confidencialidade?: Confidencialidade;
+  readonly page?: number;
+  readonly limit?: number;
+}
+

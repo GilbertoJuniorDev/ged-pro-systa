@@ -1,4 +1,4 @@
-import { DataSource } from 'typeorm';
+import { type DataSource } from 'typeorm';
 
 export async function runMigrationsWithLock(dataSource: DataSource): Promise<void> {
   const LOCK_KEY = 'ged-pro-systa:migrations';

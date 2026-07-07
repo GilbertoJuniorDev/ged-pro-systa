@@ -36,9 +36,11 @@ const BASE_URL = process.env.API_INTERNAL_URL ?? process.env.NEXT_PUBLIC_API_URL
 
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { body, token, headers: extraHeaders, ...rest } = options;
+  const isFormData = body instanceof FormData;
 
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
+    // FormData sets its own multipart boundary — the browser must generate that header itself
+    ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
     ...(extraHeaders as Record<string, string>),
   };
 
@@ -49,7 +51,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   const response = await fetch(`${BASE_URL}${path}`, {
     ...rest,
     headers,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
+    body: body === undefined ? undefined : isFormData ? body : JSON.stringify(body),
   });
 
   if (!response.ok) {

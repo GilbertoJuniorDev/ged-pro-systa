@@ -1,6 +1,6 @@
 import { of } from 'rxjs';
-import { type ExecutionContext, type CallHandler } from '@nestjs/common';
-import { TransformInterceptor } from './transform.interceptor';
+import { StreamableFile, type ExecutionContext, type CallHandler } from '@nestjs/common';
+import { TransformInterceptor, type ApiResponse } from './transform.interceptor';
 
 describe('TransformInterceptor', () => {
   let interceptor: TransformInterceptor<unknown>;
@@ -14,7 +14,8 @@ describe('TransformInterceptor', () => {
     const mockCallHandler: CallHandler = { handle: () => of(mockData) };
     const mockCtx = {} as ExecutionContext;
 
-    interceptor.intercept(mockCtx, mockCallHandler).subscribe((result) => {
+    interceptor.intercept(mockCtx, mockCallHandler).subscribe((raw) => {
+      const result = raw as ApiResponse<unknown>;
       expect(result.success).toBe(true);
       expect(result.data).toEqual(mockData);
       expect(result.message).toBe('Operação realizada com sucesso');
@@ -28,9 +29,21 @@ describe('TransformInterceptor', () => {
     const mockCallHandler: CallHandler = { handle: () => of(null) };
     const mockCtx = {} as ExecutionContext;
 
-    interceptor.intercept(mockCtx, mockCallHandler).subscribe((result) => {
+    interceptor.intercept(mockCtx, mockCallHandler).subscribe((raw) => {
+      const result = raw as ApiResponse<unknown>;
       expect(result.success).toBe(true);
       expect(result.data).toBeNull();
+      done();
+    });
+  });
+
+  it('should pass through a StreamableFile unwrapped', (done) => {
+    const file = new StreamableFile(Buffer.from('conteudo'));
+    const mockCallHandler: CallHandler = { handle: () => of(file) };
+    const mockCtx = {} as ExecutionContext;
+
+    interceptor.intercept(mockCtx, mockCallHandler).subscribe((result) => {
+      expect(result).toBe(file);
       done();
     });
   });

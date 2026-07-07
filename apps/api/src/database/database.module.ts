@@ -21,6 +21,9 @@ import {
   Subscription,
   SubscriptionPayment,
   SystemSetting,
+  DocumentSeries,
+  Dossie,
+  Document,
 } from '@ged/database';
 
 @Module({
@@ -51,6 +54,9 @@ import {
           Subscription,
           SubscriptionPayment,
           SystemSetting,
+          DocumentSeries,
+          Dossie,
+          Document,
         ],
         synchronize: false,
         migrationsRun: false,

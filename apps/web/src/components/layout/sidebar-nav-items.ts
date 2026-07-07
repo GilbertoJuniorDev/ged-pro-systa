@@ -25,6 +25,48 @@ export const NAV_ITEMS: readonly NavItem[] = [
     iconPaths: [
       'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
     ],
+    children: [
+      {
+        label: 'Upload',
+        href: '/documents/upload',
+        moduloSlug: 'documentos',
+        iconPaths: [
+          'M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M12 12v9m0-9l-3 3m3-3l3 3',
+        ],
+      },
+      {
+        label: 'Classificação',
+        href: '/documents/classificacao',
+        moduloSlug: 'documentos',
+        iconPaths: [
+          'M4 6h16M4 10h10M4 14h16M4 18h10',
+        ],
+      },
+      {
+        label: 'Temporalidade',
+        href: '/documents/temporalidade',
+        moduloSlug: 'documentos',
+        iconPaths: [
+          'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
+        ],
+      },
+      {
+        label: 'Dossiês',
+        href: '/documents/dossies',
+        moduloSlug: 'documentos',
+        iconPaths: [
+          'M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z',
+        ],
+      },
+      {
+        label: 'Transferências',
+        href: '/documents/transferencias',
+        moduloSlug: 'documentos',
+        iconPaths: [
+          'M8 7h12m0 0l-4-4m4 4l-4 4M16 17H4m0 0l4 4m-4-4l4-4',
+        ],
+      },
+    ],
   },
   {
     label: 'Categorias',

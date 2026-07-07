@@ -40,8 +40,19 @@ export type {
   RecordPaymentInput,
   SubscriptionStatus,
   SubscriptionPaymentDto,
+  DestinacaoFinal,
+  DocumentSeriesDto,
+  UpsertDocumentSeriesInput,
+  DossieDto,
+  UpsertDossieInput,
+  Confidencialidade,
+  DocumentFase,
+  DocumentDto,
+  UploadDocumentInput,
+  UpdateDocumentInput,
+  DocumentQuery,
 } from '@ged/types';
-export { SUBSCRIPTION_STATUS } from '@ged/types';
+export { SUBSCRIPTION_STATUS, DESTINACAO_FINAL, CONFIDENCIALIDADE, DOCUMENT_FASE } from '@ged/types';
 
 export interface SystemVersionDto {
   readonly appName: string;
