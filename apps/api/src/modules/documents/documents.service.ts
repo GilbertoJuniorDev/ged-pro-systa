@@ -39,15 +39,18 @@ export interface UpdateDocumentInputData {
   readonly isActive?: boolean;
 }
 
-function addMonths(date: Date, months: number): Date {
-  // `date` columns come back from TypeORM as a UTC-midnight Date (e.g. new Date('2026-01-01')
-  // is 2026-01-01T00:00:00.000Z). Using local getMonth/setMonth here would corrupt the
-  // result on any server whose local timezone is behind UTC (this codebase deploys to
-  // Brazil, UTC-3): the UTC midnight instant is the previous day locally, so adding months
-  // via local calendar fields can silently roll the result forward by a day around
-  // month-end boundaries. Operating in UTC keeps this deterministic regardless of server TZ.
+function addMonths(date: Date | string, months: number): Date {
+  // `date` columns come back from TypeORM/pg as 'YYYY-MM-DD' strings (only when a value was
+  // just set in memory is it still a real Date). Both `new Date('2026-01-01')` and a Date
+  // already at UTC-midnight give the same UTC calendar day, so normalize to a Date first.
+  const base = typeof date === 'string' ? new Date(date) : date;
+  // Using local getMonth/setMonth here would corrupt the result on any server whose local
+  // timezone is behind UTC (this codebase deploys to Brazil, UTC-3): the UTC midnight instant
+  // is the previous day locally, so adding months via local calendar fields can silently roll
+  // the result forward by a day around month-end boundaries. Operating in UTC keeps this
+  // deterministic regardless of server TZ.
   const result = new Date(
-    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
+    Date.UTC(base.getUTCFullYear(), base.getUTCMonth(), base.getUTCDate()),
   );
   result.setUTCMonth(result.getUTCMonth() + months);
   return result;

@@ -20,7 +20,19 @@ const makeSerie = (overrides: Partial<DocumentSeries> = {}): DocumentSeries =>
     ...overrides,
   }) as DocumentSeries;
 
-const makeDocument = (overrides: Partial<Document> = {}): Document =>
+// `validade`, `faseCorrenteDesde` and `faseIntermediarioDesde` are Postgres `date`
+// columns: TypeORM/pg returns them as 'YYYY-MM-DD' strings, not Date objects (unlike the
+// `timestamp` columns createdAt/updatedAt). Fixtures mirror that real shape so the
+// toResponseDto tests exercise what actually flows through in production.
+type DocumentOverrides = Partial<
+  Omit<Document, 'faseCorrenteDesde' | 'faseIntermediarioDesde' | 'validade'>
+> & {
+  faseCorrenteDesde?: string;
+  faseIntermediarioDesde?: string | null;
+  validade?: string | null;
+};
+
+const makeDocument = (overrides: DocumentOverrides = {}): Document =>
   ({
     id: 'doc-1',
     nome: 'Contrato',
@@ -31,7 +43,7 @@ const makeDocument = (overrides: Partial<Document> = {}): Document =>
     serieId: 'serie-1',
     dossieId: null,
     fase: DOCUMENT_FASE.CORRENTE,
-    faseCorrenteDesde: new Date('2026-01-01'),
+    faseCorrenteDesde: '2026-01-01',
     faseIntermediarioDesde: null,
     arquivoNome: 'contrato.pdf',
     arquivoChave: 'drive-file-id',
@@ -42,7 +54,7 @@ const makeDocument = (overrides: Partial<Document> = {}): Document =>
     updatedAt: new Date('2026-01-01'),
     serie: makeSerie(),
     ...overrides,
-  }) as Document;
+  }) as unknown as Document;
 
 describe('DocumentsService', () => {
   let service: DocumentsService;
@@ -235,7 +247,7 @@ describe('DocumentsService', () => {
       const document = makeDocument({ fase: DOCUMENT_FASE.CORRENTE });
       const transferred = makeDocument({
         fase: DOCUMENT_FASE.INTERMEDIARIO,
-        faseIntermediarioDesde: new Date('2026-07-06'),
+        faseIntermediarioDesde: '2026-07-06',
       });
       documentRepository.findById.mockResolvedValue(document);
       documentRepository.update.mockResolvedValue(transferred);
@@ -284,14 +296,14 @@ describe('DocumentsService', () => {
       jest.useFakeTimers().setSystemTime(new Date('2026-07-01T00:00:00.000Z'));
       const document = makeDocument({
         fase: DOCUMENT_FASE.CORRENTE,
-        faseCorrenteDesde: new Date('2026-01-01'),
+        faseCorrenteDesde: '2026-01-01',
         faseIntermediarioDesde: null,
         serie: makeSerie({ prazoCorrenteMeses: 6, prazoIntermediarioMeses: 12 }),
       });
 
       const dto = service.toResponseDto(document);
 
-      expect(dto.vencimentoCorrente).toEqual(new Date('2026-07-01'));
+      expect(dto.vencimentoCorrente).toBe('2026-07-01');
       expect(dto.vencimentoIntermediario).toBeNull();
       expect(dto.elegivelTransferencia).toBe(true);
     });
@@ -300,30 +312,47 @@ describe('DocumentsService', () => {
       jest.useFakeTimers().setSystemTime(new Date('2026-03-01T00:00:00.000Z'));
       const document = makeDocument({
         fase: DOCUMENT_FASE.CORRENTE,
-        faseCorrenteDesde: new Date('2026-01-01'),
+        faseCorrenteDesde: '2026-01-01',
         faseIntermediarioDesde: null,
         serie: makeSerie({ prazoCorrenteMeses: 6, prazoIntermediarioMeses: 12 }),
       });
 
       const dto = service.toResponseDto(document);
 
-      expect(dto.vencimentoCorrente).toEqual(new Date('2026-07-01'));
+      expect(dto.vencimentoCorrente).toBe('2026-07-01');
       expect(dto.elegivelTransferencia).toBe(false);
     });
 
     it('computes vencimentoIntermediario when faseIntermediarioDesde is set, and is never elegivel once transferred', () => {
       const document = makeDocument({
         fase: DOCUMENT_FASE.INTERMEDIARIO,
-        faseCorrenteDesde: new Date('2026-01-01'),
-        faseIntermediarioDesde: new Date('2026-07-01'),
+        faseCorrenteDesde: '2026-01-01',
+        faseIntermediarioDesde: '2026-07-01',
         serie: makeSerie({ prazoCorrenteMeses: 6, prazoIntermediarioMeses: 12 }),
       });
 
       const dto = service.toResponseDto(document);
 
-      expect(dto.vencimentoCorrente).toEqual(new Date('2026-07-01'));
-      expect(dto.vencimentoIntermediario).toEqual(new Date('2027-07-01'));
+      expect(dto.vencimentoCorrente).toBe('2026-07-01');
+      expect(dto.vencimentoIntermediario).toBe('2027-07-01');
       expect(dto.elegivelTransferencia).toBe(false);
+    });
+
+    it('does not throw and normalizes to YYYY-MM-DD when date columns arrive as strings (TypeORM shape)', () => {
+      const document = makeDocument({
+        validade: '2027-12-31',
+        faseCorrenteDesde: '2026-01-01',
+        faseIntermediarioDesde: '2026-07-01',
+        serie: makeSerie({ prazoCorrenteMeses: 6, prazoIntermediarioMeses: 12 }),
+      });
+
+      const dto = service.toResponseDto(document);
+
+      expect(dto.validade).toBe('2027-12-31');
+      expect(dto.faseCorrenteDesde).toBe('2026-01-01');
+      expect(dto.faseIntermediarioDesde).toBe('2026-07-01');
+      expect(dto.vencimentoCorrente).toBe('2026-07-01');
+      expect(dto.vencimentoIntermediario).toBe('2027-07-01');
     });
 
     it('never includes arquivoChave in the response', () => {
