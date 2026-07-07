@@ -59,7 +59,8 @@ export class DocumentsRepository implements IDocumentRepository {
 
   async create(data: CreateDocumentData): Promise<Document> {
     const document = this.repo.create(data);
-    return this.repo.save(document);
+    const saved = await this.repo.save(document);
+    return this.repo.findOneOrFail({ where: { id: saved.id }, relations: ['serie'] });
   }
 
   async update(id: string, data: UpdateDocumentData): Promise<Document> {
