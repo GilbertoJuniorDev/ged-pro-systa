@@ -136,6 +136,35 @@ describe('UploadDocumentUseCase', () => {
       );
     });
 
+    it('defaults destaque and exigeCadastro to false when not provided', async () => {
+      departmentRepo.findOne.mockResolvedValue(makeDepartment());
+      documentSeriesRepo.findOne.mockResolvedValue(makeSerie());
+      storageService.save.mockResolvedValue({ chave: 'drive-file-id', tamanho: 8 });
+      documentRepository.create.mockResolvedValue(makeDocument());
+
+      await useCase.execute(makeUploadData(), makeFile());
+
+      expect(documentRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({ destaque: false, exigeCadastro: false }),
+      );
+    });
+
+    it('passes destaque and exigeCadastro through when explicitly provided', async () => {
+      departmentRepo.findOne.mockResolvedValue(makeDepartment());
+      documentSeriesRepo.findOne.mockResolvedValue(makeSerie());
+      storageService.save.mockResolvedValue({ chave: 'drive-file-id', tamanho: 8 });
+      documentRepository.create.mockResolvedValue(makeDocument());
+
+      await useCase.execute(
+        makeUploadData({ destaque: true, exigeCadastro: true }),
+        makeFile(),
+      );
+
+      expect(documentRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({ destaque: true, exigeCadastro: true }),
+      );
+    });
+
     it('validates the dossiê when provided and belonging to the same department', async () => {
       departmentRepo.findOne.mockResolvedValue(makeDepartment());
       documentSeriesRepo.findOne.mockResolvedValue(makeSerie());

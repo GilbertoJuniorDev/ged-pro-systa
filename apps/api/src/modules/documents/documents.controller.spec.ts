@@ -30,6 +30,8 @@ const makeDocument = (overrides: Partial<Document> = {}): Document =>
     arquivoMimeType: 'application/pdf',
     arquivoTamanho: 1024,
     isActive: true,
+    destaque: false,
+    exigeCadastro: false,
     createdAt: new Date('2026-01-01'),
     updatedAt: new Date('2026-01-01'),
     ...overrides,
@@ -57,6 +59,8 @@ const makeResponseDto = (overrides: Partial<DocumentResponseDto> = {}): Document
     vencimentoCorrente: new Date('2026-07-01'),
     vencimentoIntermediario: null,
     elegivelTransferencia: false,
+    destaque: false,
+    exigeCadastro: false,
     ...overrides,
   });
 
@@ -167,6 +171,26 @@ describe('DocumentsController', () => {
       );
     });
 
+    it('carries destaque and exigeCadastro through to the response when set on upload', async () => {
+      const dtoWithFlags: CreateDocumentDto = { ...dto, destaque: true, exigeCadastro: true };
+      const created = makeDocument({ destaque: true, exigeCadastro: true });
+      documentsService.upload.mockResolvedValue(created);
+      documentsService.toResponseDto.mockReturnValue(
+        makeResponseDto({ destaque: true, exigeCadastro: true }),
+      );
+
+      const result = await controller.create(
+        makeHttpRequest(),
+        makeJwtPayload(),
+        dtoWithFlags,
+        file,
+      );
+
+      expect(documentsService.upload).toHaveBeenCalledWith(dtoWithFlags, file);
+      expect(result.destaque).toBe(true);
+      expect(result.exigeCadastro).toBe(true);
+    });
+
     it('throws BadRequestException when no file is provided', async () => {
       await expect(
         controller.create(
@@ -221,6 +245,23 @@ describe('DocumentsController', () => {
         controller.update(makeHttpRequest(), makeJwtPayload(), 'missing', {}),
       ).rejects.toThrow(NotFoundException);
       expect(auditLogsService.log).not.toHaveBeenCalled();
+    });
+
+    it('carries destaque and exigeCadastro through to the response when updated', async () => {
+      const before = makeDocument();
+      const updated = makeDocument({ destaque: true, exigeCadastro: true });
+      documentsService.findOne.mockResolvedValue(before);
+      documentsService.update.mockResolvedValue(updated);
+      documentsService.toResponseDto.mockReturnValue(
+        makeResponseDto({ destaque: true, exigeCadastro: true }),
+      );
+      const dto: UpdateDocumentDto = { destaque: true, exigeCadastro: true };
+
+      const result = await controller.update(makeHttpRequest(), makeJwtPayload(), 'doc-1', dto);
+
+      expect(documentsService.update).toHaveBeenCalledWith('doc-1', dto);
+      expect(result.destaque).toBe(true);
+      expect(result.exigeCadastro).toBe(true);
     });
   });
 

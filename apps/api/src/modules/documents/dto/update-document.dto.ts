@@ -41,4 +41,12 @@ export class UpdateDocumentDto {
   @IsOptional()
   @IsBoolean()
   readonly isActive?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  readonly destaque?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  readonly exigeCadastro?: boolean;
 }

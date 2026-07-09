@@ -26,6 +26,8 @@ export interface UploadDocumentData {
   readonly departamentoId: string;
   readonly serieId: string;
   readonly dossieId?: string | null;
+  readonly destaque?: boolean;
+  readonly exigeCadastro?: boolean;
 }
 
 @Injectable()
@@ -94,6 +96,8 @@ export class UploadDocumentUseCase {
         arquivoChave: saved.chave,
         arquivoMimeType: file.mimetype,
         arquivoTamanho: saved.tamanho,
+        destaque: data.destaque ?? false,
+        exigeCadastro: data.exigeCadastro ?? false,
       });
     } catch (error) {
       await this.storageService.delete(saved.chave);

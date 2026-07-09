@@ -21,6 +21,8 @@ export interface CreateDocumentData {
   readonly arquivoChave: string;
   readonly arquivoMimeType: string;
   readonly arquivoTamanho: number;
+  readonly destaque?: boolean;
+  readonly exigeCadastro?: boolean;
 }
 
 export interface UpdateDocumentData {
@@ -33,6 +35,8 @@ export interface UpdateDocumentData {
   readonly isActive?: boolean;
   readonly fase?: DocumentFase;
   readonly faseIntermediarioDesde?: Date;
+  readonly destaque?: boolean;
+  readonly exigeCadastro?: boolean;
 }
 
 export interface DocumentQueryFilter {

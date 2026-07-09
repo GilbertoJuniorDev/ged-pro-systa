@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsDateString,
   IsIn,
   IsOptional,
@@ -36,4 +37,12 @@ export class CreateDocumentDto {
   @IsOptional()
   @IsUUID()
   readonly dossieId?: string | null;
+
+  @IsOptional()
+  @IsBoolean()
+  readonly destaque?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  readonly exigeCadastro?: boolean;
 }

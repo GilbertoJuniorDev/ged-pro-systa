@@ -26,6 +26,8 @@ interface DocumentResponseInput {
   vencimentoCorrente: Date | string;
   vencimentoIntermediario: Date | string | null;
   elegivelTransferencia: boolean;
+  destaque: boolean;
+  exigeCadastro: boolean;
 }
 
 export class DocumentResponseDto {
@@ -49,6 +51,8 @@ export class DocumentResponseDto {
   readonly vencimentoCorrente!: string;
   readonly vencimentoIntermediario!: string | null;
   readonly elegivelTransferencia!: boolean;
+  readonly destaque!: boolean;
+  readonly exigeCadastro!: boolean;
 
   constructor(input: DocumentResponseInput) {
     this.id = input.id;
@@ -71,6 +75,8 @@ export class DocumentResponseDto {
     this.vencimentoCorrente = toIsoDateRequired(input.vencimentoCorrente);
     this.vencimentoIntermediario = toIsoDate(input.vencimentoIntermediario);
     this.elegivelTransferencia = input.elegivelTransferencia;
+    this.destaque = input.destaque;
+    this.exigeCadastro = input.exigeCadastro;
   }
 }
 

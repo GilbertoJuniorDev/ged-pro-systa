@@ -62,6 +62,8 @@ const makeDocument = (overrides: DocumentOverrides = {}): Document =>
     arquivoMimeType: 'application/pdf',
     arquivoTamanho: 1024,
     isActive: true,
+    destaque: false,
+    exigeCadastro: false,
     createdAt: new Date('2026-01-01'),
     updatedAt: new Date('2026-01-01'),
     serie: makeSerie(),
@@ -224,6 +226,26 @@ describe('DocumentsService', () => {
       expect(uploadDocumentUseCase.execute).toHaveBeenCalledWith(dto, file);
       expect(result).toEqual(created);
     });
+
+    it('forwards destaque and exigeCadastro to the use case when provided', async () => {
+      const created = makeDocument({ destaque: true, exigeCadastro: true });
+      uploadDocumentUseCase.execute.mockResolvedValue(created);
+      const dto = {
+        nome: 'Contrato',
+        confidencialidade: CONFIDENCIALIDADE.INTERNO,
+        departamentoId: 'dept-1',
+        serieId: 'serie-1',
+        destaque: true,
+        exigeCadastro: true,
+      };
+      const file = { originalname: 'x.pdf' } as Express.Multer.File;
+
+      const result = await service.upload(dto, file);
+
+      expect(uploadDocumentUseCase.execute).toHaveBeenCalledWith(dto, file);
+      expect(result.destaque).toBe(true);
+      expect(result.exigeCadastro).toBe(true);
+    });
   });
 
   describe('update', () => {
@@ -298,6 +320,22 @@ describe('DocumentsService', () => {
 
       expect(result).toEqual(updated);
       expect(dossieRepo.findOne).not.toHaveBeenCalled();
+    });
+
+    it('passes destaque and exigeCadastro through to the repository when provided', async () => {
+      const current = makeDocument();
+      const updated = makeDocument({ destaque: true, exigeCadastro: true });
+      documentRepository.findById.mockResolvedValue(current);
+      documentRepository.update.mockResolvedValue(updated);
+
+      const result = await service.update('doc-1', { destaque: true, exigeCadastro: true });
+
+      expect(documentRepository.update).toHaveBeenCalledWith(
+        'doc-1',
+        expect.objectContaining({ destaque: true, exigeCadastro: true }),
+      );
+      expect(result.destaque).toBe(true);
+      expect(result.exigeCadastro).toBe(true);
     });
   });
 
@@ -472,6 +510,22 @@ describe('DocumentsService', () => {
       const dto = service.toResponseDto(makeDocument());
 
       expect(dto).not.toHaveProperty('arquivoChave');
+    });
+
+    it('includes destaque and exigeCadastro when set on the document', () => {
+      const document = makeDocument({ destaque: true, exigeCadastro: true });
+
+      const dto = service.toResponseDto(document);
+
+      expect(dto.destaque).toBe(true);
+      expect(dto.exigeCadastro).toBe(true);
+    });
+
+    it('defaults destaque and exigeCadastro to false when not set on the document', () => {
+      const dto = service.toResponseDto(makeDocument());
+
+      expect(dto.destaque).toBe(false);
+      expect(dto.exigeCadastro).toBe(false);
     });
   });
 });

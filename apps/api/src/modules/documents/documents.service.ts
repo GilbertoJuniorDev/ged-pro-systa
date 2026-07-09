@@ -39,6 +39,8 @@ export interface UpdateDocumentInputData {
   readonly serieId?: string;
   readonly dossieId?: string | null;
   readonly isActive?: boolean;
+  readonly destaque?: boolean;
+  readonly exigeCadastro?: boolean;
 }
 
 // Papéis que enxergam todos os documentos, sem restrição por departamento.
@@ -168,6 +170,8 @@ export class DocumentsService {
       serieId: data.serieId,
       dossieId: data.dossieId,
       isActive: data.isActive,
+      destaque: data.destaque,
+      exigeCadastro: data.exigeCadastro,
     };
 
     return this.documentRepository.update(id, updateData);
@@ -245,6 +249,8 @@ export class DocumentsService {
       vencimentoCorrente,
       vencimentoIntermediario,
       elegivelTransferencia,
+      destaque: document.destaque,
+      exigeCadastro: document.exigeCadastro,
     });
   }
 }
