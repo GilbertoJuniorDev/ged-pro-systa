@@ -17,6 +17,7 @@
   "dependencies": {
     "@ged/database": "workspace:*",
     "@ged/types": "workspace:*",
+    "@ged/utils": "workspace:*",
     "@nestjs-modules/mailer": "^2.3.4",
     "@nestjs/common": "^11.0.0",
     "@nestjs/config": "^4.0.0",
@@ -91,6 +92,7 @@
     "moduleNameMapper": {
       "^@ged/database$": "<rootDir>/../../packages/@ged/database/src/index.ts",
       "^@ged/types$": "<rootDir>/../../packages/@ged/types/src/index.ts",
+      "^@ged/utils$": "<rootDir>/../../packages/@ged/utils/src/index.ts",
       "^@/(.*)$": "<rootDir>/src/$1"
     }
   }

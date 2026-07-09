@@ -22,6 +22,7 @@ import { StorageModule } from './modules/storage/storage.module';
 import { DocumentSeriesModule } from './modules/document-series/document-series.module';
 import { DossiesModule } from './modules/dossies/dossies.module';
 import { DocumentsModule } from './modules/documents/documents.module';
+import { PublicModule } from './modules/public/public.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { PermissionsGuard } from './common/guards/permissions.guard';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
@@ -64,6 +65,7 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
     DocumentSeriesModule,
     DossiesModule,
     DocumentsModule,
+    PublicModule,
   ],
   providers: [
     {
