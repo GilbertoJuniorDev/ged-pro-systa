@@ -413,6 +413,8 @@ export interface DocumentDto {
   readonly vencimentoCorrente: string;
   readonly vencimentoIntermediario: string | null;
   readonly elegivelTransferencia: boolean;
+  readonly destaque: boolean;
+  readonly exigeCadastro: boolean;
   readonly createdAt: string;
   readonly updatedAt: string;
 }
@@ -425,6 +427,8 @@ export interface UploadDocumentInput {
   readonly departamentoId: string;
   readonly serieId: string;
   readonly dossieId?: string | null;
+  readonly destaque?: boolean;
+  readonly exigeCadastro?: boolean;
 }
 
 export interface UpdateDocumentInput {
@@ -435,6 +439,8 @@ export interface UpdateDocumentInput {
   readonly serieId?: string;
   readonly dossieId?: string | null;
   readonly isActive?: boolean;
+  readonly destaque?: boolean;
+  readonly exigeCadastro?: boolean;
 }
 
 export interface DocumentQuery {
@@ -445,5 +451,38 @@ export interface DocumentQuery {
   readonly confidencialidade?: Confidencialidade;
   readonly page?: number;
   readonly limit?: number;
+}
+
+// ── GED — Public Document Portal ──────────────────────────────────────
+
+export const TIPO_DOCUMENTO = {
+  CPF: 'CPF',
+  CNPJ: 'CNPJ',
+} as const;
+
+export type TipoDocumento = (typeof TIPO_DOCUMENTO)[keyof typeof TIPO_DOCUMENTO];
+
+export interface PublicDocumentDto {
+  readonly id: string;
+  readonly nome: string;
+  readonly descricao: string | null;
+  readonly arquivoNome: string;
+  readonly arquivoMimeType: string;
+  readonly arquivoTamanho: number;
+  readonly serie: { readonly id: string; readonly codigo: string; readonly nome: string };
+  readonly destaque: boolean;
+  readonly exigeCadastro: boolean;
+  readonly createdAt: string;
+}
+
+export interface RegisterAccessInput {
+  readonly email: string;
+  readonly nome: string;
+  readonly documento: string;
+  readonly tipoDocumento: TipoDocumento;
+}
+
+export interface RegisterAccessResult {
+  readonly downloadToken: string;
 }
 
