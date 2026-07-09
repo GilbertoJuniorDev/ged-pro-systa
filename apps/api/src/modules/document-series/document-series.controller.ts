@@ -42,8 +42,12 @@ export class DocumentSeriesController {
   @ApiResponse({ status: 200, description: 'Document series listed successfully' })
   async findAll(
     @Query() query: QueryDocumentSeriesDto,
+    @CurrentUser() user: JwtPayload,
   ): Promise<DocumentSeriesResponseDto[]> {
-    const documentSeries = await this.documentSeriesService.findAll(query.departamentoId);
+    const documentSeries = await this.documentSeriesService.findAll(
+      query.departamentoId,
+      user,
+    );
     return documentSeries.map((d) => new DocumentSeriesResponseDto(d));
   }
 
@@ -51,8 +55,11 @@ export class DocumentSeriesController {
   @ApiOperation({ summary: 'Get document series by ID' })
   @ApiResponse({ status: 200, description: 'Document series found' })
   @ApiResponse({ status: 404, description: 'Document series not found' })
-  async findOne(@Param('id') id: string): Promise<DocumentSeriesResponseDto> {
-    const documentSeries = await this.documentSeriesService.findOne(id);
+  async findOne(
+    @Param('id') id: string,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<DocumentSeriesResponseDto> {
+    const documentSeries = await this.documentSeriesService.findOne(id, user);
     return new DocumentSeriesResponseDto(documentSeries);
   }
 

@@ -13,8 +13,14 @@ export interface UpdateDossieData {
   readonly isActive?: boolean;
 }
 
+export interface DossieQueryFilter {
+  readonly departamentoId?: string;
+  // Quando definido, restringe a listagem aos dossiês desses departamentos.
+  readonly allowedDepartamentoIds?: readonly string[];
+}
+
 export interface IDossieRepository {
-  findAll(filter?: { departamentoId?: string }): Promise<Dossie[]>;
+  findAll(filter?: DossieQueryFilter): Promise<Dossie[]>;
   findById(id: string): Promise<Dossie | null>;
   create(data: CreateDossieData): Promise<Dossie>;
   update(id: string, data: UpdateDossieData): Promise<Dossie>;

@@ -2,13 +2,25 @@ import { Test, type TestingModule } from '@nestjs/testing';
 import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import type { Repository } from 'typeorm';
-import { CONFIDENCIALIDADE, DOCUMENT_FASE, DocumentSeries, Dossie } from '@ged/database';
-import type { Document } from '@ged/database';
+import { CONFIDENCIALIDADE, DOCUMENT_FASE, DocumentSeries, Dossie, ROLE } from '@ged/database';
+import type { Document, UserDepartment } from '@ged/database';
+import type { JwtPayload } from '@ged/types';
 import { STORAGE_SERVICE, type IStorageService } from '../storage/interfaces/storage.interface';
+import { UserDepartmentsService } from '../user-departments/user-departments.service';
 import { DocumentsService } from './documents.service';
 import { DOCUMENT_REPOSITORY } from './interfaces/document-repository.interface';
 import type { IDocumentRepository } from './interfaces/document-repository.interface';
 import { UploadDocumentUseCase } from './use-cases/upload-document.use-case';
+
+const makeJwtPayload = (overrides: Partial<JwtPayload> = {}): JwtPayload => ({
+  sub: 'user-1',
+  email: 'user@ged.local',
+  role: ROLE.ADMIN,
+  ...overrides,
+});
+
+const makeUserDepartment = (departamentoId: string): UserDepartment =>
+  ({ departamentoId }) as UserDepartment;
 
 const makeSerie = (overrides: Partial<DocumentSeries> = {}): DocumentSeries =>
   ({
@@ -63,6 +75,7 @@ describe('DocumentsService', () => {
   let uploadDocumentUseCase: jest.Mocked<Pick<UploadDocumentUseCase, 'execute'>>;
   let documentSeriesRepo: jest.Mocked<Repository<DocumentSeries>>;
   let dossieRepo: jest.Mocked<Repository<Dossie>>;
+  let userDepartmentsService: jest.Mocked<Pick<UserDepartmentsService, 'findByUserId'>>;
 
   beforeEach(async () => {
     documentRepository = {
@@ -72,6 +85,8 @@ describe('DocumentsService', () => {
       update: jest.fn(),
       delete: jest.fn(),
     };
+
+    userDepartmentsService = { findByUserId: jest.fn() };
 
     storageService = {
       save: jest.fn(),
@@ -94,6 +109,7 @@ describe('DocumentsService', () => {
         { provide: UploadDocumentUseCase, useValue: uploadDocumentUseCase },
         { provide: getRepositoryToken(DocumentSeries), useValue: documentSeriesRepo },
         { provide: getRepositoryToken(Dossie), useValue: dossieRepo },
+        { provide: UserDepartmentsService, useValue: userDepartmentsService },
       ],
     }).compile();
 
@@ -116,6 +132,78 @@ describe('DocumentsService', () => {
       await expect(service.findOne('missing')).rejects.toThrow(
         new NotFoundException('Documento não encontrado'),
       );
+    });
+
+    it('returns the document for an ADMIN regardless of departamento', async () => {
+      documentRepository.findById.mockResolvedValue(makeDocument({ departamentoId: 'dept-9' }));
+
+      const result = await service.findOne('doc-1', makeJwtPayload({ role: ROLE.ADMIN }));
+
+      expect(result.departamentoId).toBe('dept-9');
+      expect(userDepartmentsService.findByUserId).not.toHaveBeenCalled();
+    });
+
+    it('returns the document for a VIEWER of the same departamento', async () => {
+      documentRepository.findById.mockResolvedValue(makeDocument({ departamentoId: 'dept-1' }));
+      userDepartmentsService.findByUserId.mockResolvedValue([makeUserDepartment('dept-1')]);
+
+      const result = await service.findOne(
+        'doc-1',
+        makeJwtPayload({ sub: 'viewer-1', role: ROLE.VIEWER }),
+      );
+
+      expect(result.departamentoId).toBe('dept-1');
+      expect(userDepartmentsService.findByUserId).toHaveBeenCalledWith('viewer-1');
+    });
+
+    it('throws NotFoundException when a VIEWER accesses a document outside their departamentos', async () => {
+      documentRepository.findById.mockResolvedValue(makeDocument({ departamentoId: 'dept-2' }));
+      userDepartmentsService.findByUserId.mockResolvedValue([makeUserDepartment('dept-1')]);
+
+      await expect(
+        service.findOne('doc-1', makeJwtPayload({ sub: 'viewer-1', role: ROLE.VIEWER })),
+      ).rejects.toThrow(new NotFoundException('Documento não encontrado'));
+    });
+  });
+
+  describe('findAll', () => {
+    const emptyPage = { data: [], total: 0, page: 1, limit: 20 };
+
+    it('passes no departamento restriction for an ADMIN', async () => {
+      documentRepository.findAll.mockResolvedValue(emptyPage);
+
+      await service.findAll({}, makeJwtPayload({ role: ROLE.ADMIN }));
+
+      expect(userDepartmentsService.findByUserId).not.toHaveBeenCalled();
+      expect(documentRepository.findAll).toHaveBeenCalledWith(
+        expect.objectContaining({ allowedDepartamentoIds: undefined }),
+      );
+    });
+
+    it("passes a VIEWER's departamentos as allowedDepartamentoIds", async () => {
+      documentRepository.findAll.mockResolvedValue(emptyPage);
+      userDepartmentsService.findByUserId.mockResolvedValue([
+        makeUserDepartment('dept-1'),
+        makeUserDepartment('dept-3'),
+      ]);
+
+      await service.findAll({}, makeJwtPayload({ sub: 'viewer-1', role: ROLE.VIEWER }));
+
+      expect(documentRepository.findAll).toHaveBeenCalledWith(
+        expect.objectContaining({ allowedDepartamentoIds: ['dept-1', 'dept-3'] }),
+      );
+    });
+
+    it('returns an empty page without querying when a VIEWER has no departamentos', async () => {
+      userDepartmentsService.findByUserId.mockResolvedValue([]);
+
+      const result = await service.findAll(
+        { page: 2, limit: 10 },
+        makeJwtPayload({ sub: 'viewer-1', role: ROLE.VIEWER }),
+      );
+
+      expect(result).toEqual({ data: [], total: 0, page: 2, limit: 10 });
+      expect(documentRepository.findAll).not.toHaveBeenCalled();
     });
   });
 
@@ -274,16 +362,41 @@ describe('DocumentsService', () => {
   });
 
   describe('getDownload', () => {
-    it('returns the document and its file stream', async () => {
+    it('returns the document and its file stream for an ADMIN', async () => {
       const document = makeDocument();
       const stream = {} as NodeJS.ReadableStream;
       documentRepository.findById.mockResolvedValue(document);
       storageService.getStream.mockResolvedValue(stream);
 
-      const result = await service.getDownload('doc-1');
+      const result = await service.getDownload('doc-1', makeJwtPayload({ role: ROLE.ADMIN }));
 
       expect(storageService.getStream).toHaveBeenCalledWith('drive-file-id');
       expect(result).toEqual({ document, stream });
+    });
+
+    it('returns the stream for a VIEWER of the same departamento', async () => {
+      const document = makeDocument({ departamentoId: 'dept-1' });
+      const stream = {} as NodeJS.ReadableStream;
+      documentRepository.findById.mockResolvedValue(document);
+      storageService.getStream.mockResolvedValue(stream);
+      userDepartmentsService.findByUserId.mockResolvedValue([makeUserDepartment('dept-1')]);
+
+      const result = await service.getDownload(
+        'doc-1',
+        makeJwtPayload({ sub: 'viewer-1', role: ROLE.VIEWER }),
+      );
+
+      expect(result).toEqual({ document, stream });
+    });
+
+    it('throws NotFoundException and never streams when a VIEWER is outside the departamento', async () => {
+      documentRepository.findById.mockResolvedValue(makeDocument({ departamentoId: 'dept-2' }));
+      userDepartmentsService.findByUserId.mockResolvedValue([makeUserDepartment('dept-1')]);
+
+      await expect(
+        service.getDownload('doc-1', makeJwtPayload({ sub: 'viewer-1', role: ROLE.VIEWER })),
+      ).rejects.toThrow(new NotFoundException('Documento não encontrado'));
+      expect(storageService.getStream).not.toHaveBeenCalled();
     });
   });
 

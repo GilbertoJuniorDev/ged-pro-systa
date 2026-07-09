@@ -8,10 +8,12 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Document, DOCUMENT_FASE, DocumentSeries, Dossie } from '@ged/database';
-import type { Confidencialidade } from '@ged/database';
+import { Document, DOCUMENT_FASE, DocumentSeries, Dossie, ROLE } from '@ged/database';
+import type { Confidencialidade, Role } from '@ged/database';
+import type { JwtPayload } from '@ged/types';
 import { STORAGE_SERVICE } from '../storage/interfaces/storage.interface';
 import type { IStorageService } from '../storage/interfaces/storage.interface';
+import { UserDepartmentsService } from '../user-departments/user-departments.service';
 import { UploadDocumentUseCase } from './use-cases/upload-document.use-case';
 import type { UploadDocumentData } from './use-cases/upload-document.use-case';
 import { DocumentResponseDto } from './dto/document-response.dto';
@@ -38,6 +40,9 @@ export interface UpdateDocumentInputData {
   readonly dossieId?: string | null;
   readonly isActive?: boolean;
 }
+
+// Papéis que enxergam todos os documentos, sem restrição por departamento.
+const PRIVILEGED_ROLES: readonly Role[] = [ROLE.SUPER_ADMIN, ROLE.ADMIN, ROLE.MANAGER];
 
 function addMonths(date: Date | string, months: number): Date {
   // `date` columns come back from TypeORM/pg as 'YYYY-MM-DD' strings (only when a value was
@@ -70,16 +75,56 @@ export class DocumentsService {
     private readonly documentSeriesRepo: Repository<DocumentSeries>,
     @InjectRepository(Dossie)
     private readonly dossieRepo: Repository<Dossie>,
+    private readonly userDepartmentsService: UserDepartmentsService,
   ) {}
 
-  findAll(filter: DocumentQueryFilter): Promise<PaginatedDocuments> {
-    return this.documentRepository.findAll(filter);
+  // Retorna null para papéis privilegiados (sem restrição). Caso contrário, a lista de
+  // departamentoIds aos quais o usuário está vinculado (pode ser vazia).
+  private async resolveAllowedDepartamentos(
+    user: JwtPayload,
+  ): Promise<readonly string[] | null> {
+    if (PRIVILEGED_ROLES.includes(user.role)) {
+      return null;
+    }
+    const departments = await this.userDepartmentsService.findByUserId(user.sub);
+    return departments.map((department) => department.departamentoId);
   }
 
-  async findOne(id: string): Promise<Document> {
+  // Não vaza existência: usuário sem acesso recebe 404 (igual a documento inexistente).
+  private async assertCanAccess(document: Document, user: JwtPayload): Promise<void> {
+    const allowed = await this.resolveAllowedDepartamentos(user);
+    if (allowed === null) {
+      return;
+    }
+    if (!allowed.includes(document.departamentoId)) {
+      throw new NotFoundException('Documento não encontrado');
+    }
+  }
+
+  async findAll(filter: DocumentQueryFilter, user: JwtPayload): Promise<PaginatedDocuments> {
+    const allowed = await this.resolveAllowedDepartamentos(user);
+    if (allowed !== null && allowed.length === 0) {
+      // Usuário não-privilegiado sem nenhum departamento não enxerga documento algum.
+      const page = filter.page ?? 1;
+      const limit = Math.min(filter.limit ?? 20, 100);
+      return { data: [], total: 0, page, limit };
+    }
+    return this.documentRepository.findAll({
+      ...filter,
+      allowedDepartamentoIds: allowed ?? undefined,
+    });
+  }
+
+  // `user` é opcional para preservar o caminho de escrita (update/remove/transferir), que
+  // já é restrito a ADMIN/MANAGER pelo RolesGuard e carrega o documento sem checagem de
+  // escopo. Quando `user` é fornecido (leitura), o acesso por departamento é validado.
+  async findOne(id: string, user?: JwtPayload): Promise<Document> {
     const document = await this.documentRepository.findById(id);
     if (!document) {
       throw new NotFoundException('Documento não encontrado');
+    }
+    if (user) {
+      await this.assertCanAccess(document, user);
     }
     return document;
   }
@@ -153,8 +198,12 @@ export class DocumentsService {
     });
   }
 
-  async getDownload(id: string): Promise<{ document: Document; stream: NodeJS.ReadableStream }> {
-    const document = await this.findOne(id);
+  async getDownload(
+    id: string,
+    user: JwtPayload,
+  ): Promise<{ document: Document; stream: NodeJS.ReadableStream }> {
+    // findOne(id, user) já aplica assertCanAccess — download herda o mesmo escopo.
+    const document = await this.findOne(id, user);
     const stream = await this.storageService.getStream(document.arquivoChave);
     return { document, stream };
   }

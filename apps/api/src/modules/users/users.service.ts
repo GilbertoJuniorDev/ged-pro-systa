@@ -1,5 +1,7 @@
 import { BadRequestException, Injectable, Inject, NotFoundException } from '@nestjs/common';
-import { ROLE } from '@ged/database';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { ROLE, RefreshToken } from '@ged/database';
 import type { User } from '@ged/database';
 import type { Role } from '@ged/types';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
@@ -17,6 +19,8 @@ export class UsersService {
     @Inject(USER_REPOSITORY)
     private readonly userRepository: IUserRepository,
     private readonly auditLogsService: AuditLogsService,
+    @InjectRepository(RefreshToken)
+    private readonly refreshTokenRepo: Repository<RefreshToken>,
   ) {}
 
   findByEmail(email: string): Promise<User | null> {
@@ -76,6 +80,11 @@ export class UsersService {
     if (user.role === ROLE.SUPER_ADMIN) {
       throw new BadRequestException('Não é possível remover/desativar o Super Admin');
     }
-    return this.userRepository.setActive(id, isActive);
+    const updated = await this.userRepository.setActive(id, isActive);
+    // Ao desativar, revoga todas as sessões ativas do usuário
+    if (!isActive) {
+      await this.refreshTokenRepo.delete({ userId: id });
+    }
+    return updated;
   }
 }

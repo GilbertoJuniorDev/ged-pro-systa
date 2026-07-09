@@ -43,6 +43,9 @@ export interface DocumentQueryFilter {
   readonly confidencialidade?: Confidencialidade;
   readonly page?: number;
   readonly limit?: number;
+  // Departamentos aos quais o usuário tem acesso. Quando definido e não-vazio, restringe
+  // a listagem a documentos desses departamentos (escopo por usuário não-privilegiado).
+  readonly allowedDepartamentoIds?: readonly string[];
 }
 
 export interface PaginatedDocuments {

@@ -70,8 +70,11 @@ export class DocumentsController {
   @Get()
   @ApiOperation({ summary: 'List documents' })
   @ApiResponse({ status: 200, description: 'Documents listed successfully' })
-  async findAll(@Query() query: QueryDocumentDto): Promise<PaginatedDocumentResponse> {
-    const { data, total, page, limit } = await this.documentsService.findAll(query);
+  async findAll(
+    @Query() query: QueryDocumentDto,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<PaginatedDocumentResponse> {
+    const { data, total, page, limit } = await this.documentsService.findAll(query, user);
     return {
       data: data.map((document) => this.documentsService.toResponseDto(document)),
       total,
@@ -84,8 +87,11 @@ export class DocumentsController {
   @ApiOperation({ summary: 'Get document by ID' })
   @ApiResponse({ status: 200, description: 'Document found' })
   @ApiResponse({ status: 404, description: 'Document not found' })
-  async findOne(@Param('id') id: string): Promise<DocumentResponseDto> {
-    const document = await this.documentsService.findOne(id);
+  async findOne(
+    @Param('id') id: string,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<DocumentResponseDto> {
+    const document = await this.documentsService.findOne(id, user);
     return this.documentsService.toResponseDto(document);
   }
 
@@ -95,9 +101,10 @@ export class DocumentsController {
   @ApiResponse({ status: 404, description: 'Document not found' })
   async download(
     @Param('id') id: string,
+    @CurrentUser() user: JwtPayload,
     @Res({ passthrough: true }) res: Response,
   ): Promise<StreamableFile> {
-    const { document, stream } = await this.documentsService.getDownload(id);
+    const { document, stream } = await this.documentsService.getDownload(id, user);
     res.set({
       'Content-Type': document.arquivoMimeType,
       'Content-Disposition': `attachment; filename="${encodeURIComponent(document.arquivoNome)}"`,

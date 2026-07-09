@@ -40,8 +40,11 @@ export class DossiesController {
   @Get()
   @ApiOperation({ summary: 'List all dossiês' })
   @ApiResponse({ status: 200, description: 'Dossiês listed successfully' })
-  async findAll(@Query() query: QueryDossieDto): Promise<DossieResponseDto[]> {
-    const dossies = await this.dossiesService.findAll(query.departamentoId);
+  async findAll(
+    @Query() query: QueryDossieDto,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<DossieResponseDto[]> {
+    const dossies = await this.dossiesService.findAll(query.departamentoId, user);
     return dossies.map((d) => new DossieResponseDto(d));
   }
 
@@ -49,8 +52,11 @@ export class DossiesController {
   @ApiOperation({ summary: 'Get dossiê by ID' })
   @ApiResponse({ status: 200, description: 'Dossiê found' })
   @ApiResponse({ status: 404, description: 'Dossiê not found' })
-  async findOne(@Param('id') id: string): Promise<DossieResponseDto> {
-    const dossie = await this.dossiesService.findOne(id);
+  async findOne(
+    @Param('id') id: string,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<DossieResponseDto> {
+    const dossie = await this.dossiesService.findOne(id, user);
     return new DossieResponseDto(dossie);
   }
 

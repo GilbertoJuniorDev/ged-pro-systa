@@ -110,9 +110,10 @@ describe('DocumentsController', () => {
       documentsService.findAll.mockResolvedValue({ data: documents, total: 1, page: 1, limit: 20 });
       documentsService.toResponseDto.mockReturnValue(makeResponseDto());
 
-      const result = await controller.findAll({});
+      const result = await controller.findAll({}, makeJwtPayload());
 
       expect(result).toEqual({ data: [makeResponseDto()], total: 1, page: 1, limit: 20 });
+      expect(documentsService.findAll).toHaveBeenCalledWith({}, makeJwtPayload());
       expect(documentsService.toResponseDto).toHaveBeenCalledWith(documents[0]);
     });
   });
@@ -123,16 +124,18 @@ describe('DocumentsController', () => {
       documentsService.findOne.mockResolvedValue(document);
       documentsService.toResponseDto.mockReturnValue(makeResponseDto());
 
-      const result = await controller.findOne('doc-1');
+      const result = await controller.findOne('doc-1', makeJwtPayload());
 
       expect(result.id).toBe('doc-1');
-      expect(documentsService.findOne).toHaveBeenCalledWith('doc-1');
+      expect(documentsService.findOne).toHaveBeenCalledWith('doc-1', makeJwtPayload());
     });
 
     it('throws NotFoundException when the document does not exist', async () => {
       documentsService.findOne.mockRejectedValue(new NotFoundException());
 
-      await expect(controller.findOne('missing')).rejects.toThrow(NotFoundException);
+      await expect(controller.findOne('missing', makeJwtPayload())).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -294,12 +297,13 @@ describe('DocumentsController', () => {
       documentsService.getDownload.mockResolvedValue({ document, stream });
       const res = { set: jest.fn() } as unknown as Response;
 
-      const result = await controller.download('doc-1', res);
+      const result = await controller.download('doc-1', makeJwtPayload(), res);
 
       expect(res.set).toHaveBeenCalledWith({
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="contrato.pdf"`,
       });
+      expect(documentsService.getDownload).toHaveBeenCalledWith('doc-1', makeJwtPayload());
       expect(result).toBeInstanceOf(StreamableFile);
     });
 
@@ -307,7 +311,9 @@ describe('DocumentsController', () => {
       documentsService.getDownload.mockRejectedValue(new NotFoundException());
       const res = { set: jest.fn() } as unknown as Response;
 
-      await expect(controller.download('missing', res)).rejects.toThrow(NotFoundException);
+      await expect(controller.download('missing', makeJwtPayload(), res)).rejects.toThrow(
+        NotFoundException,
+      );
       expect(res.set).not.toHaveBeenCalled();
     });
   });

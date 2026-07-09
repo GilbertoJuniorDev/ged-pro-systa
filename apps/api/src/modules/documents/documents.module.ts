@@ -8,12 +8,14 @@ import { UploadDocumentUseCase } from './use-cases/upload-document.use-case';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { AuditLogsModule } from '../audit-logs/audit-logs.module';
 import { StorageModule } from '../storage/storage.module';
+import { UserDepartmentsModule } from '../user-departments/user-departments.module';
 
 @NestModule({
   imports: [
     TypeOrmModule.forFeature([Document, Department, DocumentSeries, Dossie]),
     AuditLogsModule,
     StorageModule,
+    UserDepartmentsModule,
   ],
   controllers: [DocumentsController],
   providers: [

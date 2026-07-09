@@ -178,6 +178,16 @@ describe('AuthService', () => {
 
       expect(result).toBeNull();
     });
+
+    it('should return null when user is inactive even with valid password', async () => {
+      const user = makeUser({ isActive: false });
+      jest.spyOn(bcrypt, 'compare').mockResolvedValue(true as never);
+      mockUsersService.findByEmail.mockResolvedValue(user);
+
+      const result = await service.validateUser('test@ged.local', 'correct-password');
+
+      expect(result).toBeNull();
+    });
   });
 
   describe('login', () => {
@@ -204,7 +214,7 @@ describe('AuthService', () => {
 
       await service.login(user);
 
-      expect(bcrypt.hash).toHaveBeenCalledWith(expect.any(String), 10);
+      expect(bcrypt.hash).toHaveBeenCalledWith(expect.any(String), 12);
       expect(mockRefreshTokenRepo.create).toHaveBeenCalledWith(
         expect.objectContaining({ token: 'bcrypt-hash', userId: user.id }),
       );
@@ -263,6 +273,18 @@ describe('AuthService', () => {
       await expect(
         service.refreshTokens('user-uuid-1', 'raw-token'),
       ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw UnauthorizedException when user is inactive', async () => {
+      const stored = makeRefreshToken();
+      jest.spyOn(bcrypt, 'compare').mockResolvedValue(true as never);
+      mockRefreshTokenRepo.find.mockResolvedValue([stored]);
+      mockRefreshTokenRepo.delete.mockResolvedValue({});
+      mockUsersService.findById.mockResolvedValue(makeUser({ isActive: false }));
+
+      await expect(
+        service.refreshTokens('user-uuid-1', 'raw-token'),
+      ).rejects.toThrow(UnauthorizedException);
     });
   });
 
@@ -381,6 +403,28 @@ describe('AuthService', () => {
       );
       expect(mockPasswordResetTokenRepo.delete).toHaveBeenCalledWith({
         id: validPrt.id,
+      });
+    });
+
+    it('should revoke all refresh tokens for the user when password is reset', async () => {
+      const user = makeUser();
+      const validPrt = {
+        id: 'prt-uuid-1',
+        tokenHash: 'some-hash',
+        userId: user.id,
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+      };
+      mockPasswordResetTokenRepo.findOne.mockResolvedValue(validPrt);
+      mockUsersService.findById.mockResolvedValue(user);
+      jest.spyOn(bcrypt, 'hash').mockResolvedValue('new-hashed-password' as never);
+      mockUsersService.updatePassword.mockResolvedValue(undefined);
+      mockRefreshTokenRepo.delete.mockResolvedValue({});
+      mockPasswordResetTokenRepo.delete.mockResolvedValue({});
+
+      await service.resetPassword('a'.repeat(64), 'NewP@ssw0rd');
+
+      expect(mockRefreshTokenRepo.delete).toHaveBeenCalledWith({
+        userId: user.id,
       });
     });
 

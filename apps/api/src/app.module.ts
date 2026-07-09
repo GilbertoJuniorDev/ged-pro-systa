@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { validate } from './config/env.validation';
 import { DatabaseModule } from './database/database.module';
 import { MongoDatabaseModule } from './database/mongo-database.module';
@@ -31,6 +32,19 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
       isGlobal: true,
       validate,
     }),
+    ThrottlerModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => {
+        const ttl = Number(config.get('THROTTLE_TTL'));
+        const limit = Number(config.get('THROTTLE_LIMIT'));
+        return [
+          {
+            ttl: Number.isFinite(ttl) && ttl > 0 ? ttl : 60_000,
+            limit: Number.isFinite(limit) && limit > 0 ? limit : 100,
+          },
+        ];
+      },
+    }),
     DatabaseModule,
     MongoDatabaseModule,
     UsersModule,
@@ -52,6 +66,10 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
     DocumentsModule,
   ],
   providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,

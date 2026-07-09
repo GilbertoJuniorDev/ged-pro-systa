@@ -29,6 +29,20 @@ const SENSITIVE_KEYS = new Set([
 /** Throttle TTL in seconds — 1 alert per unique error key per window. */
 const ALERT_THROTTLE_SECONDS = 300;
 
+/**
+ * Escapa caracteres sensíveis a HTML em strings vindas de fonte não confiável
+ * (endpoint público `POST /error-logs/client`) antes de persistir, reduzindo
+ * risco de stored-XSS / log-injection quando os logs são exibidos no painel admin.
+ */
+function escapeText(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+}
+
 function sanitize(value: unknown, depth = 0): unknown {
   if (depth > 4 || value === null || value === undefined) return value;
   if (Array.isArray(value)) {
@@ -71,6 +85,9 @@ export class ErrorLogsService {
     try {
       const sanitized: CreateErrorLogData = {
         ...data,
+        message: escapeText(data.message),
+        stack: data.stack !== undefined ? escapeText(data.stack) : undefined,
+        url: data.url !== undefined ? escapeText(data.url) : undefined,
         context: data.context
           ? (sanitize(data.context) as Record<string, unknown>)
           : undefined,

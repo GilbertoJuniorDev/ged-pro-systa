@@ -1,6 +1,7 @@
 import { Test, type TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { BadRequestException, ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common';
-import { ROLE } from '@ged/database';
+import { ROLE, RefreshToken } from '@ged/database';
 import type { User, UserDepartment } from '@ged/database';
 import type { JwtPayload } from '@ged/types';
 import type { HttpRequest } from '../../common/interfaces/http-request.interface';
@@ -98,6 +99,7 @@ describe('UsersController', () => {
       providers: [
         UsersService,
         { provide: USER_REPOSITORY, useValue: mockRepository },
+        { provide: getRepositoryToken(RefreshToken), useValue: { delete: jest.fn() } },
         { provide: CreateUserWithProfileUseCase, useValue: createUserWithProfileUseCase },
         { provide: UpdateUserWithDepartmentsUseCase, useValue: updateUserWithDepartmentsUseCase },
         { provide: UserDepartmentsService, useValue: userDepartmentsService },

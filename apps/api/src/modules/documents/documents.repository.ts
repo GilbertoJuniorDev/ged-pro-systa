@@ -48,6 +48,11 @@ export class DocumentsRepository implements IDocumentRepository {
         confidencialidade: filter.confidencialidade,
       });
     }
+    if (filter.allowedDepartamentoIds && filter.allowedDepartamentoIds.length > 0) {
+      qb.andWhere('document.departamento_id IN (:...allowedDepartamentoIds)', {
+        allowedDepartamentoIds: filter.allowedDepartamentoIds,
+      });
+    }
 
     const [data, total] = await qb.getManyAndCount();
     return { data, total, page, limit };

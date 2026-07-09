@@ -44,7 +44,7 @@ export class CreateClientErrorLogDto {
 
   @IsOptional()
   @IsString()
-  @MaxLength(20_000)
+  @MaxLength(10_000)
   readonly stack?: string;
 
   @IsOptional()

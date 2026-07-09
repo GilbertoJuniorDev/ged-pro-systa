@@ -30,6 +30,10 @@ const envSchema = z.object({
   GOOGLE_DRIVE_REFRESH_TOKEN: z.string().min(1),
   GOOGLE_DRIVE_FOLDER_ID: z.string().min(1),
   STORAGE_MAX_FILE_SIZE: z.coerce.number().int().positive().default(26_214_400),
+  SEED_ADMIN_EMAIL: z.string().email().optional(),
+  SEED_ADMIN_PASSWORD: z.string().min(12).optional(),
+  THROTTLE_TTL: z.coerce.number().int().positive().default(60_000),
+  THROTTLE_LIMIT: z.coerce.number().int().positive().default(100),
 });
 
 export type Env = z.infer<typeof envSchema>;
