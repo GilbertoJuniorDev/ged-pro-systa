@@ -33,4 +33,9 @@ export {
   DOCUMENT_FASE,
   type DocumentFase,
 } from './entities/document.entity';
+export {
+  DocumentLead,
+  TIPO_DOCUMENTO,
+  type TipoDocumento,
+} from './entities/document-lead.entity';
 

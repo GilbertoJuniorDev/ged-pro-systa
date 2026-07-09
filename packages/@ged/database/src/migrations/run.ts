@@ -24,6 +24,8 @@ import { UpgradeSeedAdminToSuperAdmin1782950400003 } from './1782950400003-Upgra
 import { CreateDocumentSeriesTable1782950400004 } from './1782950400004-CreateDocumentSeriesTable';
 import { CreateDossiesTable1782950400005 } from './1782950400005-CreateDossiesTable';
 import { CreateDocumentsTable1782950400006 } from './1782950400006-CreateDocumentsTable';
+import { AddPortalFieldsToDocuments1782950400007 } from './1782950400007-AddPortalFieldsToDocuments';
+import { CreateDocumentLeadsTable1782950400008 } from './1782950400008-CreateDocumentLeadsTable';
 const DATABASE_URL = process.env['DATABASE_URL'];
 
 if (!DATABASE_URL) {
@@ -60,6 +62,8 @@ const dataSource = new DataSource({
     CreateDocumentSeriesTable1782950400004,
     CreateDossiesTable1782950400005,
     CreateDocumentsTable1782950400006,
+    AddPortalFieldsToDocuments1782950400007,
+    CreateDocumentLeadsTable1782950400008,
   ],
   migrationsTableName: 'migrations',
 });

@@ -24,6 +24,7 @@ import {
   DocumentSeries,
   Dossie,
   Document,
+  DocumentLead,
 } from '@ged/database';
 
 @Module({
@@ -57,6 +58,7 @@ import {
           DocumentSeries,
           Dossie,
           Document,
+          DocumentLead,
         ],
         synchronize: false,
         migrationsRun: false,

@@ -99,6 +99,12 @@ export class Document {
   @Column({ name: 'is_active', default: true })
   isActive!: boolean;
 
+  @Column({ name: 'destaque', default: false })
+  destaque!: boolean;
+
+  @Column({ name: 'exige_cadastro', default: false })
+  exigeCadastro!: boolean;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 
