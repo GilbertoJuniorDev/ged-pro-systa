@@ -38,6 +38,8 @@ export interface UploadDocumentPayload {
   departamentoId: string;
   serieId: string;
   dossieId?: string | null;
+  destaque?: boolean;
+  exigeCadastro?: boolean;
 }
 
 function buildQueryString(filters: DocumentFilters): string {
@@ -94,6 +96,8 @@ export function useUploadDocument() {
       formData.append('departamentoId', payload.departamentoId);
       formData.append('serieId', payload.serieId);
       if (payload.dossieId) formData.append('dossieId', payload.dossieId);
+      if (payload.destaque !== undefined) formData.append('destaque', String(payload.destaque));
+      if (payload.exigeCadastro !== undefined) formData.append('exigeCadastro', String(payload.exigeCadastro));
 
       return apiClient.post<DocumentDto>('/documents', formData, {
         token: session?.user?.accessToken,

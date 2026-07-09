@@ -15,6 +15,7 @@ import { useDossies } from '@/hooks/use-dossies';
 import { useAuth } from '@/hooks/use-auth';
 import { Combobox } from '@/components/ui/combobox';
 import { DatePicker } from '@/components/ui/date-picker';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const ALLOWED_EXTENSIONS = '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.txt';
 const ALLOWED_MIME_TYPES = [
@@ -52,6 +53,8 @@ const schema = z.object({
   departamentoId: z.string().uuid('Selecione um departamento'),
   serieId: z.string().uuid('Selecione uma série'),
   dossieId: z.string().optional().or(z.literal('')),
+  destaque: z.boolean().optional(),
+  exigeCadastro: z.boolean().optional(),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -90,6 +93,16 @@ export function UploadDocumentForm() {
     setValue('serieId', '');
     setValue('dossieId', '');
   }, [watchedDepartamentoId, setValue]);
+
+  const watchedConfidencialidade = watch('confidencialidade');
+  const isPublico = watchedConfidencialidade === CONFIDENCIALIDADE.PUBLICO;
+
+  useEffect(() => {
+    if (!isPublico) {
+      setValue('destaque', false);
+      setValue('exigeCadastro', false);
+    }
+  }, [isPublico, setValue]);
 
   const departamentoOptions = (departamentos ?? []).map((d) => ({ value: d.id, label: d.nome }));
   const serieOptions = (series ?? []).map((s) => ({ value: s.id, label: `${s.codigo} — ${s.nome}` }));
@@ -133,6 +146,8 @@ export function UploadDocumentForm() {
         departamentoId: data.departamentoId,
         serieId: data.serieId,
         dossieId: data.dossieId === '' ? undefined : data.dossieId,
+        destaque: data.destaque,
+        exigeCadastro: data.exigeCadastro,
       },
       { onSuccess: () => router.push('/documents') },
     );
@@ -322,6 +337,62 @@ export function UploadDocumentForm() {
         />
         {errors.confidencialidade && (
           <p className="text-rose-500 dark:text-rose-400 text-xs mt-1">{errors.confidencialidade.message}</p>
+        )}
+      </div>
+
+      <div className="space-y-2.5">
+        <div className="flex items-center gap-3">
+          <Controller
+            name="destaque"
+            control={control}
+            render={({ field }) => (
+              <Checkbox
+                id="destaque"
+                checked={field.value ?? false}
+                onChange={(e) => field.onChange(e.target.checked)}
+                disabled={!isPublico}
+              />
+            )}
+          />
+          <label
+            htmlFor="destaque"
+            className={`text-sm cursor-pointer ${
+              isPublico
+                ? 'text-slate-600 dark:text-slate-400'
+                : 'text-slate-400 dark:text-slate-600 cursor-not-allowed'
+            }`}
+          >
+            Exibir no portal público como destaque
+          </label>
+        </div>
+        <div className="flex items-center gap-3">
+          <Controller
+            name="exigeCadastro"
+            control={control}
+            render={({ field }) => (
+              <Checkbox
+                id="exigeCadastro"
+                checked={field.value ?? false}
+                onChange={(e) => field.onChange(e.target.checked)}
+                disabled={!isPublico}
+              />
+            )}
+          />
+          <label
+            htmlFor="exigeCadastro"
+            className={`text-sm cursor-pointer ${
+              isPublico
+                ? 'text-slate-600 dark:text-slate-400'
+                : 'text-slate-400 dark:text-slate-600 cursor-not-allowed'
+            }`}
+          >
+            Exigir cadastro para download
+          </label>
+        </div>
+        {!isPublico && (
+          <p className="text-xs text-slate-500 dark:text-slate-500">
+            Disponível apenas para documentos com confidencialidade Público.
+          </p>
         )}
       </div>
 
