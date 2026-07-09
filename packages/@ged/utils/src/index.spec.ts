@@ -100,8 +100,8 @@ describe('isValidCpf', () => {
   });
 
   it('should return false when the first check digit does not match', () => {
-    // Dígito verificador correto para essa base é 3; aqui usamos 8.
-    expect(isValidCpf('11144477835')).toBe(false);
+    // Base 111444777 e 2º dígito verificador (5) mantidos; 1º dígito verificador correto é 3, aqui usamos 8.
+    expect(isValidCpf('11144477785')).toBe(false);
   });
 
   it('should return false when the second check digit does not match', () => {
