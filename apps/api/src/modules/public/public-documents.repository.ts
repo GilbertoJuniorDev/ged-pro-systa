@@ -10,11 +10,21 @@ export interface PublicDocumentQueryFilter {
   readonly limit?: number;
 }
 
-export interface PaginatedPublicDocuments {
+// Nomeado "Entities" (não "PaginatedPublicDocuments") de propósito: opera sobre a
+// entidade Document crua vinda do TypeORM, não sobre o PublicDocumentDto — um tipo
+// legitimamente diferente do `PaginatedPublicDocuments` (alias de `PaginatedResult<PublicDocumentDto>`)
+// exportado por @ged/types e usado na camada de service/controller.
+export interface PaginatedPublicDocumentEntities {
   readonly data: Document[];
   readonly total: number;
   readonly page: number;
   readonly limit: number;
+}
+
+export interface PublicSerieOption {
+  readonly id: string;
+  readonly codigo: string;
+  readonly nome: string;
 }
 
 const LISTAR_LIMIT_CAP = 100;
@@ -42,7 +52,7 @@ export class PublicDocumentsRepository {
       .andWhere('document.is_active = :isActive', { isActive: true });
   }
 
-  async listar(filter: PublicDocumentQueryFilter): Promise<PaginatedPublicDocuments> {
+  async listar(filter: PublicDocumentQueryFilter): Promise<PaginatedPublicDocumentEntities> {
     const page = filter.page ?? 1;
     const limit = Math.min(filter.limit ?? 20, LISTAR_LIMIT_CAP);
     const skip = (page - 1) * limit;
@@ -74,5 +84,18 @@ export class PublicDocumentsRepository {
 
   findById(id: string): Promise<Document | null> {
     return this.baseQuery().andWhere('document.id = :id', { id }).getOne();
+  }
+
+  // Projeção enxuta (id/codigo/nome da série) para popular o filtro do portal com a lista
+  // completa de séries disponíveis — não a entidade Document inteira, então `select`
+  // substitui por completo os selects automáticos de `leftJoinAndSelect` em baseQuery().
+  listarSeriesDisponiveis(): Promise<PublicSerieOption[]> {
+    return this.baseQuery()
+      .select('serie.id', 'id')
+      .addSelect('serie.codigo', 'codigo')
+      .addSelect('serie.nome', 'nome')
+      .distinct(true)
+      .orderBy('serie.nome', 'ASC')
+      .getRawMany<PublicSerieOption>();
   }
 }

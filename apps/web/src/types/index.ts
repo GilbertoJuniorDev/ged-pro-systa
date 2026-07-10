@@ -55,6 +55,7 @@ export type {
   RegisterAccessInput,
   RegisterAccessResult,
   TipoDocumento,
+  PaginatedPublicDocuments,
 } from '@ged/types';
 export { SUBSCRIPTION_STATUS, DESTINACAO_FINAL, CONFIDENCIALIDADE, DOCUMENT_FASE } from '@ged/types';
 

@@ -13,9 +13,13 @@ function makeQueryBuilderMock(): jest.Mocked<SelectQueryBuilder<Document>> {
   qb.orderBy = jest.fn().mockReturnValue(qb);
   qb.skip = jest.fn().mockReturnValue(qb);
   qb.take = jest.fn().mockReturnValue(qb);
+  qb.select = jest.fn().mockReturnValue(qb);
+  qb.addSelect = jest.fn().mockReturnValue(qb);
+  qb.distinct = jest.fn().mockReturnValue(qb);
   qb.getManyAndCount = jest.fn();
   qb.getMany = jest.fn();
   qb.getOne = jest.fn();
+  qb.getRawMany = jest.fn();
   return qb as unknown as jest.Mocked<SelectQueryBuilder<Document>>;
 }
 
@@ -148,6 +152,42 @@ describe('PublicDocumentsRepository', () => {
       });
       expect(qb.andWhere).toHaveBeenCalledWith('document.is_active = :isActive', { isActive: true });
       expect(qb.andWhere).toHaveBeenCalledWith('document.id = :id', { id: 'doc-1' });
+    });
+  });
+
+  describe('listarSeriesDisponiveis', () => {
+    it('should always filter confidencialidade=PUBLICO and is_active=true', async () => {
+      qb.getRawMany.mockResolvedValue([]);
+
+      await repository.listarSeriesDisponiveis();
+
+      expect(qb.andWhere).toHaveBeenCalledWith('document.confidencialidade = :confidencialidade', {
+        confidencialidade: 'PUBLICO',
+      });
+      expect(qb.andWhere).toHaveBeenCalledWith('document.is_active = :isActive', { isActive: true });
+    });
+
+    it('should select only the distinct serie id/codigo/nome columns', async () => {
+      qb.getRawMany.mockResolvedValue([]);
+
+      await repository.listarSeriesDisponiveis();
+
+      expect(qb.select).toHaveBeenCalledWith('serie.id', 'id');
+      expect(qb.addSelect).toHaveBeenCalledWith('serie.codigo', 'codigo');
+      expect(qb.addSelect).toHaveBeenCalledWith('serie.nome', 'nome');
+      expect(qb.distinct).toHaveBeenCalledWith(true);
+    });
+
+    it('should return the raw rows produced by the query', async () => {
+      const rows = [
+        { id: 'serie-1', codigo: 'FIN-01', nome: 'Contratos financeiros' },
+        { id: 'serie-2', codigo: 'RH-01', nome: 'Documentos de RH' },
+      ];
+      qb.getRawMany.mockResolvedValue(rows);
+
+      const result = await repository.listarSeriesDisponiveis();
+
+      expect(result).toEqual(rows);
     });
   });
 });

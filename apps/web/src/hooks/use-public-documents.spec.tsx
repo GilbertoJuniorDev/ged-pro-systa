@@ -7,6 +7,7 @@ import {
   usePublicDestaques,
   usePublicRecentes,
   usePublicDocument,
+  usePublicSeries,
   useRegisterAccess,
 } from './use-public-documents';
 import { apiClient } from '../lib/api-client';
@@ -150,6 +151,25 @@ describe('usePublicDocument', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     expect(mockedApiClient.get).toHaveBeenCalledWith('/public/documents/doc-1');
+  });
+});
+
+describe('usePublicSeries', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should fetch the full list of available séries without a token', async () => {
+    const series = [{ id: 'serie-1', codigo: 'FIN-01', nome: 'Contratos financeiros' }];
+    mockedApiClient.get.mockResolvedValue(series);
+
+    const { result } = renderHook(() => usePublicSeries(), { wrapper: createWrapper() });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(result.current.data).toEqual(series);
+    expect(mockedApiClient.get).toHaveBeenCalledWith('/public/documents/series');
+    expect(mockedApiClient.get.mock.calls[0]).toHaveLength(1);
   });
 });
 

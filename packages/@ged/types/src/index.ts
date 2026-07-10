@@ -486,3 +486,5 @@ export interface RegisterAccessResult {
   readonly downloadToken: string;
 }
 
+export type PaginatedPublicDocuments = PaginatedResult<PublicDocumentDto>;
+

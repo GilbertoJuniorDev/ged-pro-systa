@@ -34,7 +34,13 @@ describe('PublicDocumentsController', () => {
   let publicDocumentsService: jest.Mocked<
     Pick<
       PublicDocumentsService,
-      'listar' | 'destaques' | 'recentes' | 'buscarPorId' | 'registrarAcesso' | 'getDownload'
+      | 'listar'
+      | 'destaques'
+      | 'recentes'
+      | 'series'
+      | 'buscarPorId'
+      | 'registrarAcesso'
+      | 'getDownload'
     >
   >;
 
@@ -43,6 +49,7 @@ describe('PublicDocumentsController', () => {
       listar: jest.fn(),
       destaques: jest.fn(),
       recentes: jest.fn(),
+      series: jest.fn(),
       buscarPorId: jest.fn(),
       registrarAcesso: jest.fn(),
       getDownload: jest.fn(),
@@ -97,6 +104,18 @@ describe('PublicDocumentsController', () => {
       await controller.recentes({});
 
       expect(publicDocumentsService.recentes).toHaveBeenCalledWith(undefined);
+    });
+  });
+
+  describe('series', () => {
+    it('should delegate to the service', async () => {
+      const series = [{ id: 'serie-1', codigo: 'FIN-01', nome: 'Contratos financeiros' }];
+      publicDocumentsService.series.mockResolvedValue(series);
+
+      const result = await controller.series();
+
+      expect(publicDocumentsService.series).toHaveBeenCalled();
+      expect(result).toBe(series);
     });
   });
 

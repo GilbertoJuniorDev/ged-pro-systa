@@ -3,7 +3,12 @@
 import { toast } from 'sonner';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { apiClient } from '../lib/api-client';
-import type { PublicDocumentDto, RegisterAccessInput, RegisterAccessResult } from '../types';
+import type {
+  PaginatedPublicDocuments,
+  PublicDocumentDto,
+  RegisterAccessInput,
+  RegisterAccessResult,
+} from '../types';
 
 // Hooks do portal público — NUNCA passam `{ token }` nem usam `enabled: !!session...`:
 // as rotas /public/documents/* não exigem autenticação (@Public() no controller da API).
@@ -13,13 +18,6 @@ export interface PublicDocumentFilters {
   serieId?: string;
   page?: number;
   limit?: number;
-}
-
-export interface PaginatedPublicDocuments {
-  data: PublicDocumentDto[];
-  total: number;
-  page: number;
-  limit: number;
 }
 
 function buildQueryString(filters: PublicDocumentFilters): string {
@@ -51,6 +49,16 @@ export function usePublicRecentes(limit?: number) {
     queryKey: ['public-documents', 'recentes', limit],
     queryFn: () =>
       apiClient.get<PublicDocumentDto[]>(`/public/documents/recentes${limit ? `?limit=${limit}` : ''}`),
+  });
+}
+
+// Lista completa das séries com pelo menos um documento público, independente da
+// página/filtro de `usePublicDocuments` atualmente carregada — usada para popular as
+// opções do filtro de série do portal (ver PortalPageClient).
+export function usePublicSeries() {
+  return useQuery({
+    queryKey: ['public-documents', 'series'],
+    queryFn: () => apiClient.get<PublicDocumentDto['serie'][]>('/public/documents/series'),
   });
 }
 

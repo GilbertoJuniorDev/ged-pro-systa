@@ -3,10 +3,11 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import type { Readable } from 'node:stream';
 import type { Response } from 'express';
-import type { PublicDocumentDto, RegisterAccessResult } from '@ged/types';
+import type { PaginatedPublicDocuments, PublicDocumentDto, RegisterAccessResult } from '@ged/types';
 import { Public } from '../../common/decorators/public.decorator';
 import type { HttpRequest } from '../../common/interfaces/http-request.interface';
-import { PublicDocumentsService, type PaginatedPublicDocumentDtos } from './public-documents.service';
+import { PublicDocumentsService } from './public-documents.service';
+import type { PublicSerieOption } from './public-documents.repository';
 import { QueryPublicDocumentsDto, QueryRecentesDto } from './dto/query-public-documents.dto';
 import { RegisterAccessDto } from './dto/register-access.dto';
 
@@ -27,7 +28,7 @@ export class PublicDocumentsController {
   @Get()
   @ApiOperation({ summary: 'Listar documentos públicos' })
   @ApiResponse({ status: 200, description: 'Documentos públicos listados com sucesso' })
-  listar(@Query() query: QueryPublicDocumentsDto): Promise<PaginatedPublicDocumentDtos> {
+  listar(@Query() query: QueryPublicDocumentsDto): Promise<PaginatedPublicDocuments> {
     return this.publicDocumentsService.listar(query);
   }
 
@@ -47,6 +48,17 @@ export class PublicDocumentsController {
   @ApiResponse({ status: 200, description: 'Documentos recentes listados com sucesso' })
   recentes(@Query() query: QueryRecentesDto): Promise<PublicDocumentDto[]> {
     return this.publicDocumentsService.recentes(query.limit);
+  }
+
+  // Rota estática — precisa vir antes de `Get(':id')` abaixo, senão `:id` capturaria
+  // "series" como se fosse um id de documento (ordem de registro de rota do Nest).
+  @Public()
+  @Throttle(BROWSE_THROTTLE)
+  @Get('series')
+  @ApiOperation({ summary: 'Listar séries com pelo menos um documento público' })
+  @ApiResponse({ status: 200, description: 'Séries públicas listadas com sucesso' })
+  series(): Promise<PublicSerieOption[]> {
+    return this.publicDocumentsService.series();
   }
 
   @Public()

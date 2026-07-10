@@ -41,7 +41,10 @@ const makeDocument = (overrides: Partial<Document> = {}): Document =>
 describe('PublicDocumentsService', () => {
   let service: PublicDocumentsService;
   let publicDocumentsRepository: jest.Mocked<
-    Pick<PublicDocumentsRepository, 'listar' | 'destaques' | 'recentes' | 'findById'>
+    Pick<
+      PublicDocumentsRepository,
+      'listar' | 'destaques' | 'recentes' | 'findById' | 'listarSeriesDisponiveis'
+    >
   >;
   let documentLeadRepo: jest.Mocked<Repository<DocumentLead>>;
   let storageService: jest.Mocked<IStorageService>;
@@ -53,6 +56,7 @@ describe('PublicDocumentsService', () => {
       destaques: jest.fn(),
       recentes: jest.fn(),
       findById: jest.fn(),
+      listarSeriesDisponiveis: jest.fn(),
     };
     documentLeadRepo = {
       create: jest.fn((input: Partial<DocumentLead>) => input),
@@ -144,6 +148,21 @@ describe('PublicDocumentsService', () => {
 
       expect(publicDocumentsRepository.recentes).toHaveBeenCalledWith(3);
       expect(result).toHaveLength(1);
+    });
+  });
+
+  describe('series', () => {
+    it('should delegate to the repository and return the list unchanged', async () => {
+      const series = [
+        { id: 'serie-1', codigo: 'FIN-01', nome: 'Contratos financeiros' },
+        { id: 'serie-2', codigo: 'RH-01', nome: 'Documentos de RH' },
+      ];
+      publicDocumentsRepository.listarSeriesDisponiveis.mockResolvedValue(series);
+
+      const result = await service.series();
+
+      expect(publicDocumentsRepository.listarSeriesDisponiveis).toHaveBeenCalled();
+      expect(result).toEqual(series);
     });
   });
 

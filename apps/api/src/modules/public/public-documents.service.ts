@@ -3,23 +3,22 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { Document, DocumentLead, TIPO_DOCUMENTO } from '@ged/database';
-import type { PublicDocumentDto, RegisterAccessInput, RegisterAccessResult } from '@ged/types';
+import type {
+  PaginatedPublicDocuments,
+  PublicDocumentDto,
+  RegisterAccessInput,
+  RegisterAccessResult,
+} from '@ged/types';
 import { stripCnpjMask, stripCpfMask } from '@ged/utils';
 import { STORAGE_SERVICE } from '../storage/interfaces/storage.interface';
 import type { IStorageService } from '../storage/interfaces/storage.interface';
 import {
   PublicDocumentsRepository,
-  type PaginatedPublicDocuments,
+  type PaginatedPublicDocumentEntities,
   type PublicDocumentQueryFilter,
+  type PublicSerieOption,
 } from './public-documents.repository';
 import { PublicDocumentResponseDto } from './dto/public-document-response.dto';
-
-export interface PaginatedPublicDocumentDtos {
-  readonly data: PublicDocumentDto[];
-  readonly total: number;
-  readonly page: number;
-  readonly limit: number;
-}
 
 export interface RegisterAccessMeta {
   readonly ipCliente: string | null;
@@ -52,8 +51,8 @@ export class PublicDocumentsService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async listar(filtro: PublicDocumentQueryFilter): Promise<PaginatedPublicDocumentDtos> {
-    const result: PaginatedPublicDocuments = await this.publicDocumentsRepository.listar(filtro);
+  async listar(filtro: PublicDocumentQueryFilter): Promise<PaginatedPublicDocuments> {
+    const result: PaginatedPublicDocumentEntities = await this.publicDocumentsRepository.listar(filtro);
     return {
       data: result.data.map((document) => this.toPublicDto(document)),
       total: result.total,
@@ -70,6 +69,13 @@ export class PublicDocumentsService {
   async recentes(limit?: number): Promise<PublicDocumentDto[]> {
     const documents = await this.publicDocumentsRepository.recentes(limit);
     return documents.map((document) => this.toPublicDto(document));
+  }
+
+  // Lista completa das séries com pelo menos um documento PUBLICO+ativo — usada para
+  // popular o filtro do portal independente da página/filtro de listagem atualmente
+  // aplicado (ver PublicDocumentsRepository.listarSeriesDisponiveis()).
+  series(): Promise<PublicSerieOption[]> {
+    return this.publicDocumentsRepository.listarSeriesDisponiveis();
   }
 
   // 404 tanto para documento inexistente quanto para documento existente mas não
