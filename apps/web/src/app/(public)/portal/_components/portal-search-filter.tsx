@@ -48,11 +48,15 @@ export function PortalSearchFilter({
         />
       </div>
       <div className="w-full sm:w-64">
+        {/* `light` força a Combobox (que usa `dark:` internamente) a ignorar o `.dark`
+            ambiente do <html> — o portal público é sempre claro. Overrides correspondentes
+            em app/globals.css (`.light .dark\:*`). */}
         <Combobox
           value={serieId}
           onValueChange={onSerieChange}
           options={serieOptions}
           placeholder="Todas as séries"
+          className="light"
         />
       </div>
     </div>
