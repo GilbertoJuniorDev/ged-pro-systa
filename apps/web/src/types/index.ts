@@ -51,6 +51,10 @@ export type {
   UploadDocumentInput,
   UpdateDocumentInput,
   DocumentQuery,
+  PublicDocumentDto,
+  RegisterAccessInput,
+  RegisterAccessResult,
+  TipoDocumento,
 } from '@ged/types';
 export { SUBSCRIPTION_STATUS, DESTINACAO_FINAL, CONFIDENCIALIDADE, DOCUMENT_FASE } from '@ged/types';
 
