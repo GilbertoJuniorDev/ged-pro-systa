@@ -18,8 +18,9 @@
   - `CONFIDENCIAL` → visible only if a row exists in `document_access_users` for `(document.id, user.id)`.
   - Otherwise: `NotFoundException('Documento não encontrado')` — never leak existence (unchanged behavior).
 - `PRIVILEGED_ROLES` (`SUPER_ADMIN`, `ADMIN`, `MANAGER`) always bypass the above and see every document at every level — unchanged from today.
-- Managing confidentiality (setting a level other than `RESTRITO`, or setting non-empty `accessDepartamentoIds`/`accessUserIds`) requires: role `ADMIN` or `SUPER_ADMIN`, **or** the permission `DOCUMENTS_MANAGE_CONFIDENTIALITY` (checked via `UserPermissionsService.hasPermission(userId, 'DOCUMENTS_MANAGE_CONFIDENTIALITY')`). A caller without this fails with `ForbiddenException('Você não tem permissão para gerenciar a confidencialidade deste documento')` — never silently downgraded.
-- A caller without manage rights who uploads a document always gets `confidencialidade = 'RESTRITO'` with no grants, regardless of what they send in the request body.
+- Managing confidentiality (setting a level other than `RESTRITO`, or setting non-empty `accessDepartamentoIds`/`accessUserIds`) requires: role `ADMIN` or `SUPER_ADMIN`, **or** the permission `DOCUMENTS_MANAGE_CONFIDENTIALITY` (checked via `UserPermissionsService.hasPermission(userId, 'DOCUMENTS_MANAGE_CONFIDENTIALITY')`). A caller without this fails with `ForbiddenException('Você não tem permissão para gerenciar a confidencialidade deste documento')` and **the request touches no grant tables at all** — never silently downgraded. This applies identically on create and update: silently forcing an already-`CONFIDENCIAL`/`RESTRITO`-with-grants document back to bare `RESTRITO` as a side effect of an unauthorized *update* request would destroy real access-control state, so denial must always throw, never mutate.
+- A caller without manage rights who uploads a document **without requesting anything beyond the default** (`confidencialidade` omitted or `RESTRITO`, no grants) succeeds normally at `RESTRITO` with no grants — this is the default path, not a denial, and performs no permission check at all (cheap, common case).
+- On update, when a caller *is* authorized but omits `confidencialidade` from the request while still touching `accessDepartamentoIds`/`accessUserIds` (e.g. "just add a user to an existing `CONFIDENCIAL` document's access list, level unchanged"), the caller (`DocumentsService.update`, Task 6) must pass the document's **current** `confidencialidade` as `requestedConfidencialidade` to `ApplyDocumentConfidentialityUseCase` — never leave it `undefined` in that case. Leaving it `undefined` resolves to `RESTRITO` inside the use-case (see Task 5), which would silently wipe the existing grants instead of updating them.
 - `CONFIDENCIAL` requires at least one entry in `accessUserIds` (validated in the use-case, not just DTO shape) — throws `BadRequestException('Documentos confidenciais exigem ao menos um usuário com acesso')` otherwise. The uploading/editing user is auto-included if not already present in the list.
 - New DB naming: table names snake_case plural (`document_access_departments`, `document_access_users`), columns `document_id`/`departamento_id`/`usuario_id`; TS camelCase `documentId`/`departamentoId`/`usuarioId` — exactly the casing convention used by `user_departments`/`document_leads`.
 - No native TypeScript `enum` — `const object + as const + type`, per `packages/@ged/database/CLAUDE.md`.
@@ -673,21 +674,42 @@ describe('ApplyDocumentConfidentialityUseCase', () => {
     };
   });
 
-  it('a VIEWER without the permission is silently held at RESTRITO with no grants, even if they request otherwise', async () => {
+  it('a VIEWER without the permission requesting anything beyond RESTRITO throws ForbiddenException and touches no grant tables', async () => {
+    await expect(
+      useCase.execute(
+        {
+          documentId: 'doc-1',
+          requestedConfidencialidade: CONFIDENCIALIDADE.CONFIDENCIAL,
+          requestedAccessDepartamentoIds: ['dept-9'],
+          requestedAccessUserIds: ['user-9'],
+          actingUser: makeUser({ role: ROLE.VIEWER }),
+        },
+        manager as never,
+      ),
+    ).rejects.toThrow(
+      new ForbiddenException(
+        'Você não tem permissão para gerenciar a confidencialidade deste documento',
+      ),
+    );
+    expect(manager.find).not.toHaveBeenCalled();
+    expect(manager.delete).not.toHaveBeenCalled();
+    expect(manager.save).not.toHaveBeenCalled();
+  });
+
+  it('a caller with no permission requesting nothing beyond the default (confidencialidade undefined, no grants) succeeds at RESTRITO without a permission check', async () => {
     const result = await useCase.execute(
       {
         documentId: 'doc-1',
-        requestedConfidencialidade: CONFIDENCIALIDADE.CONFIDENCIAL,
-        requestedAccessDepartamentoIds: ['dept-9'],
-        requestedAccessUserIds: ['user-9'],
+        requestedConfidencialidade: undefined,
+        requestedAccessDepartamentoIds: undefined,
+        requestedAccessUserIds: undefined,
         actingUser: makeUser({ role: ROLE.VIEWER }),
       },
       manager as never,
     );
 
     expect(result.confidencialidade).toBe(CONFIDENCIALIDADE.RESTRITO);
-    expect(manager.delete).not.toHaveBeenCalled();
-    expect(manager.save).not.toHaveBeenCalled();
+    expect(userPermissionsService.hasPermission).not.toHaveBeenCalled();
   });
 
   it('an ADMIN can set PUBLICO with no grants required', async () => {
@@ -815,7 +837,7 @@ Expected: FAIL — module not found.
 Create `apps/api/src/modules/documents/use-cases/apply-document-confidentiality.use-case.ts`:
 
 ```ts
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import type { EntityManager } from 'typeorm';
 import { In } from 'typeorm';
 import { CONFIDENCIALIDADE, DocumentAccessDepartment, DocumentAccessUser } from '@ged/database';
@@ -850,16 +872,26 @@ export class ApplyDocumentConfidentialityUseCase {
       (input.requestedAccessDepartamentoIds?.length ?? 0) > 0 ||
       (input.requestedAccessUserIds?.length ?? 0) > 0;
 
-    const allowed = requestsManagement
-      ? await canManageConfidentiality(input.actingUser, this.userPermissionsService)
-      : true;
+    // Denial never mutates state — it always throws before touching the grant tables.
+    // This matters most on update: silently forcing an already-CONFIDENCIAL/RESTRITO-with-
+    // grants document back to bare RESTRITO as a side effect of an unauthorized request
+    // would destroy real access-control state. Only the "nothing beyond the default was
+    // requested" path (requestsManagement === false) skips the permission check entirely —
+    // that's the safe, no-op-equivalent default, not a denial.
+    if (requestsManagement) {
+      const allowed = await canManageConfidentiality(input.actingUser, this.userPermissionsService);
+      if (!allowed) {
+        throw new ForbiddenException(
+          'Você não tem permissão para gerenciar a confidencialidade deste documento',
+        );
+      }
+    }
 
-    const confidencialidade: Confidencialidade = allowed
-      ? (input.requestedConfidencialidade ?? CONFIDENCIALIDADE.RESTRITO)
-      : CONFIDENCIALIDADE.RESTRITO;
+    const confidencialidade: Confidencialidade =
+      input.requestedConfidencialidade ?? CONFIDENCIALIDADE.RESTRITO;
 
     if (confidencialidade === CONFIDENCIALIDADE.CONFIDENCIAL) {
-      const requestedUserIds = allowed ? (input.requestedAccessUserIds ?? []) : [];
+      const requestedUserIds = input.requestedAccessUserIds ?? [];
       if (requestedUserIds.length === 0) {
         throw new BadRequestException(
           'Documentos confidenciais exigem ao menos um usuário com acesso',
@@ -875,9 +907,7 @@ export class ApplyDocumentConfidentialityUseCase {
     }
 
     if (confidencialidade === CONFIDENCIALIDADE.RESTRITO) {
-      const accessDepartamentoIds = allowed
-        ? (input.requestedAccessDepartamentoIds ?? [])
-        : [];
+      const accessDepartamentoIds = input.requestedAccessDepartamentoIds ?? [];
       await this.syncDepartmentGrants(manager, input.documentId, accessDepartamentoIds);
       await this.syncUserGrants(manager, input.documentId, []);
       return { confidencialidade };
@@ -1174,10 +1204,15 @@ Replace the `async update(id: string, data: UpdateDocumentInputData): Promise<Do
 
       let confidencialidade = current.confidencialidade;
       if (managesConfidentiality) {
+        // If the level itself isn't part of this request (only grants are being touched —
+        // e.g. adding a user to an already-CONFIDENCIAL document's access list), fall back to
+        // the document's CURRENT level rather than leaving it undefined. Leaving it undefined
+        // would resolve to RESTRITO inside the use-case and silently wipe the existing grants
+        // instead of updating them (see Global Constraints).
         const result = await this.applyConfidentiality.execute(
           {
             documentId: id,
-            requestedConfidencialidade: data.confidencialidade,
+            requestedConfidencialidade: data.confidencialidade ?? current.confidencialidade,
             requestedAccessDepartamentoIds: data.accessDepartamentoIds,
             requestedAccessUserIds: data.accessUserIds,
             actingUser,
