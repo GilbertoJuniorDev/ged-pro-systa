@@ -1,9 +1,9 @@
 import { Test, type TestingModule } from '@nestjs/testing';
 import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import type { Repository } from 'typeorm';
-import { CONFIDENCIALIDADE, DOCUMENT_FASE, DocumentSeries, Dossie, ROLE } from '@ged/database';
-import type { Document, UserDepartment } from '@ged/database';
+import { getDataSourceToken, getRepositoryToken } from '@nestjs/typeorm';
+import type { DataSource, EntityManager, Repository } from 'typeorm';
+import { CONFIDENCIALIDADE, DOCUMENT_FASE, Document, DocumentSeries, Dossie, ROLE } from '@ged/database';
+import type { UserDepartment } from '@ged/database';
 import type { JwtPayload } from '@ged/types';
 import { STORAGE_SERVICE, type IStorageService } from '../storage/interfaces/storage.interface';
 import { UserDepartmentsService } from '../user-departments/user-departments.service';
@@ -11,6 +11,7 @@ import { DocumentsService } from './documents.service';
 import { DOCUMENT_REPOSITORY } from './interfaces/document-repository.interface';
 import type { IDocumentRepository } from './interfaces/document-repository.interface';
 import { UploadDocumentUseCase } from './use-cases/upload-document.use-case';
+import { ApplyDocumentConfidentialityUseCase } from './use-cases/apply-document-confidentiality.use-case';
 
 const makeJwtPayload = (overrides: Partial<JwtPayload> = {}): JwtPayload => ({
   sub: 'user-1',
@@ -78,6 +79,9 @@ describe('DocumentsService', () => {
   let documentSeriesRepo: jest.Mocked<Repository<DocumentSeries>>;
   let dossieRepo: jest.Mocked<Repository<Dossie>>;
   let userDepartmentsService: jest.Mocked<Pick<UserDepartmentsService, 'findByUserId'>>;
+  let applyConfidentiality: jest.Mocked<Pick<ApplyDocumentConfidentialityUseCase, 'execute'>>;
+  let manager: { update: jest.Mock; findOneOrFail: jest.Mock };
+  let dataSource: jest.Mocked<Pick<DataSource, 'transaction'>>;
 
   beforeEach(async () => {
     documentRepository = {
@@ -103,6 +107,15 @@ describe('DocumentsService', () => {
     } as unknown as jest.Mocked<Repository<DocumentSeries>>;
     dossieRepo = { findOne: jest.fn() } as unknown as jest.Mocked<Repository<Dossie>>;
 
+    applyConfidentiality = { execute: jest.fn() };
+    manager = { update: jest.fn(), findOneOrFail: jest.fn() };
+    dataSource = {
+      transaction: jest.fn(
+        async (cb: (manager: EntityManager) => Promise<unknown>) =>
+          cb(manager as unknown as EntityManager),
+      ),
+    } as unknown as jest.Mocked<Pick<DataSource, 'transaction'>>;
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         DocumentsService,
@@ -112,6 +125,8 @@ describe('DocumentsService', () => {
         { provide: getRepositoryToken(DocumentSeries), useValue: documentSeriesRepo },
         { provide: getRepositoryToken(Dossie), useValue: dossieRepo },
         { provide: UserDepartmentsService, useValue: userDepartmentsService },
+        { provide: getDataSourceToken(), useValue: dataSource },
+        { provide: ApplyDocumentConfidentialityUseCase, useValue: applyConfidentiality },
       ],
     }).compile();
 
@@ -218,6 +233,7 @@ describe('DocumentsService', () => {
         confidencialidade: CONFIDENCIALIDADE.RESTRITO,
         departamentoId: 'dept-1',
         serieId: 'serie-1',
+        actingUser: makeJwtPayload(),
       };
       const file = { originalname: 'x.pdf' } as Express.Multer.File;
 
@@ -237,6 +253,7 @@ describe('DocumentsService', () => {
         serieId: 'serie-1',
         destaque: true,
         exigeCadastro: true,
+        actingUser: makeJwtPayload(),
       };
       const file = { originalname: 'x.pdf' } as Express.Multer.File;
 
@@ -252,71 +269,89 @@ describe('DocumentsService', () => {
     it('throws NotFoundException when the document does not exist', async () => {
       documentRepository.findById.mockResolvedValue(null);
 
-      await expect(service.update('missing', { nome: 'Novo nome' })).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.update('missing', { nome: 'Novo nome' }, makeJwtPayload({ role: ROLE.ADMIN })),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('throws BadRequestException when the new série does not exist', async () => {
       documentRepository.findById.mockResolvedValue(makeDocument());
       documentSeriesRepo.findOne.mockResolvedValue(null);
 
-      await expect(service.update('doc-1', { serieId: 'serie-2' })).rejects.toThrow(
-        new BadRequestException('Série não encontrada'),
-      );
-      expect(documentRepository.update).not.toHaveBeenCalled();
+      await expect(
+        service.update('doc-1', { serieId: 'serie-2' }, makeJwtPayload({ role: ROLE.ADMIN })),
+      ).rejects.toThrow(new BadRequestException('Série não encontrada'));
+      expect(manager.update).not.toHaveBeenCalled();
     });
 
     it('throws BadRequestException when the new série belongs to a different departamento', async () => {
       documentRepository.findById.mockResolvedValue(makeDocument());
       documentSeriesRepo.findOne.mockResolvedValue(makeSerie({ id: 'serie-2', departamentoId: 'dept-2' }));
 
-      await expect(service.update('doc-1', { serieId: 'serie-2' })).rejects.toThrow(
+      await expect(
+        service.update('doc-1', { serieId: 'serie-2' }, makeJwtPayload({ role: ROLE.ADMIN })),
+      ).rejects.toThrow(
         new BadRequestException('A série deve pertencer ao mesmo departamento do documento'),
       );
-      expect(documentRepository.update).not.toHaveBeenCalled();
+      expect(manager.update).not.toHaveBeenCalled();
     });
 
     it('throws BadRequestException when the new dossiê does not exist', async () => {
       documentRepository.findById.mockResolvedValue(makeDocument());
       dossieRepo.findOne.mockResolvedValue(null);
 
-      await expect(service.update('doc-1', { dossieId: 'dossie-1' })).rejects.toThrow(
-        new BadRequestException('Dossiê não encontrado'),
-      );
-      expect(documentRepository.update).not.toHaveBeenCalled();
+      await expect(
+        service.update('doc-1', { dossieId: 'dossie-1' }, makeJwtPayload({ role: ROLE.ADMIN })),
+      ).rejects.toThrow(new BadRequestException('Dossiê não encontrado'));
+      expect(manager.update).not.toHaveBeenCalled();
     });
 
     it('throws BadRequestException when the new dossiê belongs to a different departamento', async () => {
       documentRepository.findById.mockResolvedValue(makeDocument());
       dossieRepo.findOne.mockResolvedValue({ id: 'dossie-1', departamentoId: 'dept-2' } as Dossie);
 
-      await expect(service.update('doc-1', { dossieId: 'dossie-1' })).rejects.toThrow(
+      await expect(
+        service.update('doc-1', { dossieId: 'dossie-1' }, makeJwtPayload({ role: ROLE.ADMIN })),
+      ).rejects.toThrow(
         new BadRequestException('O dossiê deve pertencer ao mesmo departamento do documento'),
       );
-      expect(documentRepository.update).not.toHaveBeenCalled();
+      expect(manager.update).not.toHaveBeenCalled();
     });
 
     it('updates the document when validation passes', async () => {
       const current = makeDocument();
       const updated = makeDocument({ nome: 'Novo nome' });
       documentRepository.findById.mockResolvedValue(current);
-      documentRepository.update.mockResolvedValue(updated);
+      manager.findOneOrFail.mockResolvedValue(updated);
 
-      const result = await service.update('doc-1', { nome: 'Novo nome' });
+      const result = await service.update(
+        'doc-1',
+        { nome: 'Novo nome' },
+        makeJwtPayload({ role: ROLE.ADMIN }),
+      );
 
       expect(result).toEqual(updated);
       expect(documentSeriesRepo.findOne).not.toHaveBeenCalled();
       expect(dossieRepo.findOne).not.toHaveBeenCalled();
+      expect(applyConfidentiality.execute).not.toHaveBeenCalled();
+      expect(manager.update).toHaveBeenCalledWith(
+        Document,
+        'doc-1',
+        expect.objectContaining({ nome: 'Novo nome' }),
+      );
     });
 
     it('allows clearing the dossiê (setting it to null) without FK validation', async () => {
       const current = makeDocument({ dossieId: 'dossie-1' });
       const updated = makeDocument({ dossieId: null });
       documentRepository.findById.mockResolvedValue(current);
-      documentRepository.update.mockResolvedValue(updated);
+      manager.findOneOrFail.mockResolvedValue(updated);
 
-      const result = await service.update('doc-1', { dossieId: null });
+      const result = await service.update(
+        'doc-1',
+        { dossieId: null },
+        makeJwtPayload({ role: ROLE.ADMIN }),
+      );
 
       expect(result).toEqual(updated);
       expect(dossieRepo.findOne).not.toHaveBeenCalled();
@@ -326,16 +361,112 @@ describe('DocumentsService', () => {
       const current = makeDocument();
       const updated = makeDocument({ destaque: true, exigeCadastro: true });
       documentRepository.findById.mockResolvedValue(current);
-      documentRepository.update.mockResolvedValue(updated);
+      manager.findOneOrFail.mockResolvedValue(updated);
 
-      const result = await service.update('doc-1', { destaque: true, exigeCadastro: true });
+      const result = await service.update(
+        'doc-1',
+        { destaque: true, exigeCadastro: true },
+        makeJwtPayload({ role: ROLE.ADMIN }),
+      );
 
-      expect(documentRepository.update).toHaveBeenCalledWith(
+      expect(manager.update).toHaveBeenCalledWith(
+        Document,
         'doc-1',
         expect.objectContaining({ destaque: true, exigeCadastro: true }),
       );
       expect(result.destaque).toBe(true);
       expect(result.exigeCadastro).toBe(true);
+    });
+
+    it('does not call applyConfidentiality when neither confidencialidade nor grant fields are in the request', async () => {
+      const current = makeDocument();
+      documentRepository.findById.mockResolvedValue(current);
+      manager.findOneOrFail.mockResolvedValue(current);
+
+      await service.update('doc-1', { nome: 'Novo nome' }, makeJwtPayload({ role: ROLE.ADMIN }));
+
+      expect(applyConfidentiality.execute).not.toHaveBeenCalled();
+      expect(manager.update).toHaveBeenCalledWith(
+        Document,
+        'doc-1',
+        expect.not.objectContaining({ confidencialidade: expect.anything() }),
+      );
+    });
+
+    it('calls applyConfidentiality with the requested confidencialidade when it is part of the request', async () => {
+      const current = makeDocument({ confidencialidade: CONFIDENCIALIDADE.RESTRITO });
+      const actingUser = makeJwtPayload({ role: ROLE.ADMIN });
+      documentRepository.findById.mockResolvedValue(current);
+      applyConfidentiality.execute.mockResolvedValue({
+        confidencialidade: CONFIDENCIALIDADE.PUBLICO,
+      });
+      manager.findOneOrFail.mockResolvedValue(
+        makeDocument({ confidencialidade: CONFIDENCIALIDADE.PUBLICO }),
+      );
+
+      const result = await service.update(
+        'doc-1',
+        { confidencialidade: CONFIDENCIALIDADE.PUBLICO },
+        actingUser,
+      );
+
+      expect(applyConfidentiality.execute).toHaveBeenCalledWith(
+        {
+          documentId: 'doc-1',
+          requestedConfidencialidade: CONFIDENCIALIDADE.PUBLICO,
+          requestedAccessDepartamentoIds: undefined,
+          requestedAccessUserIds: undefined,
+          actingUser,
+        },
+        manager,
+      );
+      expect(manager.update).toHaveBeenCalledWith(
+        Document,
+        'doc-1',
+        expect.objectContaining({ confidencialidade: CONFIDENCIALIDADE.PUBLICO }),
+      );
+      expect(result.confidencialidade).toBe(CONFIDENCIALIDADE.PUBLICO);
+    });
+
+    it('falls back to the document current confidencialidade when only grant fields are requested (does not leave it undefined)', async () => {
+      // Regression guard: leaving requestedConfidencialidade undefined here would resolve to
+      // RESTRITO inside ApplyDocumentConfidentialityUseCase and silently wipe an existing
+      // CONFIDENCIAL document's grants instead of just updating the access-user list.
+      const current = makeDocument({ confidencialidade: CONFIDENCIALIDADE.CONFIDENCIAL });
+      const actingUser = makeJwtPayload({ role: ROLE.ADMIN });
+      documentRepository.findById.mockResolvedValue(current);
+      applyConfidentiality.execute.mockResolvedValue({
+        confidencialidade: CONFIDENCIALIDADE.CONFIDENCIAL,
+      });
+      manager.findOneOrFail.mockResolvedValue(current);
+
+      await service.update('doc-1', { accessUserIds: ['user-9'] }, actingUser);
+
+      expect(applyConfidentiality.execute).toHaveBeenCalledWith(
+        {
+          documentId: 'doc-1',
+          requestedConfidencialidade: CONFIDENCIALIDADE.CONFIDENCIAL,
+          requestedAccessDepartamentoIds: undefined,
+          requestedAccessUserIds: ['user-9'],
+          actingUser,
+        },
+        manager,
+      );
+    });
+
+    it('propagates ForbiddenException from applyConfidentiality without persisting anything', async () => {
+      const current = makeDocument();
+      documentRepository.findById.mockResolvedValue(current);
+      applyConfidentiality.execute.mockRejectedValue(new Error('denied'));
+
+      await expect(
+        service.update(
+          'doc-1',
+          { confidencialidade: CONFIDENCIALIDADE.CONFIDENCIAL },
+          makeJwtPayload({ role: ROLE.ADMIN }),
+        ),
+      ).rejects.toThrow('denied');
+      expect(manager.update).not.toHaveBeenCalled();
     });
   });
 

@@ -160,7 +160,10 @@ describe('DocumentsController', () => {
       const result = await controller.create(makeHttpRequest(), makeJwtPayload(), dto, file);
 
       expect(result.id).toBe('doc-1');
-      expect(documentsService.upload).toHaveBeenCalledWith(dto, file);
+      expect(documentsService.upload).toHaveBeenCalledWith(
+        { ...dto, actingUser: makeJwtPayload() },
+        file,
+      );
       expect(auditLogsService.log).toHaveBeenCalledWith(
         expect.objectContaining({
           usuarioId: 'admin-uuid',
@@ -186,7 +189,10 @@ describe('DocumentsController', () => {
         file,
       );
 
-      expect(documentsService.upload).toHaveBeenCalledWith(dtoWithFlags, file);
+      expect(documentsService.upload).toHaveBeenCalledWith(
+        { ...dtoWithFlags, actingUser: makeJwtPayload() },
+        file,
+      );
       expect(result.destaque).toBe(true);
       expect(result.exigeCadastro).toBe(true);
     });
@@ -226,7 +232,7 @@ describe('DocumentsController', () => {
       const result = await controller.update(makeHttpRequest(), makeJwtPayload(), 'doc-1', dto);
 
       expect(result.nome).toBe('Contrato Renovado');
-      expect(documentsService.update).toHaveBeenCalledWith('doc-1', dto);
+      expect(documentsService.update).toHaveBeenCalledWith('doc-1', dto, makeJwtPayload());
       expect(auditLogsService.log).toHaveBeenCalledWith(
         expect.objectContaining({
           acao: 'ATUALIZAR_DOCUMENTO',
@@ -259,7 +265,7 @@ describe('DocumentsController', () => {
 
       const result = await controller.update(makeHttpRequest(), makeJwtPayload(), 'doc-1', dto);
 
-      expect(documentsService.update).toHaveBeenCalledWith('doc-1', dto);
+      expect(documentsService.update).toHaveBeenCalledWith('doc-1', dto, makeJwtPayload());
       expect(result.destaque).toBe(true);
       expect(result.exigeCadastro).toBe(true);
     });

@@ -6,8 +6,8 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Document, DOCUMENT_FASE, DocumentSeries, Dossie, ROLE } from '@ged/database';
 import type { Confidencialidade, Role } from '@ged/database';
 import type { JwtPayload } from '@ged/types';
@@ -16,6 +16,7 @@ import type { IStorageService } from '../storage/interfaces/storage.interface';
 import { UserDepartmentsService } from '../user-departments/user-departments.service';
 import { UploadDocumentUseCase } from './use-cases/upload-document.use-case';
 import type { UploadDocumentData } from './use-cases/upload-document.use-case';
+import { ApplyDocumentConfidentialityUseCase } from './use-cases/apply-document-confidentiality.use-case';
 import { DocumentResponseDto } from './dto/document-response.dto';
 import { DOCUMENT_REPOSITORY } from './interfaces/document-repository.interface';
 import type {
@@ -41,6 +42,8 @@ export interface UpdateDocumentInputData {
   readonly isActive?: boolean;
   readonly destaque?: boolean;
   readonly exigeCadastro?: boolean;
+  readonly accessDepartamentoIds?: string[];
+  readonly accessUserIds?: string[];
 }
 
 // Papéis que enxergam todos os documentos, sem restrição por departamento.
@@ -78,6 +81,9 @@ export class DocumentsService {
     @InjectRepository(Dossie)
     private readonly dossieRepo: Repository<Dossie>,
     private readonly userDepartmentsService: UserDepartmentsService,
+    @InjectDataSource()
+    private readonly dataSource: DataSource,
+    private readonly applyConfidentiality: ApplyDocumentConfidentialityUseCase,
   ) {}
 
   // Retorna null para papéis privilegiados (sem restrição). Caso contrário, a lista de
@@ -135,7 +141,11 @@ export class DocumentsService {
     return this.uploadDocumentUseCase.execute(dto, file);
   }
 
-  async update(id: string, data: UpdateDocumentInputData): Promise<Document> {
+  async update(
+    id: string,
+    data: UpdateDocumentInputData,
+    actingUser: JwtPayload,
+  ): Promise<Document> {
     const current = await this.findOne(id);
 
     if (data.serieId && data.serieId !== current.serieId) {
@@ -162,19 +172,54 @@ export class DocumentsService {
       }
     }
 
-    const updateData: UpdateDocumentData = {
-      nome: data.nome,
-      descricao: data.descricao,
-      validade: data.validade !== undefined ? (data.validade ? new Date(data.validade) : null) : undefined,
-      confidencialidade: data.confidencialidade,
-      serieId: data.serieId,
-      dossieId: data.dossieId,
-      isActive: data.isActive,
-      destaque: data.destaque,
-      exigeCadastro: data.exigeCadastro,
-    };
+    return this.dataSource.transaction(async (manager) => {
+      const managesConfidentiality =
+        data.confidencialidade !== undefined ||
+        data.accessDepartamentoIds !== undefined ||
+        data.accessUserIds !== undefined;
 
-    return this.documentRepository.update(id, updateData);
+      let confidencialidade = current.confidencialidade;
+      if (managesConfidentiality) {
+        // If the level itself isn't part of this request (only grants are being touched —
+        // e.g. adding a user to an already-CONFIDENCIAL document's access list), fall back to
+        // the document's CURRENT level rather than leaving it undefined. Leaving it undefined
+        // would resolve to RESTRITO inside the use-case and silently wipe the existing grants
+        // instead of updating them (see Global Constraints).
+        const result = await this.applyConfidentiality.execute(
+          {
+            documentId: id,
+            requestedConfidencialidade: data.confidencialidade ?? current.confidencialidade,
+            requestedAccessDepartamentoIds: data.accessDepartamentoIds,
+            requestedAccessUserIds: data.accessUserIds,
+            actingUser,
+          },
+          manager,
+        );
+        confidencialidade = result.confidencialidade;
+      }
+
+      const updateData: UpdateDocumentData = {
+        nome: data.nome,
+        descricao: data.descricao,
+        validade:
+          data.validade !== undefined ? (data.validade ? new Date(data.validade) : null) : undefined,
+        confidencialidade: managesConfidentiality ? confidencialidade : undefined,
+        serieId: data.serieId,
+        dossieId: data.dossieId,
+        isActive: data.isActive,
+        destaque: data.destaque,
+        exigeCadastro: data.exigeCadastro,
+      };
+
+      await manager.update(Document, id, this.stripUndefined(updateData));
+      return manager.findOneOrFail(Document, { where: { id }, relations: ['serie'] });
+    });
+  }
+
+  private stripUndefined<T extends object>(obj: T): Partial<T> {
+    return Object.fromEntries(
+      Object.entries(obj).filter(([, value]) => value !== undefined),
+    ) as Partial<T>;
   }
 
   async remove(id: string): Promise<void> {

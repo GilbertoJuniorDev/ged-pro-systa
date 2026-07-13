@@ -142,7 +142,7 @@ export class DocumentsController {
     @UploadedFile() file: Express.Multer.File,
   ): Promise<DocumentResponseDto> {
     if (!file) throw new BadRequestException('Arquivo é obrigatório');
-    const document = await this.documentsService.upload(dto, file);
+    const document = await this.documentsService.upload({ ...dto, actingUser: currentUser }, file);
     void this.auditLogsService.log({
       usuarioId: currentUser.sub,
       acao: 'CRIAR_DOCUMENTO',
@@ -177,7 +177,7 @@ export class DocumentsController {
     @Body() dto: UpdateDocumentDto,
   ): Promise<DocumentResponseDto> {
     const before = await this.documentsService.findOne(id);
-    const document = await this.documentsService.update(id, dto);
+    const document = await this.documentsService.update(id, dto, currentUser);
     void this.auditLogsService.log({
       usuarioId: currentUser.sub,
       acao: 'ATUALIZAR_DOCUMENTO',
