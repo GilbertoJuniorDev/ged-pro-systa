@@ -28,6 +28,8 @@ interface DocumentResponseInput {
   elegivelTransferencia: boolean;
   destaque: boolean;
   exigeCadastro: boolean;
+  acessoDepartamentoIds: string[];
+  acessoUsuarioIds: string[];
 }
 
 export class DocumentResponseDto {
@@ -53,6 +55,8 @@ export class DocumentResponseDto {
   readonly elegivelTransferencia!: boolean;
   readonly destaque!: boolean;
   readonly exigeCadastro!: boolean;
+  readonly acessoDepartamentoIds!: string[];
+  readonly acessoUsuarioIds!: string[];
 
   constructor(input: DocumentResponseInput) {
     this.id = input.id;
@@ -77,6 +81,8 @@ export class DocumentResponseDto {
     this.elegivelTransferencia = input.elegivelTransferencia;
     this.destaque = input.destaque;
     this.exigeCadastro = input.exigeCadastro;
+    this.acessoDepartamentoIds = input.acessoDepartamentoIds;
+    this.acessoUsuarioIds = input.acessoUsuarioIds;
   }
 }
 

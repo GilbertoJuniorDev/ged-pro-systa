@@ -291,7 +291,26 @@ export class DocumentsService {
     return { document, stream };
   }
 
-  toResponseDto(document: Document): DocumentResponseDto {
+  async getAccessGrants(
+    documentId: string,
+  ): Promise<{ acessoDepartamentoIds: string[]; acessoUsuarioIds: string[] }> {
+    const [departmentGrants, userGrants] = await Promise.all([
+      this.documentAccessDepartmentRepo.find({ where: { documentId } }),
+      this.documentAccessUserRepo.find({ where: { documentId } }),
+    ]);
+    return {
+      acessoDepartamentoIds: departmentGrants.map((g) => g.departamentoId),
+      acessoUsuarioIds: userGrants.map((g) => g.usuarioId),
+    };
+  }
+
+  toResponseDto(
+    document: Document,
+    grants: { acessoDepartamentoIds: string[]; acessoUsuarioIds: string[] } = {
+      acessoDepartamentoIds: [],
+      acessoUsuarioIds: [],
+    },
+  ): DocumentResponseDto {
     if (!document.serie) {
       throw new Error(
         `Documento ${document.id} carregado sem a série associada (serieId=${document.serieId})`,
@@ -330,6 +349,8 @@ export class DocumentsService {
       elegivelTransferencia,
       destaque: document.destaque,
       exigeCadastro: document.exigeCadastro,
+      acessoDepartamentoIds: grants.acessoDepartamentoIds,
+      acessoUsuarioIds: grants.acessoUsuarioIds,
     });
   }
 }

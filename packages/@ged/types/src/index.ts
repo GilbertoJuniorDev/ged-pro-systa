@@ -414,6 +414,8 @@ export interface DocumentDto {
   readonly elegivelTransferencia: boolean;
   readonly destaque: boolean;
   readonly exigeCadastro: boolean;
+  readonly acessoDepartamentoIds: string[];
+  readonly acessoUsuarioIds: string[];
   readonly createdAt: string;
   readonly updatedAt: string;
 }
@@ -428,6 +430,8 @@ export interface UploadDocumentInput {
   readonly dossieId?: string | null;
   readonly destaque?: boolean;
   readonly exigeCadastro?: boolean;
+  readonly accessDepartamentoIds?: string[];
+  readonly accessUserIds?: string[];
 }
 
 export interface UpdateDocumentInput {
@@ -440,6 +444,8 @@ export interface UpdateDocumentInput {
   readonly isActive?: boolean;
   readonly destaque?: boolean;
   readonly exigeCadastro?: boolean;
+  readonly accessDepartamentoIds?: string[];
+  readonly accessUserIds?: string[];
 }
 
 export interface DocumentQuery {

@@ -92,7 +92,8 @@ export class DocumentsController {
     @CurrentUser() user: JwtPayload,
   ): Promise<DocumentResponseDto> {
     const document = await this.documentsService.findOne(id, user);
-    return this.documentsService.toResponseDto(document);
+    const grants = await this.documentsService.getAccessGrants(id);
+    return this.documentsService.toResponseDto(document, grants);
   }
 
   @Get(':id/download')
@@ -177,7 +178,9 @@ export class DocumentsController {
     @Body() dto: UpdateDocumentDto,
   ): Promise<DocumentResponseDto> {
     const before = await this.documentsService.findOne(id);
+    const grantsBefore = await this.documentsService.getAccessGrants(id);
     const document = await this.documentsService.update(id, dto, currentUser);
+    const grantsAfter = await this.documentsService.getAccessGrants(id);
     void this.auditLogsService.log({
       usuarioId: currentUser.sub,
       acao: 'ATUALIZAR_DOCUMENTO',
@@ -190,6 +193,7 @@ export class DocumentsController {
         serieId: before.serieId,
         dossieId: before.dossieId,
         isActive: before.isActive,
+        ...grantsBefore,
       },
       dadosNovos: {
         nome: document.nome,
@@ -198,11 +202,12 @@ export class DocumentsController {
         serieId: document.serieId,
         dossieId: document.dossieId,
         isActive: document.isActive,
+        ...grantsAfter,
       },
       ipCliente: req.ip ?? null,
       userAgent: req.headers['user-agent'] ?? null,
     });
-    return this.documentsService.toResponseDto(document);
+    return this.documentsService.toResponseDto(document, grantsAfter);
   }
 
   @Patch(':id/transferir')

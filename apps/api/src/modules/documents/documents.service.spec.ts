@@ -90,8 +90,10 @@ describe('DocumentsService', () => {
   let dossieRepo: jest.Mocked<Repository<Dossie>>;
   let userDepartmentsService: jest.Mocked<Pick<UserDepartmentsService, 'findByUserId'>>;
   let applyConfidentiality: jest.Mocked<Pick<ApplyDocumentConfidentialityUseCase, 'execute'>>;
-  let documentAccessDepartmentRepo: jest.Mocked<Pick<Repository<DocumentAccessDepartment>, 'exists'>>;
-  let documentAccessUserRepo: jest.Mocked<Pick<Repository<DocumentAccessUser>, 'exists'>>;
+  let documentAccessDepartmentRepo: jest.Mocked<
+    Pick<Repository<DocumentAccessDepartment>, 'exists' | 'find'>
+  >;
+  let documentAccessUserRepo: jest.Mocked<Pick<Repository<DocumentAccessUser>, 'exists' | 'find'>>;
   let manager: { update: jest.Mock; findOneOrFail: jest.Mock };
   let dataSource: jest.Mocked<Pick<DataSource, 'transaction'>>;
 
@@ -120,8 +122,8 @@ describe('DocumentsService', () => {
     dossieRepo = { findOne: jest.fn() } as unknown as jest.Mocked<Repository<Dossie>>;
 
     applyConfidentiality = { execute: jest.fn() };
-    documentAccessDepartmentRepo = { exists: jest.fn() };
-    documentAccessUserRepo = { exists: jest.fn() };
+    documentAccessDepartmentRepo = { exists: jest.fn(), find: jest.fn() };
+    documentAccessUserRepo = { exists: jest.fn(), find: jest.fn() };
     manager = { update: jest.fn(), findOneOrFail: jest.fn() };
     dataSource = {
       transaction: jest.fn(
@@ -824,6 +826,57 @@ describe('DocumentsService', () => {
 
       expect(dto.destaque).toBe(false);
       expect(dto.exigeCadastro).toBe(false);
+    });
+
+    it('defaults acessoDepartamentoIds and acessoUsuarioIds to [] when no grants argument is passed', () => {
+      const dto = service.toResponseDto(makeDocument());
+
+      expect(dto.acessoDepartamentoIds).toEqual([]);
+      expect(dto.acessoUsuarioIds).toEqual([]);
+    });
+
+    it('passes the provided grants through when a second argument is given', () => {
+      const dto = service.toResponseDto(makeDocument(), {
+        acessoDepartamentoIds: ['dept-1', 'dept-2'],
+        acessoUsuarioIds: ['user-9'],
+      });
+
+      expect(dto.acessoDepartamentoIds).toEqual(['dept-1', 'dept-2']);
+      expect(dto.acessoUsuarioIds).toEqual(['user-9']);
+    });
+  });
+
+  describe('getAccessGrants', () => {
+    it('maps document_access_departments and document_access_users rows to id arrays', async () => {
+      documentAccessDepartmentRepo.find.mockResolvedValue([
+        { departamentoId: 'dept-1' },
+        { departamentoId: 'dept-2' },
+      ] as DocumentAccessDepartment[]);
+      documentAccessUserRepo.find.mockResolvedValue([
+        { usuarioId: 'user-9' },
+      ] as DocumentAccessUser[]);
+
+      const result = await service.getAccessGrants('doc-1');
+
+      expect(documentAccessDepartmentRepo.find).toHaveBeenCalledWith({
+        where: { documentId: 'doc-1' },
+      });
+      expect(documentAccessUserRepo.find).toHaveBeenCalledWith({
+        where: { documentId: 'doc-1' },
+      });
+      expect(result).toEqual({
+        acessoDepartamentoIds: ['dept-1', 'dept-2'],
+        acessoUsuarioIds: ['user-9'],
+      });
+    });
+
+    it('returns empty arrays when the document has no grants', async () => {
+      documentAccessDepartmentRepo.find.mockResolvedValue([]);
+      documentAccessUserRepo.find.mockResolvedValue([]);
+
+      const result = await service.getAccessGrants('doc-1');
+
+      expect(result).toEqual({ acessoDepartamentoIds: [], acessoUsuarioIds: [] });
     });
   });
 });

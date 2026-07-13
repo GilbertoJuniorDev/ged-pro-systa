@@ -61,6 +61,8 @@ const makeResponseDto = (overrides: Partial<DocumentResponseDto> = {}): Document
     elegivelTransferencia: false,
     destaque: false,
     exigeCadastro: false,
+    acessoDepartamentoIds: [],
+    acessoUsuarioIds: [],
     ...overrides,
   });
 
@@ -92,6 +94,7 @@ describe('DocumentsController', () => {
       transferir: jest.fn(),
       getDownload: jest.fn(),
       toResponseDto: jest.fn(),
+      getAccessGrants: jest.fn(),
     };
 
     auditLogsService = { log: jest.fn().mockResolvedValue(undefined) };
@@ -140,6 +143,21 @@ describe('DocumentsController', () => {
       await expect(controller.findOne('missing', makeJwtPayload())).rejects.toThrow(
         NotFoundException,
       );
+    });
+
+    it('loads access grants and passes them to toResponseDto', async () => {
+      const document = makeDocument();
+      const grants = { acessoDepartamentoIds: ['dept-1'], acessoUsuarioIds: ['user-1'] };
+      documentsService.findOne.mockResolvedValue(document);
+      documentsService.getAccessGrants.mockResolvedValue(grants);
+      documentsService.toResponseDto.mockReturnValue(makeResponseDto(grants));
+
+      const result = await controller.findOne('doc-1', makeJwtPayload());
+
+      expect(documentsService.getAccessGrants).toHaveBeenCalledWith('doc-1');
+      expect(documentsService.toResponseDto).toHaveBeenCalledWith(document, grants);
+      expect(result.acessoDepartamentoIds).toEqual(['dept-1']);
+      expect(result.acessoUsuarioIds).toEqual(['user-1']);
     });
   });
 
@@ -240,6 +258,35 @@ describe('DocumentsController', () => {
           entidadeId: 'doc-1',
           dadosAnteriores: expect.objectContaining({ nome: 'Contrato' }),
           dadosNovos: expect.objectContaining({ nome: 'Contrato Renovado' }),
+        }),
+      );
+    });
+
+    it('loads before/after access grants, includes them in the audit payload, and passes grantsAfter to toResponseDto', async () => {
+      const before = makeDocument();
+      const updated = makeDocument({ nome: 'Contrato Renovado' });
+      const grantsBefore = { acessoDepartamentoIds: ['dept-1'], acessoUsuarioIds: [] };
+      const grantsAfter = { acessoDepartamentoIds: ['dept-1', 'dept-2'], acessoUsuarioIds: [] };
+      documentsService.findOne.mockResolvedValue(before);
+      documentsService.getAccessGrants
+        .mockResolvedValueOnce(grantsBefore)
+        .mockResolvedValueOnce(grantsAfter);
+      documentsService.update.mockResolvedValue(updated);
+      documentsService.toResponseDto.mockReturnValue(
+        makeResponseDto({ nome: 'Contrato Renovado', ...grantsAfter }),
+      );
+      const dto: UpdateDocumentDto = { nome: 'Contrato Renovado' };
+
+      await controller.update(makeHttpRequest(), makeJwtPayload(), 'doc-1', dto);
+
+      expect(documentsService.getAccessGrants).toHaveBeenCalledTimes(2);
+      expect(documentsService.getAccessGrants).toHaveBeenNthCalledWith(1, 'doc-1');
+      expect(documentsService.getAccessGrants).toHaveBeenNthCalledWith(2, 'doc-1');
+      expect(documentsService.toResponseDto).toHaveBeenCalledWith(updated, grantsAfter);
+      expect(auditLogsService.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          dadosAnteriores: expect.objectContaining(grantsBefore),
+          dadosNovos: expect.objectContaining(grantsAfter),
         }),
       );
     });
