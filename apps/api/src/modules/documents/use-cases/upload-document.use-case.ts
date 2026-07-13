@@ -2,6 +2,7 @@ import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
+  CONFIDENCIALIDADE,
   Department,
   Document,
   DOCUMENT_FASE,
@@ -22,7 +23,11 @@ export interface UploadDocumentData {
   readonly nome: string;
   readonly descricao?: string | null;
   readonly validade?: string | null;
-  readonly confidencialidade: Document['confidencialidade'];
+  // Optional here (mirrors CreateDocumentDto, see Task 4) — defaults to RESTRITO below,
+  // same as the column default on Document. Task 6 replaces this default with the real
+  // ApplyDocumentConfidentialityUseCase authorization/grant flow; this is a stopgap so the
+  // type stays consistent with the DTO in the meantime.
+  readonly confidencialidade?: Document['confidencialidade'];
   readonly departamentoId: string;
   readonly serieId: string;
   readonly dossieId?: string | null;
@@ -86,7 +91,7 @@ export class UploadDocumentUseCase {
         nome: data.nome,
         descricao: data.descricao ?? null,
         validade: data.validade ? new Date(data.validade) : null,
-        confidencialidade: data.confidencialidade,
+        confidencialidade: data.confidencialidade ?? CONFIDENCIALIDADE.RESTRITO,
         departamentoId: data.departamentoId,
         serieId: data.serieId,
         dossieId: data.dossieId ?? null,

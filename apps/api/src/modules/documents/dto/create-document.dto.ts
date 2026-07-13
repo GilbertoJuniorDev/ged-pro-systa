@@ -37,8 +37,9 @@ export class CreateDocumentDto {
   @IsDateString()
   readonly validade?: string | null;
 
+  @IsOptional()
   @IsIn(Object.values(CONFIDENCIALIDADE))
-  readonly confidencialidade!: Confidencialidade;
+  readonly confidencialidade?: Confidencialidade;
 
   @IsUUID()
   readonly departamentoId!: string;
@@ -49,6 +50,14 @@ export class CreateDocumentDto {
   @IsOptional()
   @IsUUID()
   readonly dossieId?: string | null;
+
+  @IsOptional()
+  @IsUUID('all', { each: true })
+  readonly accessDepartamentoIds?: string[];
+
+  @IsOptional()
+  @IsUUID('all', { each: true })
+  readonly accessUserIds?: string[];
 
   @IsOptional()
   @Transform(toBoolean)
