@@ -27,6 +27,7 @@ import { CreateDocumentsTable1782950400006 } from './1782950400006-CreateDocumen
 import { AddPortalFieldsToDocuments1782950400007 } from './1782950400007-AddPortalFieldsToDocuments';
 import { CreateDocumentLeadsTable1782950400008 } from './1782950400008-CreateDocumentLeadsTable';
 import { RemoveInternoConfidencialidade1782950400009 } from './1782950400009-RemoveInternoConfidencialidade';
+import { CreateDocumentAccessGrantsTable1782950400010 } from './1782950400010-CreateDocumentAccessGrantsTable';
 const DATABASE_URL = process.env['DATABASE_URL'];
 
 if (!DATABASE_URL) {
@@ -66,6 +67,7 @@ const dataSource = new DataSource({
     AddPortalFieldsToDocuments1782950400007,
     CreateDocumentLeadsTable1782950400008,
     RemoveInternoConfidencialidade1782950400009,
+    CreateDocumentAccessGrantsTable1782950400010,
   ],
   migrationsTableName: 'migrations',
 });

@@ -38,4 +38,6 @@ export {
   TIPO_DOCUMENTO,
   type TipoDocumento,
 } from './entities/document-lead.entity';
+export { DocumentAccessDepartment } from './entities/document-access-department.entity';
+export { DocumentAccessUser } from './entities/document-access-user.entity';
 

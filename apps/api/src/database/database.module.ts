@@ -25,6 +25,8 @@ import {
   Dossie,
   Document,
   DocumentLead,
+  DocumentAccessDepartment,
+  DocumentAccessUser,
 } from '@ged/database';
 
 @Module({
@@ -59,6 +61,8 @@ import {
           Dossie,
           Document,
           DocumentLead,
+          DocumentAccessDepartment,
+          DocumentAccessUser,
         ],
         synchronize: false,
         migrationsRun: false,
