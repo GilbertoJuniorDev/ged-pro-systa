@@ -46,6 +46,19 @@ const MODULE_SEEDS: ReadonlyArray<ModuleSeed> = [
       },
     ],
   },
+  {
+    nome: 'Documentos',
+    slug: 'documentos',
+    descricao: 'Gestão de documentos',
+    icone: 'FileText',
+    ordem: 300,
+    permissions: [
+      {
+        nome: 'DOCUMENTS_MANAGE_CONFIDENTIALITY',
+        descricao: 'Gerenciar confidencialidade e acesso de documentos',
+      },
+    ],
+  },
 ];
 
 export async function seedPermissions(dataSource: DataSource): Promise<void> {
