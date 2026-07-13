@@ -32,7 +32,6 @@ const MAX_FILE_SIZE = 26_214_400; // 25MB — mesmo limite do backend
 
 const CONFIDENCIALIDADE_OPTIONS = [
   { value: CONFIDENCIALIDADE.PUBLICO, label: 'Público' },
-  { value: CONFIDENCIALIDADE.INTERNO, label: 'Interno' },
   { value: CONFIDENCIALIDADE.RESTRITO, label: 'Restrito' },
   { value: CONFIDENCIALIDADE.CONFIDENCIAL, label: 'Confidencial' },
 ];
@@ -42,12 +41,7 @@ const schema = z.object({
   descricao: z.string().max(1000, 'Máximo 1000 caracteres').optional().or(z.literal('')),
   validade: z.string().optional().or(z.literal('')),
   confidencialidade: z.enum(
-    [
-      CONFIDENCIALIDADE.PUBLICO,
-      CONFIDENCIALIDADE.INTERNO,
-      CONFIDENCIALIDADE.RESTRITO,
-      CONFIDENCIALIDADE.CONFIDENCIAL,
-    ],
+    [CONFIDENCIALIDADE.PUBLICO, CONFIDENCIALIDADE.RESTRITO, CONFIDENCIALIDADE.CONFIDENCIAL],
     { required_error: 'Selecione a confidencialidade' },
   ),
   departamentoId: z.string().uuid('Selecione um departamento'),

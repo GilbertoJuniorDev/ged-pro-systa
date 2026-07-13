@@ -36,7 +36,7 @@ const makeFile = (overrides: Partial<Express.Multer.File> = {}): Express.Multer.
 
 const makeUploadData = (overrides: Partial<UploadDocumentData> = {}): UploadDocumentData => ({
   nome: 'Contrato de prestação de serviço',
-  confidencialidade: CONFIDENCIALIDADE.INTERNO,
+  confidencialidade: CONFIDENCIALIDADE.RESTRITO,
   departamentoId: 'dept-1',
   serieId: 'serie-1',
   ...overrides,
@@ -109,7 +109,7 @@ describe('UploadDocumentUseCase', () => {
           nome: 'Contrato de prestação de serviço',
           descricao: null,
           validade: null,
-          confidencialidade: CONFIDENCIALIDADE.INTERNO,
+          confidencialidade: CONFIDENCIALIDADE.RESTRITO,
           departamentoId: 'dept-1',
           serieId: 'serie-1',
           dossieId: null,

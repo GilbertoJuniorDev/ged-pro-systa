@@ -380,7 +380,6 @@ export interface UpsertDossieInput {
 
 export const CONFIDENCIALIDADE = {
   PUBLICO: 'PUBLICO',
-  INTERNO: 'INTERNO',
   RESTRITO: 'RESTRITO',
   CONFIDENCIAL: 'CONFIDENCIAL',
 } as const;

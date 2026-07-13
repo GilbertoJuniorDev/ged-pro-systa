@@ -50,7 +50,7 @@ const makeDocument = (overrides: DocumentOverrides = {}): Document =>
     nome: 'Contrato',
     descricao: null,
     validade: null,
-    confidencialidade: CONFIDENCIALIDADE.INTERNO,
+    confidencialidade: CONFIDENCIALIDADE.RESTRITO,
     departamentoId: 'dept-1',
     serieId: 'serie-1',
     dossieId: null,
@@ -215,7 +215,7 @@ describe('DocumentsService', () => {
       uploadDocumentUseCase.execute.mockResolvedValue(created);
       const dto = {
         nome: 'Contrato',
-        confidencialidade: CONFIDENCIALIDADE.INTERNO,
+        confidencialidade: CONFIDENCIALIDADE.RESTRITO,
         departamentoId: 'dept-1',
         serieId: 'serie-1',
       };
@@ -232,7 +232,7 @@ describe('DocumentsService', () => {
       uploadDocumentUseCase.execute.mockResolvedValue(created);
       const dto = {
         nome: 'Contrato',
-        confidencialidade: CONFIDENCIALIDADE.INTERNO,
+        confidencialidade: CONFIDENCIALIDADE.RESTRITO,
         departamentoId: 'dept-1',
         serieId: 'serie-1',
         destaque: true,

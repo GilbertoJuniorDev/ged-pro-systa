@@ -18,7 +18,7 @@ const makeDocument = (overrides: Partial<Document> = {}): Document =>
     nome: 'Contrato',
     descricao: null,
     validade: null,
-    confidencialidade: CONFIDENCIALIDADE.INTERNO,
+    confidencialidade: CONFIDENCIALIDADE.RESTRITO,
     departamentoId: 'dept-1',
     serieId: 'serie-1',
     dossieId: null,
@@ -43,7 +43,7 @@ const makeResponseDto = (overrides: Partial<DocumentResponseDto> = {}): Document
     nome: 'Contrato',
     descricao: null,
     validade: null,
-    confidencialidade: CONFIDENCIALIDADE.INTERNO,
+    confidencialidade: CONFIDENCIALIDADE.RESTRITO,
     departamentoId: 'dept-1',
     serieId: 'serie-1',
     dossieId: null,
@@ -146,7 +146,7 @@ describe('DocumentsController', () => {
   describe('create', () => {
     const dto: CreateDocumentDto = {
       nome: 'Contrato',
-      confidencialidade: CONFIDENCIALIDADE.INTERNO,
+      confidencialidade: CONFIDENCIALIDADE.RESTRITO,
       departamentoId: 'dept-1',
       serieId: 'serie-1',
     };

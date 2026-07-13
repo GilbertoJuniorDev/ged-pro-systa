@@ -13,7 +13,6 @@ import { Dossie } from './dossie.entity';
 
 export const CONFIDENCIALIDADE = {
   PUBLICO: 'PUBLICO',
-  INTERNO: 'INTERNO',
   RESTRITO: 'RESTRITO',
   CONFIDENCIAL: 'CONFIDENCIAL',
 } as const;
@@ -44,8 +43,8 @@ export class Document {
   @Column({
     name: 'confidencialidade',
     type: 'enum',
-    enum: ['PUBLICO', 'INTERNO', 'RESTRITO', 'CONFIDENCIAL'],
-    default: CONFIDENCIALIDADE.INTERNO,
+    enum: ['PUBLICO', 'RESTRITO', 'CONFIDENCIAL'],
+    default: CONFIDENCIALIDADE.RESTRITO,
   })
   confidencialidade!: Confidencialidade;
 

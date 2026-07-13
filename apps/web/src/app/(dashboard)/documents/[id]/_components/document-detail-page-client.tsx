@@ -13,14 +13,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 const CONFIDENCIALIDADE_BADGE: Record<Confidencialidade, string> = {
   PUBLICO: 'bg-slate-800 text-slate-400',
-  INTERNO: 'bg-indigo-900/40 text-indigo-400',
   RESTRITO: 'bg-amber-900/40 text-amber-400',
   CONFIDENCIAL: 'bg-rose-900/40 text-rose-400',
 };
 
 const CONFIDENCIALIDADE_LABEL: Record<Confidencialidade, string> = {
   PUBLICO: 'Público',
-  INTERNO: 'Interno',
   RESTRITO: 'Restrito',
   CONFIDENCIAL: 'Confidencial',
 };
