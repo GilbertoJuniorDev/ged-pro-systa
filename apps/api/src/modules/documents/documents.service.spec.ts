@@ -1,8 +1,18 @@
 import { Test, type TestingModule } from '@nestjs/testing';
 import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { getDataSourceToken, getRepositoryToken } from '@nestjs/typeorm';
+import { In } from 'typeorm';
 import type { DataSource, EntityManager, Repository } from 'typeorm';
-import { CONFIDENCIALIDADE, DOCUMENT_FASE, Document, DocumentSeries, Dossie, ROLE } from '@ged/database';
+import {
+  CONFIDENCIALIDADE,
+  DOCUMENT_FASE,
+  Document,
+  DocumentAccessDepartment,
+  DocumentAccessUser,
+  DocumentSeries,
+  Dossie,
+  ROLE,
+} from '@ged/database';
 import type { UserDepartment } from '@ged/database';
 import type { JwtPayload } from '@ged/types';
 import { STORAGE_SERVICE, type IStorageService } from '../storage/interfaces/storage.interface';
@@ -80,6 +90,8 @@ describe('DocumentsService', () => {
   let dossieRepo: jest.Mocked<Repository<Dossie>>;
   let userDepartmentsService: jest.Mocked<Pick<UserDepartmentsService, 'findByUserId'>>;
   let applyConfidentiality: jest.Mocked<Pick<ApplyDocumentConfidentialityUseCase, 'execute'>>;
+  let documentAccessDepartmentRepo: jest.Mocked<Pick<Repository<DocumentAccessDepartment>, 'exists'>>;
+  let documentAccessUserRepo: jest.Mocked<Pick<Repository<DocumentAccessUser>, 'exists'>>;
   let manager: { update: jest.Mock; findOneOrFail: jest.Mock };
   let dataSource: jest.Mocked<Pick<DataSource, 'transaction'>>;
 
@@ -108,6 +120,8 @@ describe('DocumentsService', () => {
     dossieRepo = { findOne: jest.fn() } as unknown as jest.Mocked<Repository<Dossie>>;
 
     applyConfidentiality = { execute: jest.fn() };
+    documentAccessDepartmentRepo = { exists: jest.fn() };
+    documentAccessUserRepo = { exists: jest.fn() };
     manager = { update: jest.fn(), findOneOrFail: jest.fn() };
     dataSource = {
       transaction: jest.fn(
@@ -124,6 +138,11 @@ describe('DocumentsService', () => {
         { provide: UploadDocumentUseCase, useValue: uploadDocumentUseCase },
         { provide: getRepositoryToken(DocumentSeries), useValue: documentSeriesRepo },
         { provide: getRepositoryToken(Dossie), useValue: dossieRepo },
+        {
+          provide: getRepositoryToken(DocumentAccessDepartment),
+          useValue: documentAccessDepartmentRepo,
+        },
+        { provide: getRepositoryToken(DocumentAccessUser), useValue: documentAccessUserRepo },
         { provide: UserDepartmentsService, useValue: userDepartmentsService },
         { provide: getDataSourceToken(), useValue: dataSource },
         { provide: ApplyDocumentConfidentialityUseCase, useValue: applyConfidentiality },
@@ -171,11 +190,82 @@ describe('DocumentsService', () => {
 
       expect(result.departamentoId).toBe('dept-1');
       expect(userDepartmentsService.findByUserId).toHaveBeenCalledWith('viewer-1');
+      expect(documentAccessDepartmentRepo.exists).not.toHaveBeenCalled();
     });
 
-    it('throws NotFoundException when a VIEWER accesses a document outside their departamentos', async () => {
+    it('throws NotFoundException when a VIEWER accesses a RESTRITO document outside their departamentos and without a grant', async () => {
       documentRepository.findById.mockResolvedValue(makeDocument({ departamentoId: 'dept-2' }));
       userDepartmentsService.findByUserId.mockResolvedValue([makeUserDepartment('dept-1')]);
+      documentAccessDepartmentRepo.exists.mockResolvedValue(false);
+
+      await expect(
+        service.findOne('doc-1', makeJwtPayload({ sub: 'viewer-1', role: ROLE.VIEWER })),
+      ).rejects.toThrow(new NotFoundException('Documento não encontrado'));
+    });
+
+    it('returns a RESTRITO document to a VIEWER outside their own departamento when granted via document_access_departments', async () => {
+      documentRepository.findById.mockResolvedValue(makeDocument({ departamentoId: 'dept-2' }));
+      userDepartmentsService.findByUserId.mockResolvedValue([makeUserDepartment('dept-1')]);
+      documentAccessDepartmentRepo.exists.mockResolvedValue(true);
+
+      const result = await service.findOne(
+        'doc-1',
+        makeJwtPayload({ sub: 'viewer-1', role: ROLE.VIEWER }),
+      );
+
+      expect(result.departamentoId).toBe('dept-2');
+      expect(documentAccessDepartmentRepo.exists).toHaveBeenCalledWith({
+        where: { documentId: 'doc-1', departamentoId: In(['dept-1']) },
+      });
+    });
+
+    it('returns a PUBLICO document to any authenticated VIEWER, even with zero departamentos', async () => {
+      documentRepository.findById.mockResolvedValue(
+        makeDocument({ departamentoId: 'dept-2', confidencialidade: CONFIDENCIALIDADE.PUBLICO }),
+      );
+      userDepartmentsService.findByUserId.mockResolvedValue([]);
+
+      const result = await service.findOne(
+        'doc-1',
+        makeJwtPayload({ sub: 'viewer-1', role: ROLE.VIEWER }),
+      );
+
+      expect(result.confidencialidade).toBe(CONFIDENCIALIDADE.PUBLICO);
+      expect(documentAccessDepartmentRepo.exists).not.toHaveBeenCalled();
+      expect(documentAccessUserRepo.exists).not.toHaveBeenCalled();
+    });
+
+    it('returns a CONFIDENCIAL document to a VIEWER with a matching document_access_users grant', async () => {
+      documentRepository.findById.mockResolvedValue(
+        makeDocument({
+          departamentoId: 'dept-2',
+          confidencialidade: CONFIDENCIALIDADE.CONFIDENCIAL,
+        }),
+      );
+      userDepartmentsService.findByUserId.mockResolvedValue([makeUserDepartment('dept-1')]);
+      documentAccessUserRepo.exists.mockResolvedValue(true);
+
+      const result = await service.findOne(
+        'doc-1',
+        makeJwtPayload({ sub: 'viewer-1', role: ROLE.VIEWER }),
+      );
+
+      expect(result.confidencialidade).toBe(CONFIDENCIALIDADE.CONFIDENCIAL);
+      expect(documentAccessUserRepo.exists).toHaveBeenCalledWith({
+        where: { documentId: 'doc-1', usuarioId: 'viewer-1' },
+      });
+      expect(documentAccessDepartmentRepo.exists).not.toHaveBeenCalled();
+    });
+
+    it('throws NotFoundException when a VIEWER lacks a document_access_users grant for a CONFIDENCIAL document', async () => {
+      documentRepository.findById.mockResolvedValue(
+        makeDocument({
+          departamentoId: 'dept-2',
+          confidencialidade: CONFIDENCIALIDADE.CONFIDENCIAL,
+        }),
+      );
+      userDepartmentsService.findByUserId.mockResolvedValue([makeUserDepartment('dept-1')]);
+      documentAccessUserRepo.exists.mockResolvedValue(false);
 
       await expect(
         service.findOne('doc-1', makeJwtPayload({ sub: 'viewer-1', role: ROLE.VIEWER })),
@@ -186,18 +276,18 @@ describe('DocumentsService', () => {
   describe('findAll', () => {
     const emptyPage = { data: [], total: 0, page: 1, limit: 20 };
 
-    it('passes no departamento restriction for an ADMIN', async () => {
+    it('passes accessScope: null (no restriction) for an ADMIN', async () => {
       documentRepository.findAll.mockResolvedValue(emptyPage);
 
       await service.findAll({}, makeJwtPayload({ role: ROLE.ADMIN }));
 
       expect(userDepartmentsService.findByUserId).not.toHaveBeenCalled();
       expect(documentRepository.findAll).toHaveBeenCalledWith(
-        expect.objectContaining({ allowedDepartamentoIds: undefined }),
+        expect.objectContaining({ accessScope: null }),
       );
     });
 
-    it("passes a VIEWER's departamentos as allowedDepartamentoIds", async () => {
+    it("passes a VIEWER's id and departamentos as accessScope", async () => {
       documentRepository.findAll.mockResolvedValue(emptyPage);
       userDepartmentsService.findByUserId.mockResolvedValue([
         makeUserDepartment('dept-1'),
@@ -207,11 +297,14 @@ describe('DocumentsService', () => {
       await service.findAll({}, makeJwtPayload({ sub: 'viewer-1', role: ROLE.VIEWER }));
 
       expect(documentRepository.findAll).toHaveBeenCalledWith(
-        expect.objectContaining({ allowedDepartamentoIds: ['dept-1', 'dept-3'] }),
+        expect.objectContaining({
+          accessScope: { userId: 'viewer-1', userDepartamentoIds: ['dept-1', 'dept-3'] },
+        }),
       );
     });
 
-    it('returns an empty page without querying when a VIEWER has no departamentos', async () => {
+    it('still queries the repository (no more empty-page short-circuit) for a VIEWER with zero departamentos', async () => {
+      documentRepository.findAll.mockResolvedValue({ data: [], total: 0, page: 2, limit: 10 });
       userDepartmentsService.findByUserId.mockResolvedValue([]);
 
       const result = await service.findAll(
@@ -219,8 +312,12 @@ describe('DocumentsService', () => {
         makeJwtPayload({ sub: 'viewer-1', role: ROLE.VIEWER }),
       );
 
+      expect(documentRepository.findAll).toHaveBeenCalledWith(
+        expect.objectContaining({
+          accessScope: { userId: 'viewer-1', userDepartamentoIds: [] },
+        }),
+      );
       expect(result).toEqual({ data: [], total: 0, page: 2, limit: 10 });
-      expect(documentRepository.findAll).not.toHaveBeenCalled();
     });
   });
 
@@ -558,9 +655,79 @@ describe('DocumentsService', () => {
       expect(result).toEqual({ document, stream });
     });
 
-    it('throws NotFoundException and never streams when a VIEWER is outside the departamento', async () => {
+    it('throws NotFoundException and never streams when a VIEWER is outside the departamento and has no grant', async () => {
       documentRepository.findById.mockResolvedValue(makeDocument({ departamentoId: 'dept-2' }));
       userDepartmentsService.findByUserId.mockResolvedValue([makeUserDepartment('dept-1')]);
+      documentAccessDepartmentRepo.exists.mockResolvedValue(false);
+
+      await expect(
+        service.getDownload('doc-1', makeJwtPayload({ sub: 'viewer-1', role: ROLE.VIEWER })),
+      ).rejects.toThrow(new NotFoundException('Documento não encontrado'));
+      expect(storageService.getStream).not.toHaveBeenCalled();
+    });
+
+    it('streams a RESTRITO document for a VIEWER outside their departamento when granted via document_access_departments', async () => {
+      const document = makeDocument({ departamentoId: 'dept-2' });
+      const stream = {} as NodeJS.ReadableStream;
+      documentRepository.findById.mockResolvedValue(document);
+      storageService.getStream.mockResolvedValue(stream);
+      userDepartmentsService.findByUserId.mockResolvedValue([makeUserDepartment('dept-1')]);
+      documentAccessDepartmentRepo.exists.mockResolvedValue(true);
+
+      const result = await service.getDownload(
+        'doc-1',
+        makeJwtPayload({ sub: 'viewer-1', role: ROLE.VIEWER }),
+      );
+
+      expect(result).toEqual({ document, stream });
+    });
+
+    it('streams a PUBLICO document for any authenticated VIEWER, even with zero departamentos', async () => {
+      const document = makeDocument({
+        departamentoId: 'dept-2',
+        confidencialidade: CONFIDENCIALIDADE.PUBLICO,
+      });
+      const stream = {} as NodeJS.ReadableStream;
+      documentRepository.findById.mockResolvedValue(document);
+      storageService.getStream.mockResolvedValue(stream);
+      userDepartmentsService.findByUserId.mockResolvedValue([]);
+
+      const result = await service.getDownload(
+        'doc-1',
+        makeJwtPayload({ sub: 'viewer-1', role: ROLE.VIEWER }),
+      );
+
+      expect(result).toEqual({ document, stream });
+    });
+
+    it('streams a CONFIDENCIAL document for a VIEWER with a document_access_users grant', async () => {
+      const document = makeDocument({
+        departamentoId: 'dept-2',
+        confidencialidade: CONFIDENCIALIDADE.CONFIDENCIAL,
+      });
+      const stream = {} as NodeJS.ReadableStream;
+      documentRepository.findById.mockResolvedValue(document);
+      storageService.getStream.mockResolvedValue(stream);
+      userDepartmentsService.findByUserId.mockResolvedValue([makeUserDepartment('dept-1')]);
+      documentAccessUserRepo.exists.mockResolvedValue(true);
+
+      const result = await service.getDownload(
+        'doc-1',
+        makeJwtPayload({ sub: 'viewer-1', role: ROLE.VIEWER }),
+      );
+
+      expect(result).toEqual({ document, stream });
+    });
+
+    it('throws NotFoundException and never streams a CONFIDENCIAL document without a document_access_users grant', async () => {
+      documentRepository.findById.mockResolvedValue(
+        makeDocument({
+          departamentoId: 'dept-2',
+          confidencialidade: CONFIDENCIALIDADE.CONFIDENCIAL,
+        }),
+      );
+      userDepartmentsService.findByUserId.mockResolvedValue([makeUserDepartment('dept-1')]);
+      documentAccessUserRepo.exists.mockResolvedValue(false);
 
       await expect(
         service.getDownload('doc-1', makeJwtPayload({ sub: 'viewer-1', role: ROLE.VIEWER })),

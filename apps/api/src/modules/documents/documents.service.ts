@@ -7,8 +7,17 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
-import { Document, DOCUMENT_FASE, DocumentSeries, Dossie, ROLE } from '@ged/database';
+import { DataSource, In, Repository } from 'typeorm';
+import {
+  CONFIDENCIALIDADE,
+  Document,
+  DOCUMENT_FASE,
+  DocumentAccessDepartment,
+  DocumentAccessUser,
+  DocumentSeries,
+  Dossie,
+  ROLE,
+} from '@ged/database';
 import type { Confidencialidade, Role } from '@ged/database';
 import type { JwtPayload } from '@ged/types';
 import { STORAGE_SERVICE } from '../storage/interfaces/storage.interface';
@@ -80,46 +89,71 @@ export class DocumentsService {
     private readonly documentSeriesRepo: Repository<DocumentSeries>,
     @InjectRepository(Dossie)
     private readonly dossieRepo: Repository<Dossie>,
+    @InjectRepository(DocumentAccessDepartment)
+    private readonly documentAccessDepartmentRepo: Repository<DocumentAccessDepartment>,
+    @InjectRepository(DocumentAccessUser)
+    private readonly documentAccessUserRepo: Repository<DocumentAccessUser>,
     private readonly userDepartmentsService: UserDepartmentsService,
     @InjectDataSource()
     private readonly dataSource: DataSource,
     private readonly applyConfidentiality: ApplyDocumentConfidentialityUseCase,
   ) {}
 
-  // Retorna null para papéis privilegiados (sem restrição). Caso contrário, a lista de
-  // departamentoIds aos quais o usuário está vinculado (pode ser vazia).
-  private async resolveAllowedDepartamentos(
+  // Retorna null para papéis privilegiados (sem restrição). Caso contrário, o escopo de
+  // acesso do usuário (id + departamentos aos quais está vinculado, podendo ser vazia).
+  private async resolveAccessScope(
     user: JwtPayload,
-  ): Promise<readonly string[] | null> {
+  ): Promise<{ userId: string; userDepartamentoIds: readonly string[] } | null> {
     if (PRIVILEGED_ROLES.includes(user.role)) {
       return null;
     }
     const departments = await this.userDepartmentsService.findByUserId(user.sub);
-    return departments.map((department) => department.departamentoId);
+    return { userId: user.sub, userDepartamentoIds: departments.map((d) => d.departamentoId) };
   }
 
   // Não vaza existência: usuário sem acesso recebe 404 (igual a documento inexistente).
   private async assertCanAccess(document: Document, user: JwtPayload): Promise<void> {
-    const allowed = await this.resolveAllowedDepartamentos(user);
-    if (allowed === null) {
+    const scope = await this.resolveAccessScope(user);
+    if (scope === null) {
       return;
     }
-    if (!allowed.includes(document.departamentoId)) {
-      throw new NotFoundException('Documento não encontrado');
+    if (await this.canAccessWithScope(document, scope)) {
+      return;
     }
+    throw new NotFoundException('Documento não encontrado');
   }
 
-  async findAll(filter: DocumentQueryFilter, user: JwtPayload): Promise<PaginatedDocuments> {
-    const allowed = await this.resolveAllowedDepartamentos(user);
-    if (allowed !== null && allowed.length === 0) {
-      // Usuário não-privilegiado sem nenhum departamento não enxerga documento algum.
-      const page = filter.page ?? 1;
-      const limit = Math.min(filter.limit ?? 20, 100);
-      return { data: [], total: 0, page, limit };
+  private async canAccessWithScope(
+    document: Document,
+    scope: { userId: string; userDepartamentoIds: readonly string[] },
+  ): Promise<boolean> {
+    if (document.confidencialidade === CONFIDENCIALIDADE.PUBLICO) {
+      return true;
     }
+    if (document.confidencialidade === CONFIDENCIALIDADE.RESTRITO) {
+      if (scope.userDepartamentoIds.includes(document.departamentoId)) {
+        return true;
+      }
+      return this.documentAccessDepartmentRepo.exists({
+        where: { documentId: document.id, departamentoId: In([...scope.userDepartamentoIds]) },
+      });
+    }
+    // CONFIDENCIAL
+    return this.documentAccessUserRepo.exists({
+      where: { documentId: document.id, usuarioId: scope.userId },
+    });
+  }
+
+  // Nota: um usuário sem NENHUM departamento ainda pode enxergar documentos PUBLICO ou
+  // CONFIDENCIAL liberados individualmente para ele — por isso não há mais um atalho que
+  // retorna página vazia quando userDepartamentoIds está vazio (isso só era correto sob o
+  // modelo antigo, restrito a departamento). A query sempre é executada, e o repositório
+  // avalia PUBLICO/CONFIDENCIAL de forma independente de userDepartamentoIds estar vazio.
+  async findAll(filter: DocumentQueryFilter, user: JwtPayload): Promise<PaginatedDocuments> {
+    const accessScope = await this.resolveAccessScope(user);
     return this.documentRepository.findAll({
       ...filter,
-      allowedDepartamentoIds: allowed ?? undefined,
+      accessScope,
     });
   }
 
