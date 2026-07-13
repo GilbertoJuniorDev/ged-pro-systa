@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import type { EntityManager } from 'typeorm';
 import { In } from 'typeorm';
 import { CONFIDENCIALIDADE, DocumentAccessDepartment, DocumentAccessUser } from '@ged/database';
@@ -33,16 +33,26 @@ export class ApplyDocumentConfidentialityUseCase {
       (input.requestedAccessDepartamentoIds?.length ?? 0) > 0 ||
       (input.requestedAccessUserIds?.length ?? 0) > 0;
 
-    const allowed = requestsManagement
-      ? await canManageConfidentiality(input.actingUser, this.userPermissionsService)
-      : true;
+    // Denial never mutates state — it always throws before touching the grant tables.
+    // This matters most on update: silently forcing an already-CONFIDENCIAL/RESTRITO-with-
+    // grants document back to bare RESTRITO as a side effect of an unauthorized request
+    // would destroy real access-control state. Only the "nothing beyond the default was
+    // requested" path (requestsManagement === false) skips the permission check entirely —
+    // that's the safe, no-op-equivalent default, not a denial.
+    if (requestsManagement) {
+      const allowed = await canManageConfidentiality(input.actingUser, this.userPermissionsService);
+      if (!allowed) {
+        throw new ForbiddenException(
+          'Você não tem permissão para gerenciar a confidencialidade deste documento',
+        );
+      }
+    }
 
-    const confidencialidade: Confidencialidade = allowed
-      ? (input.requestedConfidencialidade ?? CONFIDENCIALIDADE.RESTRITO)
-      : CONFIDENCIALIDADE.RESTRITO;
+    const confidencialidade: Confidencialidade =
+      input.requestedConfidencialidade ?? CONFIDENCIALIDADE.RESTRITO;
 
     if (confidencialidade === CONFIDENCIALIDADE.CONFIDENCIAL) {
-      const requestedUserIds = allowed ? (input.requestedAccessUserIds ?? []) : [];
+      const requestedUserIds = input.requestedAccessUserIds ?? [];
       if (requestedUserIds.length === 0) {
         throw new BadRequestException(
           'Documentos confidenciais exigem ao menos um usuário com acesso',
@@ -58,7 +68,7 @@ export class ApplyDocumentConfidentialityUseCase {
     }
 
     if (confidencialidade === CONFIDENCIALIDADE.RESTRITO) {
-      const accessDepartamentoIds = allowed ? (input.requestedAccessDepartamentoIds ?? []) : [];
+      const accessDepartamentoIds = input.requestedAccessDepartamentoIds ?? [];
       await this.syncDepartmentGrants(manager, input.documentId, accessDepartamentoIds);
       await this.syncUserGrants(manager, input.documentId, []);
       return { confidencialidade };

@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { CONFIDENCIALIDADE, ROLE } from '@ged/database';
 import type { JwtPayload } from '@ged/types';
 import { ApplyDocumentConfidentialityUseCase } from './apply-document-confidentiality.use-case';
@@ -34,21 +34,42 @@ describe('ApplyDocumentConfidentialityUseCase', () => {
     };
   });
 
-  it('a VIEWER without the permission is silently held at RESTRITO with no grants, even if they request otherwise', async () => {
+  it('a VIEWER without the permission requesting anything beyond RESTRITO throws ForbiddenException and touches no grant tables', async () => {
+    await expect(
+      useCase.execute(
+        {
+          documentId: 'doc-1',
+          requestedConfidencialidade: CONFIDENCIALIDADE.CONFIDENCIAL,
+          requestedAccessDepartamentoIds: ['dept-9'],
+          requestedAccessUserIds: ['user-9'],
+          actingUser: makeUser({ role: ROLE.VIEWER }),
+        },
+        manager as never,
+      ),
+    ).rejects.toThrow(
+      new ForbiddenException(
+        'Você não tem permissão para gerenciar a confidencialidade deste documento',
+      ),
+    );
+    expect(manager.find).not.toHaveBeenCalled();
+    expect(manager.delete).not.toHaveBeenCalled();
+    expect(manager.save).not.toHaveBeenCalled();
+  });
+
+  it('a caller with no permission requesting nothing beyond the default (confidencialidade undefined, no grants) succeeds at RESTRITO without a permission check', async () => {
     const result = await useCase.execute(
       {
         documentId: 'doc-1',
-        requestedConfidencialidade: CONFIDENCIALIDADE.CONFIDENCIAL,
-        requestedAccessDepartamentoIds: ['dept-9'],
-        requestedAccessUserIds: ['user-9'],
+        requestedConfidencialidade: undefined,
+        requestedAccessDepartamentoIds: undefined,
+        requestedAccessUserIds: undefined,
         actingUser: makeUser({ role: ROLE.VIEWER }),
       },
       manager as never,
     );
 
     expect(result.confidencialidade).toBe(CONFIDENCIALIDADE.RESTRITO);
-    expect(manager.delete).not.toHaveBeenCalled();
-    expect(manager.save).not.toHaveBeenCalled();
+    expect(userPermissionsService.hasPermission).not.toHaveBeenCalled();
   });
 
   it('an ADMIN can set PUBLICO with no grants required', async () => {
