@@ -66,8 +66,9 @@ export class DossiesService {
     return this.dossieRepository.findAll({ allowedDepartamentoIds: allowed });
   }
 
-  // `user` opcional: o caminho de escrita (update/remove, restrito a ADMIN/MANAGER) carrega
-  // o dossiê sem checagem de escopo. Na leitura, `user` é fornecido e o acesso é validado.
+  // `user` opcional: o caminho de escrita (update/remove, já restrito por @Permissions via
+  // PermissionsGuard) carrega o dossiê sem checagem de escopo. Na leitura, `user` é
+  // fornecido e o acesso é validado.
   async findOne(id: string, user?: JwtPayload): Promise<Dossie> {
     const dossie = await this.dossieRepository.findById(id);
     if (!dossie) throw new NotFoundException('Dossiê não encontrado');
