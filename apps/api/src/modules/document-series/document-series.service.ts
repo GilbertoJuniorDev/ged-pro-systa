@@ -21,7 +21,7 @@ export const DOCUMENT_SERIES_REPOSITORY = 'DOCUMENT_SERIES_REPOSITORY';
 const MAX_ANCESTOR_WALK = 100;
 
 // Papéis que enxergam todas as séries, sem restrição por departamento.
-const PRIVILEGED_ROLES: readonly Role[] = [ROLE.SUPER_ADMIN, ROLE.ADMIN, ROLE.MANAGER];
+const PRIVILEGED_ROLES: readonly Role[] = [ROLE.SUPER_ADMIN, ROLE.ADMIN];
 
 @Injectable()
 export class DocumentSeriesService {
@@ -79,8 +79,9 @@ export class DocumentSeriesService {
     return this.documentSeriesRepository.findAll({ allowedDepartamentoIds: allowed });
   }
 
-  // `user` opcional: o caminho de escrita (create/update/remove, restrito a ADMIN/MANAGER)
-  // carrega a série sem checagem de escopo. Na leitura, `user` é fornecido e o acesso é validado.
+  // `user` opcional: o caminho de escrita (create/update/remove, já restrito por
+  // @Permissions via PermissionsGuard) carrega a série sem checagem de escopo. Na leitura,
+  // `user` é fornecido e o acesso é validado.
   async findOne(id: string, user?: JwtPayload): Promise<DocumentSeries> {
     const documentSeries = await this.documentSeriesRepository.findById(id);
     if (!documentSeries) {

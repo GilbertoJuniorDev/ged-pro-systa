@@ -8,20 +8,24 @@ import {
 } from './document-series.service';
 import { DocumentSeriesController } from './document-series.controller';
 import { RolesGuard } from '../../common/guards/roles.guard';
+import { PermissionsGuard } from '../../common/guards/permissions.guard';
 import { AuditLogsModule } from '../audit-logs/audit-logs.module';
 import { UserDepartmentsModule } from '../user-departments/user-departments.module';
+import { UserPermissionsModule } from '../user-permissions/user-permissions.module';
 
 @NestModule({
   imports: [
     TypeOrmModule.forFeature([DocumentSeries, Department]),
     AuditLogsModule,
     UserDepartmentsModule,
+    UserPermissionsModule,
   ],
   controllers: [DocumentSeriesController],
   providers: [
     { provide: DOCUMENT_SERIES_REPOSITORY, useClass: DocumentSeriesRepository },
     DocumentSeriesService,
     RolesGuard,
+    PermissionsGuard,
   ],
   exports: [DocumentSeriesService],
 })

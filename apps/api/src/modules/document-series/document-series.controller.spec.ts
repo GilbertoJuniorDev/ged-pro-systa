@@ -7,6 +7,7 @@ import type { JwtPayload } from '@ged/types';
 import type { HttpRequest } from '../../common/interfaces/http-request.interface';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
 import { UserDepartmentsService } from '../user-departments/user-departments.service';
+import { PermissionsGuard } from '../../common/guards/permissions.guard';
 import { DocumentSeriesController } from './document-series.controller';
 import {
   DocumentSeriesService,
@@ -82,7 +83,10 @@ describe('DocumentSeriesController', () => {
         { provide: AuditLogsService, useValue: auditLogsService },
         { provide: UserDepartmentsService, useValue: { findByUserId: jest.fn() } },
       ],
-    }).compile();
+    })
+      .overrideGuard(PermissionsGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
     controller = module.get(DocumentSeriesController);
     documentSeriesService = module.get(
