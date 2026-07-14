@@ -17,6 +17,7 @@ import { usePermissions } from '@/hooks/use-permissions';
 import { Combobox } from '@/components/ui/combobox';
 import { DatePicker } from '@/components/ui/date-picker';
 import { ConfidentialitySection } from '@/components/documents/confidentiality-section';
+import { confidentialitySchema } from '@/components/documents/confidentiality-schema';
 
 const ALLOWED_EXTENSIONS = '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.txt';
 const ALLOWED_MIME_TYPES = [
@@ -30,29 +31,6 @@ const ALLOWED_MIME_TYPES = [
   'text/plain',
 ];
 const MAX_FILE_SIZE = 26_214_400; // 25MB — mesmo limite do backend
-
-const confidentialitySchema = z
-  .object({
-    confidencialidade: z.enum(
-      [CONFIDENCIALIDADE.PUBLICO, CONFIDENCIALIDADE.RESTRITO, CONFIDENCIALIDADE.CONFIDENCIAL],
-      { required_error: 'Selecione a confidencialidade' },
-    ),
-    accessDepartamentoIds: z.array(z.string().uuid()),
-    accessUserIds: z.array(z.string().uuid()),
-    exigeCadastro: z.boolean(),
-    destaque: z.boolean(),
-  })
-  // Espelha a regra do backend (ApplyDocumentConfidentialityUseCase): documentos
-  // Confidenciais exigem ao menos um usuário com acesso.
-  .superRefine((val, ctx) => {
-    if (val.confidencialidade === CONFIDENCIALIDADE.CONFIDENCIAL && val.accessUserIds.length === 0) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['accessUserIds'],
-        message: 'Selecione ao menos um usuário com acesso',
-      });
-    }
-  });
 
 const schema = z.object({
   nome: z.string().min(2, 'Mínimo 2 caracteres').max(200, 'Máximo 200 caracteres'),

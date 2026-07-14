@@ -4,35 +4,11 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { X } from 'lucide-react';
-import { CONFIDENCIALIDADE } from '@/types';
 import type { DocumentDto } from '@/types';
 import { useUpdateDocument } from '@/hooks/use-documents';
 import { usePermissions } from '@/hooks/use-permissions';
 import { ConfidentialitySection } from '@/components/documents/confidentiality-section';
-
-// Mesmo shape de validação usado pelo formulário de upload (UploadDocumentForm) —
-// espelha a regra do backend (ApplyDocumentConfidentialityUseCase): documentos
-// Confidenciais exigem ao menos um usuário com acesso.
-const confidentialitySchema = z
-  .object({
-    confidencialidade: z.enum(
-      [CONFIDENCIALIDADE.PUBLICO, CONFIDENCIALIDADE.RESTRITO, CONFIDENCIALIDADE.CONFIDENCIAL],
-      { required_error: 'Selecione a confidencialidade' },
-    ),
-    accessDepartamentoIds: z.array(z.string().uuid()),
-    accessUserIds: z.array(z.string().uuid()),
-    exigeCadastro: z.boolean(),
-    destaque: z.boolean(),
-  })
-  .superRefine((val, ctx) => {
-    if (val.confidencialidade === CONFIDENCIALIDADE.CONFIDENCIAL && val.accessUserIds.length === 0) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['accessUserIds'],
-        message: 'Selecione ao menos um usuário com acesso',
-      });
-    }
-  });
+import { confidentialitySchema } from '@/components/documents/confidentiality-schema';
 
 const schema = z.object({
   confidentiality: confidentialitySchema,
