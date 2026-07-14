@@ -128,7 +128,7 @@ describe('PhysicalPersonService', () => {
 
     it('should throw ForbiddenException when requester is not owner and not ADMIN', async () => {
       await expect(
-        service.create('other-user', 'MANAGER', 'user-1', baseData),
+        service.create('other-user', 'VIEWER', 'user-1', baseData),
       ).rejects.toThrow(ForbiddenException);
     });
 
@@ -158,7 +158,7 @@ describe('PhysicalPersonService', () => {
 
     it('should throw ForbiddenException when requester is not owner and not ADMIN', async () => {
       await expect(
-        service.update('other-user', 'MANAGER', 'user-1', { nome: 'José' }),
+        service.update('other-user', 'VIEWER', 'user-1', { nome: 'José' }),
       ).rejects.toThrow(ForbiddenException);
     });
 
