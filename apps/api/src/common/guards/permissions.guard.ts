@@ -41,8 +41,8 @@ export class PermissionsGuard implements CanActivate {
       throw new ForbiddenException('Access denied');
     }
 
-    // SUPER_ADMIN tem bypass total
-    if (user.role === ROLE.SUPER_ADMIN) {
+    // SUPER_ADMIN e ADMIN têm bypass total — mesma regra do RolesGuard.
+    if (user.role === ROLE.SUPER_ADMIN || user.role === ROLE.ADMIN) {
       return true;
     }
 
