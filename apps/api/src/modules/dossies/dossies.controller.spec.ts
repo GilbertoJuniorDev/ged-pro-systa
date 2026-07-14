@@ -7,6 +7,7 @@ import type { JwtPayload } from '@ged/types';
 import type { HttpRequest } from '../../common/interfaces/http-request.interface';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
 import { UserDepartmentsService } from '../user-departments/user-departments.service';
+import { PermissionsGuard } from '../../common/guards/permissions.guard';
 import { DossiesController } from './dossies.controller';
 import { DossiesService, DOSSIE_REPOSITORY } from './dossies.service';
 import type { CreateDossieDto } from './dto/create-dossie.dto';
@@ -69,7 +70,10 @@ describe('DossiesController', () => {
         { provide: AuditLogsService, useValue: auditLogsService },
         { provide: UserDepartmentsService, useValue: { findByUserId: jest.fn() } },
       ],
-    }).compile();
+    })
+      .overrideGuard(PermissionsGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
     controller = module.get(DossiesController);
     dossiesService = module.get(DossiesService) as jest.Mocked<DossiesService>;

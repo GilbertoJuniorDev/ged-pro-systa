@@ -14,10 +14,10 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import type { HttpRequest } from '../../common/interfaces/http-request.interface';
-import { ROLE } from '@ged/database';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
-import { Roles } from '../../common/decorators/roles.decorator';
+import { PermissionsGuard } from '../../common/guards/permissions.guard';
+import { Permissions } from '../../common/decorators/permissions.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import type { JwtPayload } from '@ged/types';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
@@ -30,7 +30,7 @@ import { QueryDossieDto } from './dto/query-dossie.dto';
 @ApiTags('dossies')
 @ApiBearerAuth()
 @Controller('dossies')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
 export class DossiesController {
   constructor(
     private readonly dossiesService: DossiesService,
@@ -61,7 +61,7 @@ export class DossiesController {
   }
 
   @Post()
-  @Roles(ROLE.ADMIN, ROLE.MANAGER)
+  @Permissions('DOSSIES_MANAGE')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new dossiê' })
   @ApiResponse({ status: 201, description: 'Dossiê created successfully' })
@@ -92,7 +92,7 @@ export class DossiesController {
   }
 
   @Patch(':id')
-  @Roles(ROLE.ADMIN, ROLE.MANAGER)
+  @Permissions('DOSSIES_MANAGE')
   @ApiOperation({ summary: 'Update a dossiê' })
   @ApiResponse({ status: 200, description: 'Dossiê updated successfully' })
   @ApiResponse({ status: 404, description: 'Dossiê not found' })
@@ -130,7 +130,7 @@ export class DossiesController {
   }
 
   @Delete(':id')
-  @Roles(ROLE.ADMIN, ROLE.MANAGER)
+  @Permissions('DOSSIES_MANAGE')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete a dossiê' })
   @ApiResponse({ status: 204, description: 'Dossiê deleted successfully' })

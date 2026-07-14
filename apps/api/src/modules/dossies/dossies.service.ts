@@ -14,7 +14,7 @@ import type {
 export const DOSSIE_REPOSITORY = 'DOSSIE_REPOSITORY';
 
 // Papéis que enxergam todos os dossiês, sem restrição por departamento.
-const PRIVILEGED_ROLES: readonly Role[] = [ROLE.SUPER_ADMIN, ROLE.ADMIN, ROLE.MANAGER];
+const PRIVILEGED_ROLES: readonly Role[] = [ROLE.SUPER_ADMIN, ROLE.ADMIN];
 
 @Injectable()
 export class DossiesService {
