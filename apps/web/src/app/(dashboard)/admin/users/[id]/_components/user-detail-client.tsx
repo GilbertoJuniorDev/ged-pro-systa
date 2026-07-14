@@ -17,7 +17,7 @@ import { ROLE_LABELS } from '@/lib/role-labels';
 
 const editSchema = z.object({
   name: z.string().min(2, 'Mínimo 2 caracteres'),
-  role: z.enum(['VIEWER']),
+  role: z.enum(['VIEWER']).optional(),
 });
 
 type EditFormData = z.infer<typeof editSchema>;
@@ -52,6 +52,7 @@ function DadosTab({ user }: { user: UserDto }) {
   const updateUser = useUpdateUser();
   const toggleActive = useToggleUserActive();
   const isSelf = session?.user?.id === user.id;
+  const canEditRole = user.role === ROLE.VIEWER;
 
   const {
     register,
@@ -61,12 +62,18 @@ function DadosTab({ user }: { user: UserDto }) {
     resolver: zodResolver(editSchema),
     defaultValues: {
       name: user.name,
-      role: 'VIEWER',
+      role: canEditRole ? 'VIEWER' : undefined,
     },
   });
 
   function onSubmit(data: EditFormData) {
-    updateUser.mutate({ id: user.id, payload: data });
+    updateUser.mutate({
+      id: user.id,
+      payload: {
+        name: data.name,
+        ...(canEditRole ? { role: data.role } : {}),
+      },
+    });
   }
 
   return (
@@ -88,7 +95,7 @@ function DadosTab({ user }: { user: UserDto }) {
             className="w-full rounded-lg bg-slate-800/50 border border-slate-700 px-3 py-2 text-sm text-slate-500 cursor-not-allowed"
           />
         </div>
-        {user.role !== ROLE.ADMIN && (
+        {canEditRole && (
           <div>
             <label className="block text-sm text-slate-400 mb-1">Função</label>
             <div className="w-full rounded-lg bg-slate-800/50 border border-slate-700 px-3 py-2 text-sm text-slate-400">
