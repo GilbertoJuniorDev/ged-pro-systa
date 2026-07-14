@@ -25,7 +25,11 @@ export interface MultiComboboxProps {
 // Acima desse número de itens selecionados, o gatilho troca os chips
 // individuais por um resumo ("N selecionados") para manter altura fixa
 // (single-line) e evitar layout shift conforme a seleção muda.
-const MAX_INLINE_CHIPS = 3;
+// Limitado a 2 (em vez de 3): rótulos PT-BR realistas (ex.: "Tecnologia da
+// Informação") somados a 3 chips facilmente excedem a largura útil de campos
+// estreitos (~200-320px neste app), então mantemos a distinção chip-vs-resumo
+// significativa sem depender só do encolhimento flex para casos extremos.
+const MAX_INLINE_CHIPS = 2;
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
@@ -150,11 +154,17 @@ export function MultiCombobox({
             </span>
           </span>
         ) : (
-          <span className="flex flex-1 items-center gap-1 overflow-hidden">
+          <span className="flex min-w-0 flex-1 items-center gap-1 overflow-hidden">
             {selectedLabels.map((label) => (
               <span
                 key={label}
-                className="inline-flex max-w-[8rem] shrink-0 items-center truncate rounded-md bg-indigo-50 px-1.5 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300"
+                // min-w-0 + shrink (em vez de shrink-0): permite que o chip encolha
+                // proporcionalmente quando a soma dos chips excede o espaço disponível,
+                // deixando o próprio truncate/ellipsis do chip decidir onde cortar. Sem
+                // isso, o item flex resiste a encolher abaixo do seu conteúdo e o
+                // container pai (overflow-hidden) acaba cortando o chip no meio,
+                // quebrando a forma arredondada em vez de reticências limpas.
+                className="inline-flex min-w-0 max-w-[8rem] shrink items-center truncate rounded-md bg-indigo-50 px-1.5 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300"
               >
                 {label}
               </span>

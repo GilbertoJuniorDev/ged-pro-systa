@@ -94,4 +94,30 @@ describe('MultiCombobox', () => {
 
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
   });
+
+  it('should apply its own truncation classes to each trigger chip so a long label clips with an ellipsis instead of being cut off by the container', () => {
+    // Rótulos PT-BR realistas e longos (Tasks 10/11 vão alimentar este
+    // componente com nomes de departamento/usuário como estes) — o chip
+    // precisa truncar com sua própria reticência, não ser cortado pelo
+    // overflow-hidden do container ancestral no meio do pill.
+    const longLabelOptions: readonly MultiComboboxOption[] = [
+      { label: 'Tecnologia da Informação e Comunicação', value: 'ti' },
+      { label: 'Recursos Humanos', value: 'rh' },
+    ];
+
+    render(
+      <MultiCombobox
+        values={['ti', 'rh']}
+        onValuesChange={jest.fn()}
+        options={longLabelOptions}
+      />,
+    );
+
+    const chip = screen.getByText('Tecnologia da Informação e Comunicação');
+    expect(chip.className).toEqual(expect.stringContaining('truncate'));
+    expect(chip.className).toEqual(expect.stringContaining('min-w-0'));
+    // shrink (não shrink-0): o chip precisa poder encolher para caber no
+    // espaço disponível quando os chips somados excedem a largura do campo.
+    expect(chip.className).toMatch(/(?:^|\s)shrink(?!-0)(?:\s|$)/);
+  });
 });
