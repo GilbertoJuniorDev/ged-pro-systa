@@ -57,6 +57,26 @@ const MODULE_SEEDS: ReadonlyArray<ModuleSeed> = [
         nome: 'DOCUMENTS_MANAGE_CONFIDENTIALITY',
         descricao: 'Gerenciar confidencialidade e acesso de documentos',
       },
+      {
+        nome: 'DOCUMENTS_CREATE',
+        descricao: 'Criar documentos',
+      },
+      {
+        nome: 'DOCUMENTS_EDIT',
+        descricao: 'Editar e transferir documentos',
+      },
+      {
+        nome: 'DOCUMENTS_DELETE',
+        descricao: 'Remover documentos',
+      },
+      {
+        nome: 'DOSSIES_MANAGE',
+        descricao: 'Criar, editar e remover dossiês',
+      },
+      {
+        nome: 'DOCUMENT_SERIES_MANAGE',
+        descricao: 'Criar, editar e remover séries documentais',
+      },
     ],
   },
 ];
