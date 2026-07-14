@@ -1,6 +1,5 @@
 export const ROLE = {
   ADMIN: 'ADMIN',
-  MANAGER: 'MANAGER',
   SUPER_ADMIN: 'SUPER_ADMIN',
   VIEWER: 'VIEWER',
 } as const;
@@ -37,7 +36,7 @@ export interface UserDto {
 
 export interface UpdateUserPayload {
   readonly name?: string;
-  readonly role?: Extract<Role, 'ADMIN' | 'MANAGER' | 'VIEWER'>;
+  readonly role?: Extract<Role, 'ADMIN' | 'VIEWER'>;
   readonly departamentoIds?: readonly string[];
 }
 
