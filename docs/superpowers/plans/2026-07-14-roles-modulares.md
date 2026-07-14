@@ -434,9 +434,15 @@ to:
 const PRIVILEGED_ROLES: readonly Role[] = [ROLE.SUPER_ADMIN, ROLE.ADMIN];
 ```
 
-- [ ] **Step 4: `documents.module.ts` needs no change**
+- [ ] **Step 4: Add `PermissionsGuard` to `documents.module.ts`'s providers**
 
-`UserPermissionsModule` is already imported (Phase 1, Task 6) and already exports `USER_PERMISSIONS_SERVICE`/`UserPermissionsService`, which is what `PermissionsGuard` needs injected. Confirm this by reading the current file — no edit expected here, but verify rather than assume, since the module has been touched by several prior tasks.
+Correction to this plan's original research: `UserPermissionsModule` is already imported in `apps/api/src/modules/documents/documents.module.ts` (Phase 1, Task 6) and already exports `USER_PERMISSIONS_SERVICE`/`UserPermissionsService`, which is what `PermissionsGuard`'s own constructor needs injected — **but `PermissionsGuard` itself is NOT currently listed in this module's `providers: [...]` array** (only `RolesGuard` is, confirmed by direct read: `grep -n "PermissionsGuard" apps/api/src/modules/documents/documents.module.ts` returns nothing before this task). Without registering it, NestJS cannot instantiate the class reference used in Step 1's `@UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)` and DI resolution will fail. Add the import and provider entry:
+
+```ts
+import { PermissionsGuard } from '../../common/guards/permissions.guard';
+```
+
+and add `PermissionsGuard` to the `providers: [...]` array, alongside the existing `RolesGuard`.
 
 - [ ] **Step 5: Sweep `documents.service.spec.ts` for `ROLE.MANAGER`**
 
