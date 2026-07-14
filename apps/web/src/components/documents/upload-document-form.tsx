@@ -13,9 +13,10 @@ import { useDepartments } from '@/hooks/use-departments';
 import { useDocumentSeries } from '@/hooks/use-document-series';
 import { useDossies } from '@/hooks/use-dossies';
 import { useAuth } from '@/hooks/use-auth';
+import { usePermissions } from '@/hooks/use-permissions';
 import { Combobox } from '@/components/ui/combobox';
 import { DatePicker } from '@/components/ui/date-picker';
-import { Checkbox } from '@/components/ui/checkbox';
+import { ConfidentialitySection } from '@/components/documents/confidentiality-section';
 
 const ALLOWED_EXTENSIONS = '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.txt';
 const ALLOWED_MIME_TYPES = [
@@ -30,25 +31,37 @@ const ALLOWED_MIME_TYPES = [
 ];
 const MAX_FILE_SIZE = 26_214_400; // 25MB — mesmo limite do backend
 
-const CONFIDENCIALIDADE_OPTIONS = [
-  { value: CONFIDENCIALIDADE.PUBLICO, label: 'Público' },
-  { value: CONFIDENCIALIDADE.RESTRITO, label: 'Restrito' },
-  { value: CONFIDENCIALIDADE.CONFIDENCIAL, label: 'Confidencial' },
-];
+const confidentialitySchema = z
+  .object({
+    confidencialidade: z.enum(
+      [CONFIDENCIALIDADE.PUBLICO, CONFIDENCIALIDADE.RESTRITO, CONFIDENCIALIDADE.CONFIDENCIAL],
+      { required_error: 'Selecione a confidencialidade' },
+    ),
+    accessDepartamentoIds: z.array(z.string().uuid()),
+    accessUserIds: z.array(z.string().uuid()),
+    exigeCadastro: z.boolean(),
+    destaque: z.boolean(),
+  })
+  // Espelha a regra do backend (ApplyDocumentConfidentialityUseCase): documentos
+  // Confidenciais exigem ao menos um usuário com acesso.
+  .superRefine((val, ctx) => {
+    if (val.confidencialidade === CONFIDENCIALIDADE.CONFIDENCIAL && val.accessUserIds.length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['accessUserIds'],
+        message: 'Selecione ao menos um usuário com acesso',
+      });
+    }
+  });
 
 const schema = z.object({
   nome: z.string().min(2, 'Mínimo 2 caracteres').max(200, 'Máximo 200 caracteres'),
   descricao: z.string().max(1000, 'Máximo 1000 caracteres').optional().or(z.literal('')),
   validade: z.string().optional().or(z.literal('')),
-  confidencialidade: z.enum(
-    [CONFIDENCIALIDADE.PUBLICO, CONFIDENCIALIDADE.RESTRITO, CONFIDENCIALIDADE.CONFIDENCIAL],
-    { required_error: 'Selecione a confidencialidade' },
-  ),
   departamentoId: z.string().uuid('Selecione um departamento'),
   serieId: z.string().uuid('Selecione uma série'),
   dossieId: z.string().optional().or(z.literal('')),
-  destaque: z.boolean().optional(),
-  exigeCadastro: z.boolean().optional(),
+  confidentiality: confidentialitySchema,
 });
 
 type FormData = z.infer<typeof schema>;
@@ -57,6 +70,8 @@ export function UploadDocumentForm() {
   const router = useRouter();
   const upload = useUploadDocument();
   const { user } = useAuth();
+  const { hasPermission } = usePermissions();
+  const canManageConfidentiality = hasPermission('DOCUMENTS_MANAGE_CONFIDENTIALITY');
   const { data: departamentos } = useDepartments();
 
   const [file, setFile] = useState<File | null>(null);
@@ -71,7 +86,18 @@ export function UploadDocumentForm() {
     watch,
     setValue,
     formState: { errors },
-  } = useForm<FormData>({ resolver: zodResolver(schema) });
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      confidentiality: {
+        confidencialidade: CONFIDENCIALIDADE.RESTRITO,
+        accessDepartamentoIds: [],
+        accessUserIds: [],
+        exigeCadastro: false,
+        destaque: false,
+      },
+    },
+  });
 
   useEffect(() => {
     if (user?.selectedDepartmentId) {
@@ -87,16 +113,6 @@ export function UploadDocumentForm() {
     setValue('serieId', '');
     setValue('dossieId', '');
   }, [watchedDepartamentoId, setValue]);
-
-  const watchedConfidencialidade = watch('confidencialidade');
-  const isPublico = watchedConfidencialidade === CONFIDENCIALIDADE.PUBLICO;
-
-  useEffect(() => {
-    if (!isPublico) {
-      setValue('destaque', false);
-      setValue('exigeCadastro', false);
-    }
-  }, [isPublico, setValue]);
 
   const departamentoOptions = (departamentos ?? []).map((d) => ({ value: d.id, label: d.nome }));
   const serieOptions = (series ?? []).map((s) => ({ value: s.id, label: `${s.codigo} — ${s.nome}` }));
@@ -136,12 +152,14 @@ export function UploadDocumentForm() {
         nome: data.nome,
         descricao: data.descricao === '' ? undefined : data.descricao,
         validade: data.validade === '' ? undefined : data.validade,
-        confidencialidade: data.confidencialidade,
+        confidencialidade: data.confidentiality.confidencialidade,
         departamentoId: data.departamentoId,
         serieId: data.serieId,
         dossieId: data.dossieId === '' ? undefined : data.dossieId,
-        destaque: data.destaque,
-        exigeCadastro: data.exigeCadastro,
+        destaque: data.confidentiality.destaque,
+        exigeCadastro: data.confidentiality.exigeCadastro,
+        accessDepartamentoIds: data.confidentiality.accessDepartamentoIds,
+        accessUserIds: data.confidentiality.accessUserIds,
       },
       { onSuccess: () => router.push('/documents') },
     );
@@ -312,82 +330,22 @@ export function UploadDocumentForm() {
         </div>
       </div>
 
-      <div className="max-w-xs">
-        <label className="block text-sm text-slate-600 dark:text-slate-400 mb-1">
-          Confidencialidade <span className="text-rose-500 dark:text-rose-400">*</span>
-        </label>
+      <div>
         <Controller
-          name="confidencialidade"
+          name="confidentiality"
           control={control}
           render={({ field }) => (
-            <Combobox
+            <ConfidentialitySection
               value={field.value}
-              onValueChange={field.onChange}
-              options={CONFIDENCIALIDADE_OPTIONS}
-              placeholder="Selecione a confidencialidade"
-              error={!!errors.confidencialidade}
+              onChange={field.onChange}
+              canManage={canManageConfidentiality}
+              errors={{
+                confidencialidade: errors.confidentiality?.confidencialidade?.message,
+                accessUserIds: errors.confidentiality?.accessUserIds?.message,
+              }}
             />
           )}
         />
-        {errors.confidencialidade && (
-          <p className="text-rose-500 dark:text-rose-400 text-xs mt-1">{errors.confidencialidade.message}</p>
-        )}
-      </div>
-
-      <div className="space-y-2.5">
-        <div className="flex items-center gap-3">
-          <Controller
-            name="destaque"
-            control={control}
-            render={({ field }) => (
-              <Checkbox
-                id="destaque"
-                checked={field.value ?? false}
-                onChange={(e) => field.onChange(e.target.checked)}
-                disabled={!isPublico}
-              />
-            )}
-          />
-          <label
-            htmlFor="destaque"
-            className={`text-sm cursor-pointer ${
-              isPublico
-                ? 'text-slate-600 dark:text-slate-400'
-                : 'text-slate-400 dark:text-slate-600 cursor-not-allowed'
-            }`}
-          >
-            Exibir no portal público como destaque
-          </label>
-        </div>
-        <div className="flex items-center gap-3">
-          <Controller
-            name="exigeCadastro"
-            control={control}
-            render={({ field }) => (
-              <Checkbox
-                id="exigeCadastro"
-                checked={field.value ?? false}
-                onChange={(e) => field.onChange(e.target.checked)}
-                disabled={!isPublico}
-              />
-            )}
-          />
-          <label
-            htmlFor="exigeCadastro"
-            className={`text-sm cursor-pointer ${
-              isPublico
-                ? 'text-slate-600 dark:text-slate-400'
-                : 'text-slate-400 dark:text-slate-600 cursor-not-allowed'
-            }`}
-          >
-            Exigir cadastro para download
-          </label>
-        </div>
-        {!isPublico && (
-          <p className="text-xs text-slate-500 dark:text-slate-500">
-            Disponível apenas para documentos com confidencialidade Público.
-          </p>
-        )}
       </div>
 
       <div className="flex justify-end gap-3 border-t border-slate-200 pt-5 dark:border-slate-700">

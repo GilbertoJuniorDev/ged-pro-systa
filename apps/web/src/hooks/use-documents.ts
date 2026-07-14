@@ -40,6 +40,8 @@ export interface UploadDocumentPayload {
   dossieId?: string | null;
   destaque?: boolean;
   exigeCadastro?: boolean;
+  accessDepartamentoIds?: string[];
+  accessUserIds?: string[];
 }
 
 function buildQueryString(filters: DocumentFilters): string {
@@ -98,6 +100,19 @@ export function useUploadDocument() {
       if (payload.dossieId) formData.append('dossieId', payload.dossieId);
       if (payload.destaque !== undefined) formData.append('destaque', String(payload.destaque));
       if (payload.exigeCadastro !== undefined) formData.append('exigeCadastro', String(payload.exigeCadastro));
+      // `[]` suffix (not a bare repeated key): the API's multer stack (multer -> append-field)
+      // only turns a repeated *bare* key into an array starting from its 2nd occurrence — a
+      // single value stays a raw string, which would fail CreateDocumentDto's
+      // `@IsUUID('all', { each: true })`. The `field[]` suffix always yields an array, even
+      // for exactly one value (verified against append-field@1.0.0, the version this repo's
+      // multer@1.4.5-lts.x pulls in) — and a single value is the common case here (e.g. a
+      // Confidencial document with only the acting user granted).
+      if (payload.accessDepartamentoIds) {
+        payload.accessDepartamentoIds.forEach((id) => formData.append('accessDepartamentoIds[]', id));
+      }
+      if (payload.accessUserIds) {
+        payload.accessUserIds.forEach((id) => formData.append('accessUserIds[]', id));
+      }
 
       return apiClient.post<DocumentDto>('/documents', formData, {
         token: session?.user?.accessToken,
