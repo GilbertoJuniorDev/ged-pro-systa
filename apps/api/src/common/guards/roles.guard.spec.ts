@@ -40,8 +40,8 @@ describe('RolesGuard', () => {
   });
 
   it('should return true when user role matches one of the required roles', () => {
-    reflector.getAllAndOverride.mockReturnValue([ROLE.ADMIN, ROLE.MANAGER]);
-    const ctx = makeContext({ sub: 'manager-1', role: ROLE.MANAGER, email: 'm@b.com' });
+    reflector.getAllAndOverride.mockReturnValue([ROLE.ADMIN, ROLE.VIEWER]);
+    const ctx = makeContext({ sub: 'viewer-1', role: ROLE.VIEWER, email: 'v@b.com' });
 
     expect(guard.canActivate(ctx)).toBe(true);
   });
@@ -60,8 +60,8 @@ describe('RolesGuard', () => {
     expect(guard.canActivate(ctx)).toBe(true);
   });
 
-  it('should return true for SUPER_ADMIN even when required roles are ["MANAGER"]', () => {
-    reflector.getAllAndOverride.mockReturnValue([ROLE.MANAGER]);
+  it('should return true for SUPER_ADMIN even when required roles are ["VIEWER"]', () => {
+    reflector.getAllAndOverride.mockReturnValue([ROLE.VIEWER]);
     const ctx = makeContext({ sub: 'super-admin-1', role: ROLE.SUPER_ADMIN, email: 's@b.com' });
 
     expect(guard.canActivate(ctx)).toBe(true);
