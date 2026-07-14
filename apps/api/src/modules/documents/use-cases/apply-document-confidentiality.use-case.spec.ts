@@ -120,7 +120,7 @@ describe('ApplyDocumentConfidentialityUseCase', () => {
     expect(savedRows.map((r) => r.usuarioId).sort()).toEqual(['acting-user', 'other-user']);
   });
 
-  it('a MANAGER with the granted permission can manage confidentiality', async () => {
+  it('a VIEWER with the granted permission can manage confidentiality', async () => {
     userPermissionsService.hasPermission.mockResolvedValue(true);
 
     const result = await useCase.execute(
@@ -129,13 +129,13 @@ describe('ApplyDocumentConfidentialityUseCase', () => {
         requestedConfidencialidade: CONFIDENCIALIDADE.RESTRITO,
         requestedAccessDepartamentoIds: ['dept-2'],
         requestedAccessUserIds: undefined,
-        actingUser: makeUser({ sub: 'manager-1', role: ROLE.MANAGER }),
+        actingUser: makeUser({ sub: 'viewer-1', role: ROLE.VIEWER }),
       },
       manager as never,
     );
 
     expect(userPermissionsService.hasPermission).toHaveBeenCalledWith(
-      'manager-1',
+      'viewer-1',
       'DOCUMENTS_MANAGE_CONFIDENTIALITY',
     );
     expect(result.confidencialidade).toBe(CONFIDENCIALIDADE.RESTRITO);

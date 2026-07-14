@@ -56,7 +56,7 @@ export interface UpdateDocumentInputData {
 }
 
 // Papéis que enxergam todos os documentos, sem restrição por departamento.
-const PRIVILEGED_ROLES: readonly Role[] = [ROLE.SUPER_ADMIN, ROLE.ADMIN, ROLE.MANAGER];
+const PRIVILEGED_ROLES: readonly Role[] = [ROLE.SUPER_ADMIN, ROLE.ADMIN];
 
 function addMonths(date: Date | string, months: number): Date {
   // `date` columns come back from TypeORM/pg as 'YYYY-MM-DD' strings (only when a value was
@@ -158,8 +158,8 @@ export class DocumentsService {
   }
 
   // `user` é opcional para preservar o caminho de escrita (update/remove/transferir), que
-  // já é restrito a ADMIN/MANAGER pelo RolesGuard e carrega o documento sem checagem de
-  // escopo. Quando `user` é fornecido (leitura), o acesso por departamento é validado.
+  // já é restrito por @Permissions via PermissionsGuard e carrega o documento sem checagem
+  // de escopo. Quando `user` é fornecido (leitura), o acesso por departamento é validado.
   async findOne(id: string, user?: JwtPayload): Promise<Document> {
     const document = await this.documentRepository.findById(id);
     if (!document) {

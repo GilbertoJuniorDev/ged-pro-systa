@@ -14,6 +14,7 @@ import { DocumentsController } from './documents.controller';
 import { UploadDocumentUseCase } from './use-cases/upload-document.use-case';
 import { ApplyDocumentConfidentialityUseCase } from './use-cases/apply-document-confidentiality.use-case';
 import { RolesGuard } from '../../common/guards/roles.guard';
+import { PermissionsGuard } from '../../common/guards/permissions.guard';
 import { AuditLogsModule } from '../audit-logs/audit-logs.module';
 import { StorageModule } from '../storage/storage.module';
 import { UserDepartmentsModule } from '../user-departments/user-departments.module';
@@ -41,6 +42,7 @@ import { UserPermissionsModule } from '../user-permissions/user-permissions.modu
     UploadDocumentUseCase,
     ApplyDocumentConfidentialityUseCase,
     RolesGuard,
+    PermissionsGuard,
   ],
   exports: [DocumentsService],
 })

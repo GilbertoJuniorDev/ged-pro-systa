@@ -6,6 +6,7 @@ import type { Response } from 'express';
 import type { JwtPayload } from '@ged/types';
 import type { HttpRequest } from '../../common/interfaces/http-request.interface';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
+import { PermissionsGuard } from '../../common/guards/permissions.guard';
 import { DocumentsController } from './documents.controller';
 import { DocumentsService } from './documents.service';
 import { DocumentResponseDto } from './dto/document-response.dto';
@@ -105,7 +106,10 @@ describe('DocumentsController', () => {
         { provide: DocumentsService, useValue: mockDocumentsService },
         { provide: AuditLogsService, useValue: auditLogsService },
       ],
-    }).compile();
+    })
+      .overrideGuard(PermissionsGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
     controller = module.get(DocumentsController);
     documentsService = module.get(DocumentsService) as jest.Mocked<DocumentsService>;

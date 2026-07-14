@@ -28,9 +28,9 @@ describe('canManageConfidentiality', () => {
     expect(hasPermission).not.toHaveBeenCalled();
   });
 
-  it('returns false for MANAGER without the permission', async () => {
+  it('returns false for VIEWER without the permission and forwards user id + permission name to the checker', async () => {
     const hasPermission = jest.fn().mockResolvedValue(false);
-    const result = await canManageConfidentiality(makeUser({ role: ROLE.MANAGER }), {
+    const result = await canManageConfidentiality(makeUser({ role: ROLE.VIEWER }), {
       hasPermission,
     });
     expect(result).toBe(false);
