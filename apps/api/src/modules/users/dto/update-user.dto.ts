@@ -2,7 +2,7 @@ import { IsArray, IsIn, IsOptional, IsString, IsUUID, MinLength } from 'class-va
 import { ROLE } from '@ged/database';
 import type { Role } from '@ged/types';
 
-const ALLOWED_ROLES = [ROLE.ADMIN, ROLE.MANAGER, ROLE.VIEWER] as const;
+const ALLOWED_ROLES = [ROLE.ADMIN, ROLE.VIEWER] as const;
 
 export class UpdateUserDto {
   @IsOptional()

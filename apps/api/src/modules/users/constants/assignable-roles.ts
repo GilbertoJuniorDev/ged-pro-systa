@@ -7,7 +7,7 @@ import type { Role } from '@ged/types';
  */
 export function getAssignableRoles(actingRole: Role): readonly Role[] {
   if (actingRole === ROLE.SUPER_ADMIN) {
-    return [ROLE.ADMIN, ROLE.MANAGER, ROLE.VIEWER];
+    return [ROLE.ADMIN, ROLE.VIEWER];
   }
-  return [ROLE.MANAGER, ROLE.VIEWER];
+  return [ROLE.VIEWER];
 }

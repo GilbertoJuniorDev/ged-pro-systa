@@ -152,16 +152,16 @@ describe('UsersService', () => {
   describe('update', () => {
     it('should update user when found', async () => {
       const existing = makeUser();
-      const updated = makeUser({ name: 'Novo Nome', role: 'MANAGER' });
+      const updated = makeUser({ name: 'Novo Nome', role: 'VIEWER' });
       mockRepository.findById.mockResolvedValue(existing);
       mockRepository.update.mockResolvedValue(updated);
 
-      const result = await service.update('user-uuid-1', { name: 'Novo Nome', role: 'MANAGER' });
+      const result = await service.update('user-uuid-1', { name: 'Novo Nome', role: 'VIEWER' });
 
       expect(result.name).toBe('Novo Nome');
       expect(mockRepository.update).toHaveBeenCalledWith('user-uuid-1', {
         name: 'Novo Nome',
-        role: 'MANAGER',
+        role: 'VIEWER',
       });
     });
 

@@ -150,17 +150,17 @@ describe('UsersController', () => {
     });
 
     it('should use provided role when creating user', async () => {
-      createUserWithProfileUseCase.execute.mockResolvedValue(makeUser({ role: ROLE.MANAGER }));
+      createUserWithProfileUseCase.execute.mockResolvedValue(makeUser({ role: ROLE.VIEWER }));
       const dto = makeCreateUserDto({
-        name: 'Gerente',
-        email: 'gerente@example.com',
-        role: ROLE.MANAGER,
+        name: 'Visualizador',
+        email: 'visualizador@example.com',
+        role: ROLE.VIEWER,
       });
 
       await controller.create(makeHttpRequest(), dto, makeJwtPayload());
 
       expect(createUserWithProfileUseCase.execute).toHaveBeenCalledWith(
-        expect.objectContaining({ role: ROLE.MANAGER }),
+        expect.objectContaining({ role: ROLE.VIEWER }),
       );
     });
 
@@ -217,19 +217,19 @@ describe('UsersController', () => {
 
   describe('update', () => {
     it('should update and return the user', async () => {
-      const updated = makeUser({ name: 'Nome Novo', role: ROLE.MANAGER });
+      const updated = makeUser({ name: 'Nome Novo', role: ROLE.VIEWER });
       updateUserWithDepartmentsUseCase.execute.mockResolvedValue(updated);
 
-      const dto: UpdateUserDto = { name: 'Nome Novo', role: ROLE.MANAGER };
+      const dto: UpdateUserDto = { name: 'Nome Novo', role: ROLE.VIEWER };
       const currentUser = makeJwtPayload();
       const result = await controller.update(makeHttpRequest(), 'uuid-1', dto, currentUser);
 
       expect(result.name).toBe('Nome Novo');
-      expect(result.role).toBe(ROLE.MANAGER);
+      expect(result.role).toBe(ROLE.VIEWER);
       expect(updateUserWithDepartmentsUseCase.execute).toHaveBeenCalledWith({
         id: 'uuid-1',
         actingUserRole: ROLE.ADMIN,
-        data: { name: 'Nome Novo', role: ROLE.MANAGER },
+        data: { name: 'Nome Novo', role: ROLE.VIEWER },
         departamentoIds: undefined,
       });
     });
