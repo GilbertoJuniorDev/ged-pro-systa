@@ -85,20 +85,20 @@ describe('useUpdateUser', () => {
   });
 
   it('should call apiClient.patch with correct arguments on mutation', async () => {
-    const updated = makeUserDto({ name: 'Novo Nome', role: 'MANAGER' });
+    const updated = makeUserDto({ name: 'Novo Nome', role: 'VIEWER' });
     mockedApiClient.patch.mockResolvedValue(updated);
 
     const { result } = renderHook(() => useUpdateUser(), { wrapper: createWrapper() });
 
     act(() => {
-      result.current.mutate({ id: 'uuid-1', payload: { name: 'Novo Nome', role: 'MANAGER' } });
+      result.current.mutate({ id: 'uuid-1', payload: { name: 'Novo Nome', role: 'VIEWER' } });
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     expect(mockedApiClient.patch).toHaveBeenCalledWith(
       '/users/uuid-1',
-      { name: 'Novo Nome', role: 'MANAGER' },
+      { name: 'Novo Nome', role: 'VIEWER' },
       { token: 'test-token' },
     );
     expect(mockedToast.success).toHaveBeenCalledWith('Usuário atualizado com sucesso!');

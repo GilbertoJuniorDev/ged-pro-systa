@@ -59,7 +59,7 @@ describe('useAuth', () => {
       id: 'u1',
       email: 'user@test.com',
       name: 'Usuário Teste',
-      role: 'MANAGER' as const,
+      role: 'VIEWER' as const,
       accessToken: 'access-token-123',
     };
 
@@ -75,7 +75,7 @@ describe('useAuth', () => {
     const { result } = renderHook(() => useAuth());
 
     expect(result.current.user?.email).toBe('user@test.com');
-    expect(result.current.user?.role).toBe('MANAGER');
+    expect(result.current.user?.role).toBe('VIEWER');
     expect(result.current.user?.accessToken).toBe('access-token-123');
   });
 });

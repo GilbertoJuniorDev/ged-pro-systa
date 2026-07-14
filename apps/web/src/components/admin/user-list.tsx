@@ -12,7 +12,6 @@ import { UsuarioPermissoesModal } from './usuario-permissoes/usuario-permissoes-
 
 const ROLE_COLORS: Record<string, string> = {
   ADMIN: 'bg-violet-500/15 text-violet-300 ring-1 ring-violet-500/30',
-  MANAGER: 'bg-indigo-500/15 text-indigo-300 ring-1 ring-indigo-500/30',
   VIEWER: 'bg-slate-700 text-slate-300 ring-1 ring-slate-600',
   SUPER_ADMIN: 'bg-fuchsia-500/15 text-fuchsia-300 ring-1 ring-fuchsia-500/30',
 };

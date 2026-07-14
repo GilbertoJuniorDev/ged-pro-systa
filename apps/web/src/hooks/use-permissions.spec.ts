@@ -48,7 +48,7 @@ describe('usePermissions', () => {
   it('should return true for hasPermission when permission is present', () => {
     mockedUseSession.mockReturnValue({
       data: {
-        user: { role: 'MANAGER', permissoes: ['RELATORIO_GERAR', 'DOCUMENTO_EDITAR'], modulos: [] },
+        user: { role: 'VIEWER', permissoes: ['RELATORIO_GERAR', 'DOCUMENTO_EDITAR'], modulos: [] },
       },
       status: 'authenticated',
     });

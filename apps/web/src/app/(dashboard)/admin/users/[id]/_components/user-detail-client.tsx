@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useSession } from 'next-auth/react';
@@ -13,11 +13,11 @@ import { PessoaFisicaForm } from '@/components/admin/pessoa-fisica/pessoa-fisica
 import { EnderecoList } from '@/components/admin/pessoa-fisica/endereco-list';
 import { TelefoneList } from '@/components/admin/pessoa-fisica/telefone-list';
 import { usePhysicalPerson } from '@/hooks/use-physical-person';
-import { Combobox } from '@/components/ui/combobox';
+import { ROLE_LABELS } from '@/lib/role-labels';
 
 const editSchema = z.object({
   name: z.string().min(2, 'Mínimo 2 caracteres'),
-  role: z.enum(['MANAGER', 'VIEWER']),
+  role: z.enum(['VIEWER']),
 });
 
 type EditFormData = z.infer<typeof editSchema>;
@@ -56,13 +56,12 @@ function DadosTab({ user }: { user: UserDto }) {
   const {
     register,
     handleSubmit,
-    control,
     formState: { errors },
   } = useForm<EditFormData>({
     resolver: zodResolver(editSchema),
     defaultValues: {
       name: user.name,
-      role: user.role === 'ADMIN' ? 'MANAGER' : (user.role as 'MANAGER' | 'VIEWER'),
+      role: 'VIEWER',
     },
   });
 
@@ -92,21 +91,9 @@ function DadosTab({ user }: { user: UserDto }) {
         {user.role !== ROLE.ADMIN && (
           <div>
             <label className="block text-sm text-slate-400 mb-1">Função</label>
-            <Controller
-              name="role"
-              control={control}
-              render={({ field }) => (
-                <Combobox
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  placeholder="Selecionar função…"
-                  options={[
-                    { value: 'MANAGER', label: 'Gerente' },
-                    { value: 'VIEWER', label: 'Visualizador' },
-                  ]}
-                />
-              )}
-            />
+            <div className="w-full rounded-lg bg-slate-800/50 border border-slate-700 px-3 py-2 text-sm text-slate-400">
+              {ROLE_LABELS.VIEWER}
+            </div>
           </div>
         )}
         <button

@@ -30,7 +30,7 @@ const createUserSchema = z
     email: z.string().email('E-mail inválido'),
     password: z.string().min(8, 'Senha deve ter ao menos 8 caracteres'),
     confirmPassword: z.string(),
-    role: z.enum([ROLE.ADMIN, ROLE.MANAGER, ROLE.VIEWER]),
+    role: z.enum([ROLE.ADMIN, ROLE.VIEWER]),
     pessoaFisica: pessoaFisicaSchema,
     permissaoIds: z.array(z.string().uuid()),
     departamentoIds: z.array(z.string().uuid()),
@@ -55,8 +55,8 @@ export function CreateUserForm() {
   const assignableRoles = useMemo(
     () =>
       actingRole === ROLE.SUPER_ADMIN
-        ? [ROLE.ADMIN, ROLE.MANAGER, ROLE.VIEWER]
-        : [ROLE.MANAGER, ROLE.VIEWER],
+        ? [ROLE.ADMIN, ROLE.VIEWER]
+        : [ROLE.VIEWER],
     [actingRole],
   );
 
