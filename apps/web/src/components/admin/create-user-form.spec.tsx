@@ -30,11 +30,11 @@ jest.mock('../../hooks/use-permission-management', () => ({
   usePermissionsManagement: jest.fn().mockReturnValue({ data: [] }),
 }));
 
-const mockRefresh = jest.fn();
+const mockPush = jest.fn();
 const mockMutateAsync = jest.fn();
 
 function setup() {
-  (useRouter as jest.Mock).mockReturnValue({ refresh: mockRefresh });
+  (useRouter as jest.Mock).mockReturnValue({ push: mockPush });
   (useCreateUser as jest.Mock).mockReturnValue({
     mutateAsync: mockMutateAsync,
     isPending: false,
@@ -65,8 +65,38 @@ function fillValidForm(overrides?: Partial<{
   fireEvent.change(screen.getByLabelText('Nome'), { target: { value: data.nome } });
   fireEvent.change(screen.getByLabelText('Sobrenome'), { target: { value: data.sobrenome } });
   fireEvent.change(screen.getByLabelText(/CPF/), { target: { value: data.cpf } });
-  fireEvent.change(screen.getByLabelText('Data de nascimento'), { target: { value: data.dataNascimento } });
-  fireEvent.change(screen.getByLabelText('Sexo'), { target: { value: data.sexo } });
+  setDataNascimento(data.dataNascimento);
+  setSexo(data.sexo);
+}
+
+/** dataNascimento no formato YYYY-MM-DD */
+function setDataNascimento(dataNascimento: string) {
+  const [year, month, day] = dataNascimento.split('-').map(Number);
+  const MONTHS_SHORT = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+
+  fireEvent.click(screen.getByLabelText('Data de nascimento'));
+  const toggleView = screen.getByLabelText('Alternar visualização do calendário');
+  fireEvent.click(toggleView); // days -> months
+  fireEvent.click(toggleView); // months -> years
+
+  // O range de anos exibido é centrado no ano atual — navega até o ano alvo entrar no range.
+  for (let guard = 0; guard < 30; guard++) {
+    const [rangeStart, rangeEnd] = (screen.getByText(/^\d{4}\s+–\s+\d{4}$/).textContent ?? '')
+      .split('–')
+      .map((s) => Number(s.trim()));
+    if (year >= rangeStart && year <= rangeEnd) break;
+    fireEvent.click(screen.getByLabelText(year < rangeStart ? 'Anterior' : 'Próximo'));
+  }
+
+  fireEvent.click(screen.getByRole('button', { name: String(year) }));
+  fireEvent.click(screen.getByRole('button', { name: MONTHS_SHORT[month - 1] }));
+  fireEvent.click(screen.getByRole('button', { name: String(day) }));
+}
+
+function setSexo(sexo: string) {
+  const SEXO_LABELS: Record<string, string> = { M: 'Masculino', F: 'Feminino', O: 'Outro' };
+  fireEvent.click(screen.getByLabelText('Sexo'));
+  fireEvent.click(screen.getByRole('option', { name: SEXO_LABELS[sexo] }));
 }
 
 describe('CreateUserForm', () => {
@@ -162,7 +192,7 @@ describe('CreateUserForm', () => {
     expect(mockMutateAsync).not.toHaveBeenCalled();
   });
 
-  it('should call router.refresh after successful submission', async () => {
+  it('should navigate to /admin/users after successful submission', async () => {
     mockMutateAsync.mockResolvedValue({});
     render(<CreateUserForm />);
     fillValidForm();
@@ -170,7 +200,7 @@ describe('CreateUserForm', () => {
     fireEvent.click(screen.getByRole('button', { name: /criar usuário/i }));
 
     await waitFor(() => {
-      expect(mockRefresh).toHaveBeenCalledTimes(1);
+      expect(mockPush).toHaveBeenCalledWith('/admin/users');
     });
   });
 
@@ -182,7 +212,7 @@ describe('CreateUserForm', () => {
     render(<CreateUserForm />);
 
     expect(screen.getByRole('button', { name: /criando…/i })).toBeInTheDocument();
-    expect(screen.getByRole('button')).toBeDisabled();
+    expect(screen.getByRole('button', { name: /criando…/i })).toBeDisabled();
   });
 
   it('should not submit when required pessoa fisica fields are empty', async () => {

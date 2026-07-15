@@ -12,6 +12,7 @@ export interface ComboboxOption {
 }
 
 interface ComboboxProps {
+  readonly id?: string;
   readonly value?: string;
   readonly onValueChange: (value: string) => void;
   readonly options: readonly ComboboxOption[];
@@ -25,6 +26,7 @@ interface ComboboxProps {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function Combobox({
+  id,
   value,
   onValueChange,
   options,
@@ -109,6 +111,7 @@ export function Combobox({
     <div ref={containerRef} className={cn('relative', className)}>
       {/* Trigger */}
       <button
+        id={id}
         type="button"
         disabled={disabled}
         onClick={() => setOpen((o) => !o)}

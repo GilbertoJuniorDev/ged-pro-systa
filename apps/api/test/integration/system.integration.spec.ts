@@ -41,7 +41,11 @@ describe('SystemController (integration)', () => {
 
     const module: TestingModule = await Test.createTestingModule({
       imports: [
-        ConfigModule.forRoot({ isGlobal: true }),
+        ConfigModule.forRoot({
+          isGlobal: true,
+          ignoreEnvFile: true,
+          load: [() => ({ JWT_SECRET })],
+        }),
         PassportModule,
         JwtModule.register({ secret: JWT_SECRET, signOptions: { expiresIn: '1h' } }),
       ],

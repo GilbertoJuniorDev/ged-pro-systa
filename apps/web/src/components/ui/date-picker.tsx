@@ -81,6 +81,7 @@ function isSameDay(a: Date, b: Date): boolean {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 interface DatePickerProps {
+  readonly id?: string;
   readonly value?: string;
   readonly onChange: (value: string) => void;
   readonly placeholder?: string;
@@ -90,6 +91,7 @@ interface DatePickerProps {
 }
 
 export function DatePicker({
+  id,
   value,
   onChange,
   placeholder = 'Selecionar data',
@@ -178,6 +180,7 @@ export function DatePicker({
     <div ref={containerRef} className={cn('relative', className)}>
       {/* Trigger */}
       <button
+        id={id}
         type="button"
         disabled={disabled}
         onClick={() => setOpen((o) => !o)}
@@ -228,6 +231,7 @@ export function DatePicker({
             <button
               type="button"
               onClick={toggleViewMode}
+              aria-label="Alternar visualização do calendário"
               className="flex select-none items-center gap-1 rounded-lg px-2 py-1 text-sm font-semibold text-slate-950 transition-colors hover:bg-slate-100 hover:text-indigo-700 dark:text-slate-100 dark:hover:bg-slate-800 dark:hover:text-indigo-300"
             >
               {viewMode === 'days' && (

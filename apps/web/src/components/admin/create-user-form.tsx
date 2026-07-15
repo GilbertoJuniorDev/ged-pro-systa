@@ -201,6 +201,7 @@ export function CreateUserForm() {
                 control={control}
                 render={({ field }) => (
                   <DatePicker
+                    id="pf-dataNascimento"
                     value={field.value}
                     onChange={field.onChange}
                     placeholder="DD/MM/AAAA"
@@ -222,6 +223,7 @@ export function CreateUserForm() {
                 control={control}
                 render={({ field }) => (
                   <Combobox
+                    id="pf-sexo"
                     value={field.value}
                     onValueChange={field.onChange}
                     placeholder="Selecionar…"
@@ -307,6 +309,7 @@ export function CreateUserForm() {
               control={control}
               render={({ field }) => (
                 <Combobox
+                  id="role"
                   value={field.value}
                   onValueChange={field.onChange}
                   placeholder="Selecionar função…"

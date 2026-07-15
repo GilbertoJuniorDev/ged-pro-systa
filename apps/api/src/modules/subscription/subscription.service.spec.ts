@@ -5,8 +5,10 @@ import type { Subscription } from '@ged/database';
 import {
   SubscriptionService,
   SUBSCRIPTION_REPOSITORY,
+  SUBSCRIPTION_PAYMENT_REPOSITORY,
 } from './subscription.service';
 import type { ISubscriptionRepository } from './interfaces/subscription-repository.interface';
+import type { ISubscriptionPaymentRepository } from './interfaces/subscription-payment-repository.interface';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
 
 const mockSub = (overrides: Partial<Subscription> = {}): Subscription =>
@@ -29,6 +31,7 @@ const mockSub = (overrides: Partial<Subscription> = {}): Subscription =>
 describe('SubscriptionService', () => {
   let service: SubscriptionService;
   let repo: jest.Mocked<ISubscriptionRepository>;
+  let paymentRepo: jest.Mocked<ISubscriptionPaymentRepository>;
   let auditLogs: jest.Mocked<Pick<AuditLogsService, 'log'>>;
 
   beforeEach(async () => {
@@ -37,12 +40,17 @@ describe('SubscriptionService', () => {
       create: jest.fn(),
       update: jest.fn(),
     };
+    paymentRepo = {
+      create: jest.fn(),
+      findBySubscriptionId: jest.fn(),
+    };
     auditLogs = { log: jest.fn().mockResolvedValue(undefined) };
 
     const moduleRef: TestingModule = await Test.createTestingModule({
       providers: [
         SubscriptionService,
         { provide: SUBSCRIPTION_REPOSITORY, useValue: repo },
+        { provide: SUBSCRIPTION_PAYMENT_REPOSITORY, useValue: paymentRepo },
         { provide: AuditLogsService, useValue: auditLogs },
       ],
     }).compile();

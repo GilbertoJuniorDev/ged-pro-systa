@@ -147,6 +147,7 @@ export function EditUserDialog({ user, onClose }: EditUserDialogProps) {
                 control={control}
                 render={({ field }) => (
                   <Combobox
+                    id="edit-role"
                     value={field.value}
                     onValueChange={field.onChange}
                     placeholder="Selecionar função…"
