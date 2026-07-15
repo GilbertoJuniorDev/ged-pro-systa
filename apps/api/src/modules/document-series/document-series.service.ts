@@ -7,7 +7,9 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Department, type DocumentSeries } from '@ged/database';
+import { Department, ROLE, type DocumentSeries, type Role } from '@ged/database';
+import type { JwtPayload } from '@ged/types';
+import { UserDepartmentsService } from '../user-departments/user-departments.service';
 import type {
   IDocumentSeriesRepository,
   CreateDocumentSeriesData,
@@ -18,6 +20,9 @@ export const DOCUMENT_SERIES_REPOSITORY = 'DOCUMENT_SERIES_REPOSITORY';
 
 const MAX_ANCESTOR_WALK = 100;
 
+// Papéis que enxergam todas as séries, sem restrição por departamento.
+const PRIVILEGED_ROLES: readonly Role[] = [ROLE.SUPER_ADMIN, ROLE.ADMIN];
+
 @Injectable()
 export class DocumentSeriesService {
   constructor(
@@ -25,16 +30,65 @@ export class DocumentSeriesService {
     private readonly documentSeriesRepository: IDocumentSeriesRepository,
     @InjectRepository(Department)
     private readonly departmentRepo: Repository<Department>,
+    private readonly userDepartmentsService: UserDepartmentsService,
   ) {}
 
-  findAll(departamentoId?: string): Promise<DocumentSeries[]> {
-    return this.documentSeriesRepository.findAll({ departamentoId });
+  // null = papel privilegiado (sem restrição); caso contrário a lista de departamentoIds
+  // vinculados ao usuário (pode ser vazia).
+  private async resolveAllowedDepartamentos(
+    user: JwtPayload,
+  ): Promise<readonly string[] | null> {
+    if (PRIVILEGED_ROLES.includes(user.role)) {
+      return null;
+    }
+    const departments = await this.userDepartmentsService.findByUserId(user.sub);
+    return departments.map((department) => department.departamentoId);
   }
 
-  async findOne(id: string): Promise<DocumentSeries> {
+  private async assertCanAccess(
+    documentSeries: DocumentSeries,
+    user: JwtPayload,
+  ): Promise<void> {
+    const allowed = await this.resolveAllowedDepartamentos(user);
+    if (allowed === null) {
+      return;
+    }
+    if (!allowed.includes(documentSeries.departamentoId)) {
+      throw new NotFoundException('Série de documento não encontrada');
+    }
+  }
+
+  async findAll(
+    departamentoId: string | undefined,
+    user: JwtPayload,
+  ): Promise<DocumentSeries[]> {
+    const allowed = await this.resolveAllowedDepartamentos(user);
+    if (allowed === null) {
+      return this.documentSeriesRepository.findAll({ departamentoId });
+    }
+    if (allowed.length === 0) {
+      return [];
+    }
+    if (departamentoId) {
+      // Um departamento fora do escopo do usuário não deve vazar dados.
+      if (!allowed.includes(departamentoId)) {
+        return [];
+      }
+      return this.documentSeriesRepository.findAll({ departamentoId });
+    }
+    return this.documentSeriesRepository.findAll({ allowedDepartamentoIds: allowed });
+  }
+
+  // `user` opcional: o caminho de escrita (create/update/remove, já restrito por
+  // @Permissions via PermissionsGuard) carrega a série sem checagem de escopo. Na leitura,
+  // `user` é fornecido e o acesso é validado.
+  async findOne(id: string, user?: JwtPayload): Promise<DocumentSeries> {
     const documentSeries = await this.documentSeriesRepository.findById(id);
     if (!documentSeries) {
       throw new NotFoundException('Série de documento não encontrada');
+    }
+    if (user) {
+      await this.assertCanAccess(documentSeries, user);
     }
     return documentSeries;
   }

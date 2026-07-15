@@ -6,6 +6,8 @@ import type { DocumentSeries } from '@ged/database';
 import type { JwtPayload } from '@ged/types';
 import type { HttpRequest } from '../../common/interfaces/http-request.interface';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
+import { UserDepartmentsService } from '../user-departments/user-departments.service';
+import { PermissionsGuard } from '../../common/guards/permissions.guard';
 import { DocumentSeriesController } from './document-series.controller';
 import {
   DocumentSeriesService,
@@ -79,8 +81,12 @@ describe('DocumentSeriesController', () => {
         { provide: DOCUMENT_SERIES_REPOSITORY, useValue: mockRepository },
         { provide: getRepositoryToken(Department), useValue: mockDepartmentRepo },
         { provide: AuditLogsService, useValue: auditLogsService },
+        { provide: UserDepartmentsService, useValue: { findByUserId: jest.fn() } },
       ],
-    }).compile();
+    })
+      .overrideGuard(PermissionsGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
     controller = module.get(DocumentSeriesController);
     documentSeriesService = module.get(
@@ -96,35 +102,38 @@ describe('DocumentSeriesController', () => {
       ];
       jest.spyOn(documentSeriesService, 'findAll').mockResolvedValue(series);
       const query: QueryDocumentSeriesDto = {};
+      const user = makeJwtPayload();
 
-      const result = await controller.findAll(query);
+      const result = await controller.findAll(query, user);
 
       expect(result).toHaveLength(2);
       expect(result[0]).toEqual(
         expect.objectContaining({ id: 'serie-1', codigo: 'SF-001' }),
       );
-      expect(documentSeriesService.findAll).toHaveBeenCalledWith(undefined);
+      expect(documentSeriesService.findAll).toHaveBeenCalledWith(undefined, user);
     });
 
     it('should filter by departamentoId when provided', async () => {
       const series = [makeDocumentSeries()];
       jest.spyOn(documentSeriesService, 'findAll').mockResolvedValue(series);
       const query: QueryDocumentSeriesDto = { departamentoId: 'dept-1' };
+      const user = makeJwtPayload();
 
-      await controller.findAll(query);
+      await controller.findAll(query, user);
 
-      expect(documentSeriesService.findAll).toHaveBeenCalledWith('dept-1');
+      expect(documentSeriesService.findAll).toHaveBeenCalledWith('dept-1', user);
     });
   });
 
   describe('findOne', () => {
     it('should return a document series by id', async () => {
       jest.spyOn(documentSeriesService, 'findOne').mockResolvedValue(makeDocumentSeries());
+      const user = makeJwtPayload();
 
-      const result = await controller.findOne('serie-1');
+      const result = await controller.findOne('serie-1', user);
 
       expect(result.id).toBe('serie-1');
-      expect(documentSeriesService.findOne).toHaveBeenCalledWith('serie-1');
+      expect(documentSeriesService.findOne).toHaveBeenCalledWith('serie-1', user);
     });
 
     it('should throw NotFoundException when document series does not exist', async () => {
@@ -132,7 +141,9 @@ describe('DocumentSeriesController', () => {
         .spyOn(documentSeriesService, 'findOne')
         .mockRejectedValue(new NotFoundException());
 
-      await expect(controller.findOne('non-existent')).rejects.toThrow(NotFoundException);
+      await expect(controller.findOne('non-existent', makeJwtPayload())).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 

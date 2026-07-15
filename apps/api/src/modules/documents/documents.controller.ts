@@ -23,10 +23,10 @@ import type { Readable } from 'node:stream';
 import type { Response } from 'express';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import type { HttpRequest } from '../../common/interfaces/http-request.interface';
-import { ROLE } from '@ged/database';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
-import { Roles } from '../../common/decorators/roles.decorator';
+import { PermissionsGuard } from '../../common/guards/permissions.guard';
+import { Permissions } from '../../common/decorators/permissions.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import type { JwtPayload } from '@ged/types';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
@@ -60,7 +60,7 @@ interface PaginatedDocumentResponse {
 @ApiTags('documents')
 @ApiBearerAuth()
 @Controller('documents')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
 export class DocumentsController {
   constructor(
     private readonly documentsService: DocumentsService,
@@ -70,8 +70,11 @@ export class DocumentsController {
   @Get()
   @ApiOperation({ summary: 'List documents' })
   @ApiResponse({ status: 200, description: 'Documents listed successfully' })
-  async findAll(@Query() query: QueryDocumentDto): Promise<PaginatedDocumentResponse> {
-    const { data, total, page, limit } = await this.documentsService.findAll(query);
+  async findAll(
+    @Query() query: QueryDocumentDto,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<PaginatedDocumentResponse> {
+    const { data, total, page, limit } = await this.documentsService.findAll(query, user);
     return {
       data: data.map((document) => this.documentsService.toResponseDto(document)),
       total,
@@ -84,9 +87,13 @@ export class DocumentsController {
   @ApiOperation({ summary: 'Get document by ID' })
   @ApiResponse({ status: 200, description: 'Document found' })
   @ApiResponse({ status: 404, description: 'Document not found' })
-  async findOne(@Param('id') id: string): Promise<DocumentResponseDto> {
-    const document = await this.documentsService.findOne(id);
-    return this.documentsService.toResponseDto(document);
+  async findOne(
+    @Param('id') id: string,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<DocumentResponseDto> {
+    const document = await this.documentsService.findOne(id, user);
+    const grants = await this.documentsService.getAccessGrants(id);
+    return this.documentsService.toResponseDto(document, grants);
   }
 
   @Get(':id/download')
@@ -95,9 +102,10 @@ export class DocumentsController {
   @ApiResponse({ status: 404, description: 'Document not found' })
   async download(
     @Param('id') id: string,
+    @CurrentUser() user: JwtPayload,
     @Res({ passthrough: true }) res: Response,
   ): Promise<StreamableFile> {
-    const { document, stream } = await this.documentsService.getDownload(id);
+    const { document, stream } = await this.documentsService.getDownload(id, user);
     res.set({
       'Content-Type': document.arquivoMimeType,
       'Content-Disposition': `attachment; filename="${encodeURIComponent(document.arquivoNome)}"`,
@@ -110,7 +118,7 @@ export class DocumentsController {
   }
 
   @Post()
-  @Roles(ROLE.ADMIN, ROLE.MANAGER)
+  @Permissions('DOCUMENTS_CREATE')
   @HttpCode(HttpStatus.CREATED)
   @UseInterceptors(
     FileInterceptor('arquivo', {
@@ -135,7 +143,7 @@ export class DocumentsController {
     @UploadedFile() file: Express.Multer.File,
   ): Promise<DocumentResponseDto> {
     if (!file) throw new BadRequestException('Arquivo é obrigatório');
-    const document = await this.documentsService.upload(dto, file);
+    const document = await this.documentsService.upload({ ...dto, actingUser: currentUser }, file);
     void this.auditLogsService.log({
       usuarioId: currentUser.sub,
       acao: 'CRIAR_DOCUMENTO',
@@ -158,7 +166,7 @@ export class DocumentsController {
   }
 
   @Patch(':id')
-  @Roles(ROLE.ADMIN, ROLE.MANAGER)
+  @Permissions('DOCUMENTS_EDIT')
   @ApiOperation({ summary: 'Update document metadata' })
   @ApiResponse({ status: 200, description: 'Document updated successfully' })
   @ApiResponse({ status: 404, description: 'Document not found' })
@@ -170,7 +178,9 @@ export class DocumentsController {
     @Body() dto: UpdateDocumentDto,
   ): Promise<DocumentResponseDto> {
     const before = await this.documentsService.findOne(id);
-    const document = await this.documentsService.update(id, dto);
+    const grantsBefore = await this.documentsService.getAccessGrants(id);
+    const document = await this.documentsService.update(id, dto, currentUser);
+    const grantsAfter = await this.documentsService.getAccessGrants(id);
     void this.auditLogsService.log({
       usuarioId: currentUser.sub,
       acao: 'ATUALIZAR_DOCUMENTO',
@@ -183,6 +193,7 @@ export class DocumentsController {
         serieId: before.serieId,
         dossieId: before.dossieId,
         isActive: before.isActive,
+        ...grantsBefore,
       },
       dadosNovos: {
         nome: document.nome,
@@ -191,15 +202,16 @@ export class DocumentsController {
         serieId: document.serieId,
         dossieId: document.dossieId,
         isActive: document.isActive,
+        ...grantsAfter,
       },
       ipCliente: req.ip ?? null,
       userAgent: req.headers['user-agent'] ?? null,
     });
-    return this.documentsService.toResponseDto(document);
+    return this.documentsService.toResponseDto(document, grantsAfter);
   }
 
   @Patch(':id/transferir')
-  @Roles(ROLE.ADMIN, ROLE.MANAGER)
+  @Permissions('DOCUMENTS_EDIT')
   @ApiOperation({ summary: 'Transfer document from fase CORRENTE to INTERMEDIARIO' })
   @ApiResponse({ status: 200, description: 'Document transferred successfully' })
   @ApiResponse({ status: 404, description: 'Document not found' })
@@ -227,7 +239,7 @@ export class DocumentsController {
   }
 
   @Delete(':id')
-  @Roles(ROLE.ADMIN, ROLE.MANAGER)
+  @Permissions('DOCUMENTS_DELETE')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete a document' })
   @ApiResponse({ status: 204, description: 'Document deleted successfully' })

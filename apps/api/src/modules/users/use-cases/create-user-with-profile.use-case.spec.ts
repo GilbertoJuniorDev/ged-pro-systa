@@ -193,10 +193,10 @@ describe('CreateUserWithProfileUseCase', () => {
       expect(result).toMatchObject({ id: 'uuid-1' });
     });
 
-    it('should allow an ADMIN actor to assign the MANAGER role', async () => {
+    it('should allow an ADMIN actor to assign the VIEWER role', async () => {
       const result = await useCase.execute({
         ...mockCreateData,
-        role: ROLE.MANAGER,
+        role: ROLE.VIEWER,
         actingUserRole: ROLE.ADMIN,
       });
 

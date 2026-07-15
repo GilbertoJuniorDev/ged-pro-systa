@@ -8,19 +8,20 @@ import { useDocument, useDeleteDocument, useDownloadDocument } from '@/hooks/use
 import { useDepartments } from '@/hooks/use-departments';
 import { useDocumentSeries } from '@/hooks/use-document-series';
 import { useDossies } from '@/hooks/use-dossies';
+import { useUsers } from '@/hooks/use-users';
+import { usePermissions } from '@/hooks/use-permissions';
 import { formatBytes } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
+import { EditConfidentialityDialog } from './edit-confidentiality-dialog';
 
 const CONFIDENCIALIDADE_BADGE: Record<Confidencialidade, string> = {
   PUBLICO: 'bg-slate-800 text-slate-400',
-  INTERNO: 'bg-indigo-900/40 text-indigo-400',
   RESTRITO: 'bg-amber-900/40 text-amber-400',
   CONFIDENCIAL: 'bg-rose-900/40 text-rose-400',
 };
 
 const CONFIDENCIALIDADE_LABEL: Record<Confidencialidade, string> = {
   PUBLICO: 'Público',
-  INTERNO: 'Interno',
   RESTRITO: 'Restrito',
   CONFIDENCIAL: 'Confidencial',
 };
@@ -96,9 +97,13 @@ export function DocumentDetailPageClient({ id }: { id: string }) {
   const { data: departamentos } = useDepartments();
   const { data: series } = useDocumentSeries(document?.departamentoId);
   const { data: dossies } = useDossies(document?.departamentoId);
+  const { data: users } = useUsers();
   const downloadDocument = useDownloadDocument();
   const deleteDocument = useDeleteDocument();
+  const { hasPermission } = usePermissions();
+  const canManageConfidentiality = hasPermission('DOCUMENTS_MANAGE_CONFIDENTIALITY');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showEditConfidentiality, setShowEditConfidentiality] = useState(false);
 
   const backLink = (
     <Link
@@ -143,6 +148,21 @@ export function DocumentDetailPageClient({ id }: { id: string }) {
     ? (dossies?.find((d) => d.id === document.dossieId)?.nome ?? '—')
     : null;
 
+  // "Também visível para…" — só aparece quando há liberação extra além do
+  // padrão do nível: departamentos adicionais em Restrito, ou os usuários
+  // liberados em Confidencial (o próprio departamento do documento, em
+  // Restrito, já tem acesso implícito e não entra aqui).
+  const extraAccessNames: string[] =
+    document.confidencialidade === 'RESTRITO' && document.acessoDepartamentoIds.length > 0
+      ? document.acessoDepartamentoIds
+          .map((depId) => departamentos?.find((d) => d.id === depId)?.nome)
+          .filter((nome): nome is string => Boolean(nome))
+      : document.confidencialidade === 'CONFIDENCIAL'
+        ? document.acessoUsuarioIds
+            .map((userId) => users?.find((u) => u.id === userId)?.name)
+            .filter((nome): nome is string => Boolean(nome))
+        : [];
+
   return (
     <main className="flex-1 overflow-y-auto bg-slate-50 p-4 sm:p-6 lg:p-8 dark:bg-slate-950">
       <div className="mb-6">{backLink}</div>
@@ -171,6 +191,11 @@ export function DocumentDetailPageClient({ id }: { id: string }) {
                 </span>
               )}
             </div>
+            {extraAccessNames.length > 0 && (
+              <p className="mt-2 text-xs text-slate-500">
+                Também visível para: <span className="text-slate-300">{extraAccessNames.join(', ')}</span>
+              </p>
+            )}
           </div>
           <div className="flex shrink-0 gap-2">
             <button
@@ -180,6 +205,14 @@ export function DocumentDetailPageClient({ id }: { id: string }) {
             >
               Baixar
             </button>
+            {canManageConfidentiality && (
+              <button
+                onClick={() => setShowEditConfidentiality(true)}
+                className="px-4 py-2 text-sm text-slate-300 hover:text-slate-100 border border-slate-700 hover:border-slate-500 rounded-lg transition-colors"
+              >
+                Alterar confidencialidade
+              </button>
+            )}
             <button
               onClick={() => setShowDeleteConfirm(true)}
               className="px-4 py-2 text-sm text-rose-400 hover:text-rose-200 border border-rose-800 hover:border-rose-600 rounded-lg transition-colors"
@@ -222,6 +255,10 @@ export function DocumentDetailPageClient({ id }: { id: string }) {
           }}
           onCancel={() => setShowDeleteConfirm(false)}
         />
+      )}
+
+      {showEditConfidentiality && (
+        <EditConfidentialityDialog document={document} onClose={() => setShowEditConfidentiality(false)} />
       )}
     </main>
   );

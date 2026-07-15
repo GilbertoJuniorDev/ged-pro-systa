@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository, type FindOptionsWhere } from 'typeorm';
 import { DocumentSeries } from '@ged/database';
 import type {
   IDocumentSeriesRepository,
+  DocumentSeriesQueryFilter,
   CreateDocumentSeriesData,
   UpdateDocumentSeriesData,
 } from './interfaces/document-series-repository.interface';
@@ -15,11 +16,14 @@ export class DocumentSeriesRepository implements IDocumentSeriesRepository {
     private readonly repo: Repository<DocumentSeries>,
   ) {}
 
-  findAll(filter?: { departamentoId?: string }): Promise<DocumentSeries[]> {
-    return this.repo.find({
-      where: filter?.departamentoId ? { departamentoId: filter.departamentoId } : {},
-      order: { codigo: 'ASC' },
-    });
+  findAll(filter?: DocumentSeriesQueryFilter): Promise<DocumentSeries[]> {
+    const where: FindOptionsWhere<DocumentSeries> = {};
+    if (filter?.departamentoId) {
+      where.departamentoId = filter.departamentoId;
+    } else if (filter?.allowedDepartamentoIds) {
+      where.departamentoId = In([...filter.allowedDepartamentoIds]);
+    }
+    return this.repo.find({ where, order: { codigo: 'ASC' } });
   }
 
   findById(id: string): Promise<DocumentSeries | null> {

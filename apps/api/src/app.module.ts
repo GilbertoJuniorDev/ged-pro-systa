@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { validate } from './config/env.validation';
 import { DatabaseModule } from './database/database.module';
 import { MongoDatabaseModule } from './database/mongo-database.module';
@@ -21,6 +22,7 @@ import { StorageModule } from './modules/storage/storage.module';
 import { DocumentSeriesModule } from './modules/document-series/document-series.module';
 import { DossiesModule } from './modules/dossies/dossies.module';
 import { DocumentsModule } from './modules/documents/documents.module';
+import { PublicModule } from './modules/public/public.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { PermissionsGuard } from './common/guards/permissions.guard';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
@@ -30,6 +32,19 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
     ConfigModule.forRoot({
       isGlobal: true,
       validate,
+    }),
+    ThrottlerModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => {
+        const ttl = Number(config.get('THROTTLE_TTL'));
+        const limit = Number(config.get('THROTTLE_LIMIT'));
+        return [
+          {
+            ttl: Number.isFinite(ttl) && ttl > 0 ? ttl : 60_000,
+            limit: Number.isFinite(limit) && limit > 0 ? limit : 100,
+          },
+        ];
+      },
     }),
     DatabaseModule,
     MongoDatabaseModule,
@@ -50,8 +65,13 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
     DocumentSeriesModule,
     DossiesModule,
     DocumentsModule,
+    PublicModule,
   ],
   providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,

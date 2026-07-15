@@ -6,6 +6,7 @@ import type { Response } from 'express';
 import type { JwtPayload } from '@ged/types';
 import type { HttpRequest } from '../../common/interfaces/http-request.interface';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
+import { PermissionsGuard } from '../../common/guards/permissions.guard';
 import { DocumentsController } from './documents.controller';
 import { DocumentsService } from './documents.service';
 import { DocumentResponseDto } from './dto/document-response.dto';
@@ -18,7 +19,7 @@ const makeDocument = (overrides: Partial<Document> = {}): Document =>
     nome: 'Contrato',
     descricao: null,
     validade: null,
-    confidencialidade: CONFIDENCIALIDADE.INTERNO,
+    confidencialidade: CONFIDENCIALIDADE.RESTRITO,
     departamentoId: 'dept-1',
     serieId: 'serie-1',
     dossieId: null,
@@ -30,6 +31,8 @@ const makeDocument = (overrides: Partial<Document> = {}): Document =>
     arquivoMimeType: 'application/pdf',
     arquivoTamanho: 1024,
     isActive: true,
+    destaque: false,
+    exigeCadastro: false,
     createdAt: new Date('2026-01-01'),
     updatedAt: new Date('2026-01-01'),
     ...overrides,
@@ -41,7 +44,7 @@ const makeResponseDto = (overrides: Partial<DocumentResponseDto> = {}): Document
     nome: 'Contrato',
     descricao: null,
     validade: null,
-    confidencialidade: CONFIDENCIALIDADE.INTERNO,
+    confidencialidade: CONFIDENCIALIDADE.RESTRITO,
     departamentoId: 'dept-1',
     serieId: 'serie-1',
     dossieId: null,
@@ -57,6 +60,10 @@ const makeResponseDto = (overrides: Partial<DocumentResponseDto> = {}): Document
     vencimentoCorrente: new Date('2026-07-01'),
     vencimentoIntermediario: null,
     elegivelTransferencia: false,
+    destaque: false,
+    exigeCadastro: false,
+    acessoDepartamentoIds: [],
+    acessoUsuarioIds: [],
     ...overrides,
   });
 
@@ -88,6 +95,7 @@ describe('DocumentsController', () => {
       transferir: jest.fn(),
       getDownload: jest.fn(),
       toResponseDto: jest.fn(),
+      getAccessGrants: jest.fn(),
     };
 
     auditLogsService = { log: jest.fn().mockResolvedValue(undefined) };
@@ -98,7 +106,10 @@ describe('DocumentsController', () => {
         { provide: DocumentsService, useValue: mockDocumentsService },
         { provide: AuditLogsService, useValue: auditLogsService },
       ],
-    }).compile();
+    })
+      .overrideGuard(PermissionsGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
     controller = module.get(DocumentsController);
     documentsService = module.get(DocumentsService) as jest.Mocked<DocumentsService>;
@@ -110,9 +121,10 @@ describe('DocumentsController', () => {
       documentsService.findAll.mockResolvedValue({ data: documents, total: 1, page: 1, limit: 20 });
       documentsService.toResponseDto.mockReturnValue(makeResponseDto());
 
-      const result = await controller.findAll({});
+      const result = await controller.findAll({}, makeJwtPayload());
 
       expect(result).toEqual({ data: [makeResponseDto()], total: 1, page: 1, limit: 20 });
+      expect(documentsService.findAll).toHaveBeenCalledWith({}, makeJwtPayload());
       expect(documentsService.toResponseDto).toHaveBeenCalledWith(documents[0]);
     });
   });
@@ -123,23 +135,40 @@ describe('DocumentsController', () => {
       documentsService.findOne.mockResolvedValue(document);
       documentsService.toResponseDto.mockReturnValue(makeResponseDto());
 
-      const result = await controller.findOne('doc-1');
+      const result = await controller.findOne('doc-1', makeJwtPayload());
 
       expect(result.id).toBe('doc-1');
-      expect(documentsService.findOne).toHaveBeenCalledWith('doc-1');
+      expect(documentsService.findOne).toHaveBeenCalledWith('doc-1', makeJwtPayload());
     });
 
     it('throws NotFoundException when the document does not exist', async () => {
       documentsService.findOne.mockRejectedValue(new NotFoundException());
 
-      await expect(controller.findOne('missing')).rejects.toThrow(NotFoundException);
+      await expect(controller.findOne('missing', makeJwtPayload())).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+
+    it('loads access grants and passes them to toResponseDto', async () => {
+      const document = makeDocument();
+      const grants = { acessoDepartamentoIds: ['dept-1'], acessoUsuarioIds: ['user-1'] };
+      documentsService.findOne.mockResolvedValue(document);
+      documentsService.getAccessGrants.mockResolvedValue(grants);
+      documentsService.toResponseDto.mockReturnValue(makeResponseDto(grants));
+
+      const result = await controller.findOne('doc-1', makeJwtPayload());
+
+      expect(documentsService.getAccessGrants).toHaveBeenCalledWith('doc-1');
+      expect(documentsService.toResponseDto).toHaveBeenCalledWith(document, grants);
+      expect(result.acessoDepartamentoIds).toEqual(['dept-1']);
+      expect(result.acessoUsuarioIds).toEqual(['user-1']);
     });
   });
 
   describe('create', () => {
     const dto: CreateDocumentDto = {
       nome: 'Contrato',
-      confidencialidade: CONFIDENCIALIDADE.INTERNO,
+      confidencialidade: CONFIDENCIALIDADE.RESTRITO,
       departamentoId: 'dept-1',
       serieId: 'serie-1',
     };
@@ -153,7 +182,10 @@ describe('DocumentsController', () => {
       const result = await controller.create(makeHttpRequest(), makeJwtPayload(), dto, file);
 
       expect(result.id).toBe('doc-1');
-      expect(documentsService.upload).toHaveBeenCalledWith(dto, file);
+      expect(documentsService.upload).toHaveBeenCalledWith(
+        { ...dto, actingUser: makeJwtPayload() },
+        file,
+      );
       expect(auditLogsService.log).toHaveBeenCalledWith(
         expect.objectContaining({
           usuarioId: 'admin-uuid',
@@ -162,6 +194,29 @@ describe('DocumentsController', () => {
           entidadeId: 'doc-1',
         }),
       );
+    });
+
+    it('carries destaque and exigeCadastro through to the response when set on upload', async () => {
+      const dtoWithFlags: CreateDocumentDto = { ...dto, destaque: true, exigeCadastro: true };
+      const created = makeDocument({ destaque: true, exigeCadastro: true });
+      documentsService.upload.mockResolvedValue(created);
+      documentsService.toResponseDto.mockReturnValue(
+        makeResponseDto({ destaque: true, exigeCadastro: true }),
+      );
+
+      const result = await controller.create(
+        makeHttpRequest(),
+        makeJwtPayload(),
+        dtoWithFlags,
+        file,
+      );
+
+      expect(documentsService.upload).toHaveBeenCalledWith(
+        { ...dtoWithFlags, actingUser: makeJwtPayload() },
+        file,
+      );
+      expect(result.destaque).toBe(true);
+      expect(result.exigeCadastro).toBe(true);
     });
 
     it('throws BadRequestException when no file is provided', async () => {
@@ -199,7 +254,7 @@ describe('DocumentsController', () => {
       const result = await controller.update(makeHttpRequest(), makeJwtPayload(), 'doc-1', dto);
 
       expect(result.nome).toBe('Contrato Renovado');
-      expect(documentsService.update).toHaveBeenCalledWith('doc-1', dto);
+      expect(documentsService.update).toHaveBeenCalledWith('doc-1', dto, makeJwtPayload());
       expect(auditLogsService.log).toHaveBeenCalledWith(
         expect.objectContaining({
           acao: 'ATUALIZAR_DOCUMENTO',
@@ -211,6 +266,35 @@ describe('DocumentsController', () => {
       );
     });
 
+    it('loads before/after access grants, includes them in the audit payload, and passes grantsAfter to toResponseDto', async () => {
+      const before = makeDocument();
+      const updated = makeDocument({ nome: 'Contrato Renovado' });
+      const grantsBefore = { acessoDepartamentoIds: ['dept-1'], acessoUsuarioIds: [] };
+      const grantsAfter = { acessoDepartamentoIds: ['dept-1', 'dept-2'], acessoUsuarioIds: [] };
+      documentsService.findOne.mockResolvedValue(before);
+      documentsService.getAccessGrants
+        .mockResolvedValueOnce(grantsBefore)
+        .mockResolvedValueOnce(grantsAfter);
+      documentsService.update.mockResolvedValue(updated);
+      documentsService.toResponseDto.mockReturnValue(
+        makeResponseDto({ nome: 'Contrato Renovado', ...grantsAfter }),
+      );
+      const dto: UpdateDocumentDto = { nome: 'Contrato Renovado' };
+
+      await controller.update(makeHttpRequest(), makeJwtPayload(), 'doc-1', dto);
+
+      expect(documentsService.getAccessGrants).toHaveBeenCalledTimes(2);
+      expect(documentsService.getAccessGrants).toHaveBeenNthCalledWith(1, 'doc-1');
+      expect(documentsService.getAccessGrants).toHaveBeenNthCalledWith(2, 'doc-1');
+      expect(documentsService.toResponseDto).toHaveBeenCalledWith(updated, grantsAfter);
+      expect(auditLogsService.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          dadosAnteriores: expect.objectContaining(grantsBefore),
+          dadosNovos: expect.objectContaining(grantsAfter),
+        }),
+      );
+    });
+
     it('throws NotFoundException when the document does not exist', async () => {
       documentsService.findOne.mockRejectedValue(new NotFoundException());
 
@@ -218,6 +302,23 @@ describe('DocumentsController', () => {
         controller.update(makeHttpRequest(), makeJwtPayload(), 'missing', {}),
       ).rejects.toThrow(NotFoundException);
       expect(auditLogsService.log).not.toHaveBeenCalled();
+    });
+
+    it('carries destaque and exigeCadastro through to the response when updated', async () => {
+      const before = makeDocument();
+      const updated = makeDocument({ destaque: true, exigeCadastro: true });
+      documentsService.findOne.mockResolvedValue(before);
+      documentsService.update.mockResolvedValue(updated);
+      documentsService.toResponseDto.mockReturnValue(
+        makeResponseDto({ destaque: true, exigeCadastro: true }),
+      );
+      const dto: UpdateDocumentDto = { destaque: true, exigeCadastro: true };
+
+      const result = await controller.update(makeHttpRequest(), makeJwtPayload(), 'doc-1', dto);
+
+      expect(documentsService.update).toHaveBeenCalledWith('doc-1', dto, makeJwtPayload());
+      expect(result.destaque).toBe(true);
+      expect(result.exigeCadastro).toBe(true);
     });
   });
 
@@ -294,12 +395,13 @@ describe('DocumentsController', () => {
       documentsService.getDownload.mockResolvedValue({ document, stream });
       const res = { set: jest.fn() } as unknown as Response;
 
-      const result = await controller.download('doc-1', res);
+      const result = await controller.download('doc-1', makeJwtPayload(), res);
 
       expect(res.set).toHaveBeenCalledWith({
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="contrato.pdf"`,
       });
+      expect(documentsService.getDownload).toHaveBeenCalledWith('doc-1', makeJwtPayload());
       expect(result).toBeInstanceOf(StreamableFile);
     });
 
@@ -307,7 +409,9 @@ describe('DocumentsController', () => {
       documentsService.getDownload.mockRejectedValue(new NotFoundException());
       const res = { set: jest.fn() } as unknown as Response;
 
-      await expect(controller.download('missing', res)).rejects.toThrow(NotFoundException);
+      await expect(controller.download('missing', makeJwtPayload(), res)).rejects.toThrow(
+        NotFoundException,
+      );
       expect(res.set).not.toHaveBeenCalled();
     });
   });

@@ -5,14 +5,26 @@ import {
   ConflictException,
   NotFoundException,
 } from '@nestjs/common';
-import { Department, DESTINACAO_FINAL } from '@ged/database';
-import type { DocumentSeries } from '@ged/database';
+import { Department, DESTINACAO_FINAL, ROLE } from '@ged/database';
+import type { DocumentSeries, UserDepartment } from '@ged/database';
+import type { JwtPayload } from '@ged/types';
 import type { Repository } from 'typeorm';
+import { UserDepartmentsService } from '../user-departments/user-departments.service';
 import {
   DocumentSeriesService,
   DOCUMENT_SERIES_REPOSITORY,
 } from './document-series.service';
 import type { IDocumentSeriesRepository } from './interfaces/document-series-repository.interface';
+
+const makeJwtPayload = (overrides: Partial<JwtPayload> = {}): JwtPayload => ({
+  sub: 'user-1',
+  email: 'user@ged.local',
+  role: ROLE.ADMIN,
+  ...overrides,
+});
+
+const makeUserDepartment = (departamentoId: string): UserDepartment =>
+  ({ departamentoId }) as UserDepartment;
 
 const makeDocumentSeries = (overrides: Partial<DocumentSeries> = {}): DocumentSeries =>
   ({
@@ -51,6 +63,7 @@ describe('DocumentSeriesService', () => {
   let service: DocumentSeriesService;
   let mockRepository: jest.Mocked<IDocumentSeriesRepository>;
   let mockDepartmentRepo: jest.Mocked<Pick<Repository<Department>, 'findOne'>>;
+  let mockUserDepartmentsService: jest.Mocked<Pick<UserDepartmentsService, 'findByUserId'>>;
 
   beforeEach(async () => {
     mockRepository = {
@@ -66,11 +79,14 @@ describe('DocumentSeriesService', () => {
       findOne: jest.fn(),
     };
 
+    mockUserDepartmentsService = { findByUserId: jest.fn() };
+
     const testModule: TestingModule = await Test.createTestingModule({
       providers: [
         DocumentSeriesService,
         { provide: DOCUMENT_SERIES_REPOSITORY, useValue: mockRepository },
         { provide: getRepositoryToken(Department), useValue: mockDepartmentRepo },
+        { provide: UserDepartmentsService, useValue: mockUserDepartmentsService },
       ],
     }).compile();
 
@@ -78,24 +94,68 @@ describe('DocumentSeriesService', () => {
   });
 
   describe('findAll', () => {
-    it('should return all document series filtered by departamentoId', async () => {
+    it('should return all document series filtered by departamentoId for a privileged user', async () => {
       const series = [makeDocumentSeries()];
       mockRepository.findAll.mockResolvedValue(series);
 
-      const result = await service.findAll('dept-1');
+      const result = await service.findAll('dept-1', makeJwtPayload({ role: ROLE.ADMIN }));
 
       expect(result).toEqual(series);
       expect(mockRepository.findAll).toHaveBeenCalledWith({ departamentoId: 'dept-1' });
+      expect(mockUserDepartmentsService.findByUserId).not.toHaveBeenCalled();
     });
 
-    it('should return all document series when no departamentoId is given', async () => {
+    it('should return all document series when no departamentoId is given for a privileged user', async () => {
       const series = [makeDocumentSeries()];
       mockRepository.findAll.mockResolvedValue(series);
 
-      const result = await service.findAll();
+      const result = await service.findAll(undefined, makeJwtPayload({ role: ROLE.ADMIN }));
 
       expect(result).toEqual(series);
       expect(mockRepository.findAll).toHaveBeenCalledWith({ departamentoId: undefined });
+    });
+
+    it('should scope a VIEWER to their departamentos via allowedDepartamentoIds', async () => {
+      const series = [makeDocumentSeries()];
+      mockRepository.findAll.mockResolvedValue(series);
+      mockUserDepartmentsService.findByUserId.mockResolvedValue([
+        makeUserDepartment('dept-1'),
+        makeUserDepartment('dept-2'),
+      ]);
+
+      const result = await service.findAll(
+        undefined,
+        makeJwtPayload({ sub: 'viewer-1', role: ROLE.VIEWER }),
+      );
+
+      expect(result).toEqual(series);
+      expect(mockRepository.findAll).toHaveBeenCalledWith({
+        allowedDepartamentoIds: ['dept-1', 'dept-2'],
+      });
+    });
+
+    it('should return an empty list without querying when a VIEWER has no departamentos', async () => {
+      mockUserDepartmentsService.findByUserId.mockResolvedValue([]);
+
+      const result = await service.findAll(
+        undefined,
+        makeJwtPayload({ sub: 'viewer-1', role: ROLE.VIEWER }),
+      );
+
+      expect(result).toEqual([]);
+      expect(mockRepository.findAll).not.toHaveBeenCalled();
+    });
+
+    it('should return an empty list when a VIEWER filters by a departamento outside their scope', async () => {
+      mockUserDepartmentsService.findByUserId.mockResolvedValue([makeUserDepartment('dept-1')]);
+
+      const result = await service.findAll(
+        'dept-9',
+        makeJwtPayload({ sub: 'viewer-1', role: ROLE.VIEWER }),
+      );
+
+      expect(result).toEqual([]);
+      expect(mockRepository.findAll).not.toHaveBeenCalled();
     });
   });
 
@@ -113,6 +173,27 @@ describe('DocumentSeriesService', () => {
       mockRepository.findById.mockResolvedValue(null);
 
       await expect(service.findOne('non-existent')).rejects.toThrow(NotFoundException);
+    });
+
+    it('should return the series for a VIEWER of the same departamento', async () => {
+      mockRepository.findById.mockResolvedValue(makeDocumentSeries({ departamentoId: 'dept-1' }));
+      mockUserDepartmentsService.findByUserId.mockResolvedValue([makeUserDepartment('dept-1')]);
+
+      const result = await service.findOne(
+        'serie-1',
+        makeJwtPayload({ sub: 'viewer-1', role: ROLE.VIEWER }),
+      );
+
+      expect(result.departamentoId).toBe('dept-1');
+    });
+
+    it('should throw NotFoundException when a VIEWER accesses a series outside their departamentos', async () => {
+      mockRepository.findById.mockResolvedValue(makeDocumentSeries({ departamentoId: 'dept-2' }));
+      mockUserDepartmentsService.findByUserId.mockResolvedValue([makeUserDepartment('dept-1')]);
+
+      await expect(
+        service.findOne('serie-1', makeJwtPayload({ sub: 'viewer-1', role: ROLE.VIEWER })),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 

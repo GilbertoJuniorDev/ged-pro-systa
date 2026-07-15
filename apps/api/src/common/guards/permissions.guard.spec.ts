@@ -58,13 +58,12 @@ describe('PermissionsGuard', () => {
     expect(mockChecker.hasPermission).not.toHaveBeenCalled();
   });
 
-  it('should NOT bypass for ADMIN and should go through hasPermission check', async () => {
+  it('should return true for ADMIN regardless of permissions', async () => {
     reflector.getAllAndOverride.mockReturnValue(['documents:delete']);
-    mockChecker.hasPermission.mockResolvedValue(true);
     const ctx = makeContext({ sub: 'admin-1', role: ROLE.ADMIN, email: 'a@b.com' });
 
     await expect(guard.canActivate(ctx)).resolves.toBe(true);
-    expect(mockChecker.hasPermission).toHaveBeenCalledTimes(1);
+    expect(mockChecker.hasPermission).not.toHaveBeenCalled();
   });
 
   it('should return true when VIEWER has all required permissions', async () => {

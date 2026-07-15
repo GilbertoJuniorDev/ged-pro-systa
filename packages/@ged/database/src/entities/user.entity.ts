@@ -28,7 +28,7 @@ export class User {
   @Column({
     name: 'role',
     type: 'enum',
-    enum: ['ADMIN', 'MANAGER', 'VIEWER', 'SUPER_ADMIN'],
+    enum: ['ADMIN', 'VIEWER', 'SUPER_ADMIN'],
     default: ROLE.VIEWER,
   })
   role!: Role;

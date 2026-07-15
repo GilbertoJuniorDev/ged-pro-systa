@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
+import { runMigrationsWithLock } from '../run-migrations-with-lock';
 import { CreateUsersTable1745798400000 } from './1745798400000-CreateUsersTable';
 import { CreateRefreshTokensTable1745798401000 } from './1745798401000-CreateRefreshTokensTable';
 import { CreatePasswordResetTokensTable1746057600000 } from './1746057600000-CreatePasswordResetTokensTable';
@@ -24,6 +25,11 @@ import { UpgradeSeedAdminToSuperAdmin1782950400003 } from './1782950400003-Upgra
 import { CreateDocumentSeriesTable1782950400004 } from './1782950400004-CreateDocumentSeriesTable';
 import { CreateDossiesTable1782950400005 } from './1782950400005-CreateDossiesTable';
 import { CreateDocumentsTable1782950400006 } from './1782950400006-CreateDocumentsTable';
+import { AddPortalFieldsToDocuments1782950400007 } from './1782950400007-AddPortalFieldsToDocuments';
+import { CreateDocumentLeadsTable1782950400008 } from './1782950400008-CreateDocumentLeadsTable';
+import { RemoveInternoConfidencialidade1782950400009 } from './1782950400009-RemoveInternoConfidencialidade';
+import { CreateDocumentAccessGrantsTable1782950400010 } from './1782950400010-CreateDocumentAccessGrantsTable';
+import { RemoveManagerFromUsersRoleEnum1782950400011 } from './1782950400011-RemoveManagerFromUsersRoleEnum';
 const DATABASE_URL = process.env['DATABASE_URL'];
 
 if (!DATABASE_URL) {
@@ -60,6 +66,11 @@ const dataSource = new DataSource({
     CreateDocumentSeriesTable1782950400004,
     CreateDossiesTable1782950400005,
     CreateDocumentsTable1782950400006,
+    AddPortalFieldsToDocuments1782950400007,
+    CreateDocumentLeadsTable1782950400008,
+    RemoveInternoConfidencialidade1782950400009,
+    CreateDocumentAccessGrantsTable1782950400010,
+    RemoveManagerFromUsersRoleEnum1782950400011,
   ],
   migrationsTableName: 'migrations',
 });
@@ -69,7 +80,7 @@ async function runMigrations(): Promise<void> {
   await dataSource.initialize();
 
   console.log('Running pending migrations...');
-  const ran = await dataSource.runMigrations({ transaction: 'each' });
+  const ran = await runMigrationsWithLock(dataSource);
 
   if (ran.length === 0) {
     console.log('No pending migrations.');

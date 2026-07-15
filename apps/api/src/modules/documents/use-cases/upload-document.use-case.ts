@@ -1,17 +1,13 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import {
-  Department,
-  Document,
-  DOCUMENT_FASE,
-  DocumentSeries,
-  Dossie,
-} from '@ged/database';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { Department, Document, DOCUMENT_FASE, DocumentSeries, Dossie } from '@ged/database';
+import type { JwtPayload } from '@ged/types';
 import { STORAGE_SERVICE } from '../../storage/interfaces/storage.interface';
 import type { IStorageService } from '../../storage/interfaces/storage.interface';
 import { DOCUMENT_REPOSITORY } from '../interfaces/document-repository.interface';
 import type { IDocumentRepository } from '../interfaces/document-repository.interface';
+import { ApplyDocumentConfidentialityUseCase } from './apply-document-confidentiality.use-case';
 
 // Input shape for this use-case: raw fields coming straight off CreateDocumentDto
 // (multipart text fields, so `validade` is still an ISO date string here, not a Date).
@@ -22,10 +18,17 @@ export interface UploadDocumentData {
   readonly nome: string;
   readonly descricao?: string | null;
   readonly validade?: string | null;
-  readonly confidencialidade: Document['confidencialidade'];
+  // Optional here (mirrors CreateDocumentDto, see Task 4) — resolved by
+  // ApplyDocumentConfidentialityUseCase below (defaults to RESTRITO when omitted).
+  readonly confidencialidade?: Document['confidencialidade'];
   readonly departamentoId: string;
   readonly serieId: string;
   readonly dossieId?: string | null;
+  readonly destaque?: boolean;
+  readonly exigeCadastro?: boolean;
+  readonly accessDepartamentoIds?: string[];
+  readonly accessUserIds?: string[];
+  readonly actingUser: JwtPayload;
 }
 
 @Injectable()
@@ -41,6 +44,9 @@ export class UploadDocumentUseCase {
     private readonly documentSeriesRepo: Repository<DocumentSeries>,
     @InjectRepository(Dossie)
     private readonly dossieRepo: Repository<Dossie>,
+    @InjectDataSource()
+    private readonly dataSource: DataSource,
+    private readonly applyConfidentiality: ApplyDocumentConfidentialityUseCase,
   ) {}
 
   async execute(data: UploadDocumentData, file: Express.Multer.File): Promise<Document> {
@@ -80,20 +86,42 @@ export class UploadDocumentUseCase {
     });
 
     try {
-      return await this.documentRepository.create({
-        nome: data.nome,
-        descricao: data.descricao ?? null,
-        validade: data.validade ? new Date(data.validade) : null,
-        confidencialidade: data.confidencialidade,
-        departamentoId: data.departamentoId,
-        serieId: data.serieId,
-        dossieId: data.dossieId ?? null,
-        fase: DOCUMENT_FASE.CORRENTE,
-        faseCorrenteDesde: new Date(),
-        arquivoNome: file.originalname,
-        arquivoChave: saved.chave,
-        arquivoMimeType: file.mimetype,
-        arquivoTamanho: saved.tamanho,
+      return await this.dataSource.transaction(async (manager) => {
+        const created = manager.create(Document, {
+          nome: data.nome,
+          descricao: data.descricao ?? null,
+          validade: data.validade ? new Date(data.validade) : null,
+          confidencialidade: 'RESTRITO', // valor provisório, resolvido pelo use-case abaixo
+          departamentoId: data.departamentoId,
+          serieId: data.serieId,
+          dossieId: data.dossieId ?? null,
+          fase: DOCUMENT_FASE.CORRENTE,
+          faseCorrenteDesde: new Date(),
+          arquivoNome: file.originalname,
+          arquivoChave: saved.chave,
+          arquivoMimeType: file.mimetype,
+          arquivoTamanho: saved.tamanho,
+          destaque: data.destaque ?? false,
+          exigeCadastro: data.exigeCadastro ?? false,
+        });
+        const savedDocument = await manager.save(Document, created);
+
+        const { confidencialidade } = await this.applyConfidentiality.execute(
+          {
+            documentId: savedDocument.id,
+            requestedConfidencialidade: data.confidencialidade,
+            requestedAccessDepartamentoIds: data.accessDepartamentoIds,
+            requestedAccessUserIds: data.accessUserIds,
+            actingUser: data.actingUser,
+          },
+          manager,
+        );
+        await manager.update(Document, savedDocument.id, { confidencialidade });
+
+        return manager.findOneOrFail(Document, {
+          where: { id: savedDocument.id },
+          relations: ['serie'],
+        });
       });
     } catch (error) {
       await this.storageService.delete(saved.chave);

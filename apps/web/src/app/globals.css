@@ -119,6 +119,37 @@
 
   .light .ring-slate-600 { --tw-ring-color: rgb(203 213 225); }
 
+  /* Portal público: força a Combobox (que usa `dark:` internamente, ao contrário do
+     resto do app "dark-first") a renderizar clara mesmo com `.dark` ambiente no <html>
+     (ver portal-search-filter.tsx, que aplica `.light` na própria Combobox).
+     Os overrides `.light .X` acima cobrem apenas classes SEM o prefixo `dark:`, então
+     não neutralizam `dark:bg-slate-800` etc. — por isso as regras abaixo miram
+     literalmente os tokens `dark:*` gerados pela Combobox.
+     Seletor `.dark .light .dark\:X` (3 classes, especificidade 0-3-0) — o ancestral
+     `.dark` é exigido de propósito: isso restringe a regra ao caso aninhado do portal
+     (<html class="dark"> com a Combobox marcada `.light` por baixo) e garante que ELA
+     NUNCA dispare no dashboard em light mode comum, onde o next-themes troca a classe
+     do <html> para `class="light"` sozinha (sem `.dark` ancestral) — caso contrário
+     estas regras também sobrescreveriam `dark:*` de componentes do dashboard (ex.:
+     Skeleton) quando o usuário alterna para o tema claro. O variant `dark:` do
+     Tailwind é gerado como `.dark\:X:where(.dark, .dark *)` — `:where()` tem
+     especificidade zero — então mesmo com 3 classes (0-3-0) o seletor abaixo ainda
+     vence a regra compilada (0-1-0) no caso aninhado do portal. */
+  .dark .light .dark\:bg-slate-800 { background-color: rgb(255 255 255); }
+  .dark .light .dark\:bg-slate-900 { background-color: rgb(255 255 255); }
+  .dark .light .dark\:bg-slate-700\/80 { background-color: rgb(241 245 249); }
+  .dark .light .dark\:hover\:bg-slate-800:hover { background-color: rgb(241 245 249); }
+  .dark .light .dark\:border-slate-700 { border-color: rgb(226 232 240); }
+  .dark .light .dark\:border-slate-700\/60 { border-color: rgb(226 232 240); }
+  .dark .light .dark\:text-slate-100 { color: rgb(15 23 42); }
+  .dark .light .dark\:text-slate-200 { color: rgb(51 65 85); }
+  .dark .light .dark\:text-slate-400 { color: rgb(100 116 139); }
+  .dark .light .dark\:text-indigo-300 { color: rgb(67 56 202); }
+  .dark .light .dark\:shadow-2xl,
+  .dark .light .dark\:shadow-black\/40 {
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  }
+
   /* Stagger helpers */
   .delay-75  { animation-delay: 75ms;  }
   .delay-150 { animation-delay: 150ms; }

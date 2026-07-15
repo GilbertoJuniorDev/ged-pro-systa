@@ -6,14 +6,26 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Document, DOCUMENT_FASE, DocumentSeries, Dossie } from '@ged/database';
-import type { Confidencialidade } from '@ged/database';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, In, Repository } from 'typeorm';
+import {
+  CONFIDENCIALIDADE,
+  Document,
+  DOCUMENT_FASE,
+  DocumentAccessDepartment,
+  DocumentAccessUser,
+  DocumentSeries,
+  Dossie,
+  ROLE,
+} from '@ged/database';
+import type { Confidencialidade, Role } from '@ged/database';
+import type { JwtPayload } from '@ged/types';
 import { STORAGE_SERVICE } from '../storage/interfaces/storage.interface';
 import type { IStorageService } from '../storage/interfaces/storage.interface';
+import { UserDepartmentsService } from '../user-departments/user-departments.service';
 import { UploadDocumentUseCase } from './use-cases/upload-document.use-case';
 import type { UploadDocumentData } from './use-cases/upload-document.use-case';
+import { ApplyDocumentConfidentialityUseCase } from './use-cases/apply-document-confidentiality.use-case';
 import { DocumentResponseDto } from './dto/document-response.dto';
 import { DOCUMENT_REPOSITORY } from './interfaces/document-repository.interface';
 import type {
@@ -37,7 +49,14 @@ export interface UpdateDocumentInputData {
   readonly serieId?: string;
   readonly dossieId?: string | null;
   readonly isActive?: boolean;
+  readonly destaque?: boolean;
+  readonly exigeCadastro?: boolean;
+  readonly accessDepartamentoIds?: string[];
+  readonly accessUserIds?: string[];
 }
+
+// Papéis que enxergam todos os documentos, sem restrição por departamento.
+const PRIVILEGED_ROLES: readonly Role[] = [ROLE.SUPER_ADMIN, ROLE.ADMIN];
 
 function addMonths(date: Date | string, months: number): Date {
   // `date` columns come back from TypeORM/pg as 'YYYY-MM-DD' strings (only when a value was
@@ -70,16 +89,84 @@ export class DocumentsService {
     private readonly documentSeriesRepo: Repository<DocumentSeries>,
     @InjectRepository(Dossie)
     private readonly dossieRepo: Repository<Dossie>,
+    @InjectRepository(DocumentAccessDepartment)
+    private readonly documentAccessDepartmentRepo: Repository<DocumentAccessDepartment>,
+    @InjectRepository(DocumentAccessUser)
+    private readonly documentAccessUserRepo: Repository<DocumentAccessUser>,
+    private readonly userDepartmentsService: UserDepartmentsService,
+    @InjectDataSource()
+    private readonly dataSource: DataSource,
+    private readonly applyConfidentiality: ApplyDocumentConfidentialityUseCase,
   ) {}
 
-  findAll(filter: DocumentQueryFilter): Promise<PaginatedDocuments> {
-    return this.documentRepository.findAll(filter);
+  // Retorna null para papéis privilegiados (sem restrição). Caso contrário, o escopo de
+  // acesso do usuário (id + departamentos aos quais está vinculado, podendo ser vazia).
+  private async resolveAccessScope(
+    user: JwtPayload,
+  ): Promise<{ userId: string; userDepartamentoIds: readonly string[] } | null> {
+    if (PRIVILEGED_ROLES.includes(user.role)) {
+      return null;
+    }
+    const departments = await this.userDepartmentsService.findByUserId(user.sub);
+    return { userId: user.sub, userDepartamentoIds: departments.map((d) => d.departamentoId) };
   }
 
-  async findOne(id: string): Promise<Document> {
+  // Não vaza existência: usuário sem acesso recebe 404 (igual a documento inexistente).
+  private async assertCanAccess(document: Document, user: JwtPayload): Promise<void> {
+    const scope = await this.resolveAccessScope(user);
+    if (scope === null) {
+      return;
+    }
+    if (await this.canAccessWithScope(document, scope)) {
+      return;
+    }
+    throw new NotFoundException('Documento não encontrado');
+  }
+
+  private async canAccessWithScope(
+    document: Document,
+    scope: { userId: string; userDepartamentoIds: readonly string[] },
+  ): Promise<boolean> {
+    if (document.confidencialidade === CONFIDENCIALIDADE.PUBLICO) {
+      return true;
+    }
+    if (document.confidencialidade === CONFIDENCIALIDADE.RESTRITO) {
+      if (scope.userDepartamentoIds.includes(document.departamentoId)) {
+        return true;
+      }
+      return this.documentAccessDepartmentRepo.exists({
+        where: { documentId: document.id, departamentoId: In([...scope.userDepartamentoIds]) },
+      });
+    }
+    // CONFIDENCIAL
+    return this.documentAccessUserRepo.exists({
+      where: { documentId: document.id, usuarioId: scope.userId },
+    });
+  }
+
+  // Nota: um usuário sem NENHUM departamento ainda pode enxergar documentos PUBLICO ou
+  // CONFIDENCIAL liberados individualmente para ele — por isso não há mais um atalho que
+  // retorna página vazia quando userDepartamentoIds está vazio (isso só era correto sob o
+  // modelo antigo, restrito a departamento). A query sempre é executada, e o repositório
+  // avalia PUBLICO/CONFIDENCIAL de forma independente de userDepartamentoIds estar vazio.
+  async findAll(filter: DocumentQueryFilter, user: JwtPayload): Promise<PaginatedDocuments> {
+    const accessScope = await this.resolveAccessScope(user);
+    return this.documentRepository.findAll({
+      ...filter,
+      accessScope,
+    });
+  }
+
+  // `user` é opcional para preservar o caminho de escrita (update/remove/transferir), que
+  // já é restrito por @Permissions via PermissionsGuard e carrega o documento sem checagem
+  // de escopo. Quando `user` é fornecido (leitura), o acesso por departamento é validado.
+  async findOne(id: string, user?: JwtPayload): Promise<Document> {
     const document = await this.documentRepository.findById(id);
     if (!document) {
       throw new NotFoundException('Documento não encontrado');
+    }
+    if (user) {
+      await this.assertCanAccess(document, user);
     }
     return document;
   }
@@ -88,7 +175,11 @@ export class DocumentsService {
     return this.uploadDocumentUseCase.execute(dto, file);
   }
 
-  async update(id: string, data: UpdateDocumentInputData): Promise<Document> {
+  async update(
+    id: string,
+    data: UpdateDocumentInputData,
+    actingUser: JwtPayload,
+  ): Promise<Document> {
     const current = await this.findOne(id);
 
     if (data.serieId && data.serieId !== current.serieId) {
@@ -115,17 +206,54 @@ export class DocumentsService {
       }
     }
 
-    const updateData: UpdateDocumentData = {
-      nome: data.nome,
-      descricao: data.descricao,
-      validade: data.validade !== undefined ? (data.validade ? new Date(data.validade) : null) : undefined,
-      confidencialidade: data.confidencialidade,
-      serieId: data.serieId,
-      dossieId: data.dossieId,
-      isActive: data.isActive,
-    };
+    return this.dataSource.transaction(async (manager) => {
+      const managesConfidentiality =
+        data.confidencialidade !== undefined ||
+        data.accessDepartamentoIds !== undefined ||
+        data.accessUserIds !== undefined;
 
-    return this.documentRepository.update(id, updateData);
+      let confidencialidade = current.confidencialidade;
+      if (managesConfidentiality) {
+        // If the level itself isn't part of this request (only grants are being touched —
+        // e.g. adding a user to an already-CONFIDENCIAL document's access list), fall back to
+        // the document's CURRENT level rather than leaving it undefined. Leaving it undefined
+        // would resolve to RESTRITO inside the use-case and silently wipe the existing grants
+        // instead of updating them (see Global Constraints).
+        const result = await this.applyConfidentiality.execute(
+          {
+            documentId: id,
+            requestedConfidencialidade: data.confidencialidade ?? current.confidencialidade,
+            requestedAccessDepartamentoIds: data.accessDepartamentoIds,
+            requestedAccessUserIds: data.accessUserIds,
+            actingUser,
+          },
+          manager,
+        );
+        confidencialidade = result.confidencialidade;
+      }
+
+      const updateData: UpdateDocumentData = {
+        nome: data.nome,
+        descricao: data.descricao,
+        validade:
+          data.validade !== undefined ? (data.validade ? new Date(data.validade) : null) : undefined,
+        confidencialidade: managesConfidentiality ? confidencialidade : undefined,
+        serieId: data.serieId,
+        dossieId: data.dossieId,
+        isActive: data.isActive,
+        destaque: data.destaque,
+        exigeCadastro: data.exigeCadastro,
+      };
+
+      await manager.update(Document, id, this.stripUndefined(updateData));
+      return manager.findOneOrFail(Document, { where: { id }, relations: ['serie'] });
+    });
+  }
+
+  private stripUndefined<T extends object>(obj: T): Partial<T> {
+    return Object.fromEntries(
+      Object.entries(obj).filter(([, value]) => value !== undefined),
+    ) as Partial<T>;
   }
 
   async remove(id: string): Promise<void> {
@@ -153,13 +281,36 @@ export class DocumentsService {
     });
   }
 
-  async getDownload(id: string): Promise<{ document: Document; stream: NodeJS.ReadableStream }> {
-    const document = await this.findOne(id);
+  async getDownload(
+    id: string,
+    user: JwtPayload,
+  ): Promise<{ document: Document; stream: NodeJS.ReadableStream }> {
+    // findOne(id, user) já aplica assertCanAccess — download herda o mesmo escopo.
+    const document = await this.findOne(id, user);
     const stream = await this.storageService.getStream(document.arquivoChave);
     return { document, stream };
   }
 
-  toResponseDto(document: Document): DocumentResponseDto {
+  async getAccessGrants(
+    documentId: string,
+  ): Promise<{ acessoDepartamentoIds: string[]; acessoUsuarioIds: string[] }> {
+    const [departmentGrants, userGrants] = await Promise.all([
+      this.documentAccessDepartmentRepo.find({ where: { documentId } }),
+      this.documentAccessUserRepo.find({ where: { documentId } }),
+    ]);
+    return {
+      acessoDepartamentoIds: departmentGrants.map((g) => g.departamentoId),
+      acessoUsuarioIds: userGrants.map((g) => g.usuarioId),
+    };
+  }
+
+  toResponseDto(
+    document: Document,
+    grants: { acessoDepartamentoIds: string[]; acessoUsuarioIds: string[] } = {
+      acessoDepartamentoIds: [],
+      acessoUsuarioIds: [],
+    },
+  ): DocumentResponseDto {
     if (!document.serie) {
       throw new Error(
         `Documento ${document.id} carregado sem a série associada (serieId=${document.serieId})`,
@@ -196,6 +347,10 @@ export class DocumentsService {
       vencimentoCorrente,
       vencimentoIntermediario,
       elegivelTransferencia,
+      destaque: document.destaque,
+      exigeCadastro: document.exigeCadastro,
+      acessoDepartamentoIds: grants.acessoDepartamentoIds,
+      acessoUsuarioIds: grants.acessoUsuarioIds,
     });
   }
 }

@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository, type FindOptionsWhere } from 'typeorm';
 import { Dossie } from '@ged/database';
 import type {
   IDossieRepository,
+  DossieQueryFilter,
   CreateDossieData,
   UpdateDossieData,
 } from './interfaces/dossie-repository.interface';
@@ -15,11 +16,14 @@ export class DossiesRepository implements IDossieRepository {
     private readonly repo: Repository<Dossie>,
   ) {}
 
-  findAll(filter?: { departamentoId?: string }): Promise<Dossie[]> {
-    return this.repo.find({
-      where: filter?.departamentoId ? { departamentoId: filter.departamentoId } : {},
-      order: { nome: 'ASC' },
-    });
+  findAll(filter?: DossieQueryFilter): Promise<Dossie[]> {
+    const where: FindOptionsWhere<Dossie> = {};
+    if (filter?.departamentoId) {
+      where.departamentoId = filter.departamentoId;
+    } else if (filter?.allowedDepartamentoIds) {
+      where.departamentoId = In([...filter.allowedDepartamentoIds]);
+    }
+    return this.repo.find({ where, order: { nome: 'ASC' } });
   }
 
   findById(id: string): Promise<Dossie | null> {

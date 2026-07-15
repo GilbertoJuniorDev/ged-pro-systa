@@ -1,17 +1,20 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { DataSource } from 'typeorm';
 import { randomUUID } from 'crypto';
+import helmet from 'helmet';
 import type { NextFunction, Request, Response } from 'express';
+import { runMigrationsWithLock } from '@ged/database';
 import { AppModule } from './app.module';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
-import { runMigrationsWithLock } from './database/run-migrations-with-lock';
 import { seedAdmin } from './database/seeds/admin.seed';
 import { seedPermissions } from './database/seeds/permissions.seed';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.use(helmet());
 
   await runMigrationsWithLock(app.get(DataSource));
 
@@ -56,14 +59,18 @@ async function bootstrap() {
   // AllExceptionsFilter é registrado via APP_FILTER no AppModule (precisa de DI)
   app.useGlobalInterceptors(new TransformInterceptor());
 
-  const swaggerConfig = new DocumentBuilder()
-    .setTitle('GED Pro API')
-    .setDescription('API do Sistema de Gerenciamento Eletrônico de Documentos')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .build();
-  const document = SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup('api/docs', app, document);
+  if (process.env.NODE_ENV !== 'production') {
+    const swaggerConfig = new DocumentBuilder()
+      .setTitle('GED Pro API')
+      .setDescription(
+        'API do Sistema de Gerenciamento Eletrônico de Documentos',
+      )
+      .setVersion('1.0')
+      .addBearerAuth()
+      .build();
+    const document = SwaggerModule.createDocument(app, swaggerConfig);
+    SwaggerModule.setup('api/docs', app, document);
+  }
 
   const port = process.env.PORT ?? 3333;
   await app.listen(port);
@@ -74,8 +81,12 @@ async function bootstrap() {
     await seedPermissions(dataSource);
   }
 
-  console.log(`GED Pro API rodando na porta ${port}`);
+  const logger = new Logger('Bootstrap');
+  logger.log(`GED Pro API rodando na porta ${port}`);
 }
 
-bootstrap();
+void bootstrap().catch((err) => {
+  new Logger('Bootstrap').error(err);
+  process.exit(1);
+});
 

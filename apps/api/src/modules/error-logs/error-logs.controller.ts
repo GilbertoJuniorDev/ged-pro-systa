@@ -11,6 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import type { Request } from 'express';
+import { Throttle } from '@nestjs/throttler';
 import { ROLE } from '@ged/database';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -86,6 +87,7 @@ export class ErrorLogsController {
    */
   @Post('client')
   @Public()
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @HttpCode(HttpStatus.NO_CONTENT)
   async reportClient(
     @Body() body: CreateClientErrorLogDto,

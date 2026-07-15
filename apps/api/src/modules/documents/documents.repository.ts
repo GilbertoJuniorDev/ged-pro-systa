@@ -48,6 +48,33 @@ export class DocumentsRepository implements IDocumentRepository {
         confidencialidade: filter.confidencialidade,
       });
     }
+    if (filter.accessScope) {
+      const { userId, userDepartamentoIds } = filter.accessScope;
+      qb.andWhere(
+        `(
+          document.confidencialidade = 'PUBLICO'
+          OR (
+            document.confidencialidade = 'RESTRITO'
+            AND (
+              document.departamento_id = ANY(:userDepartamentoIds)
+              OR EXISTS (
+                SELECT 1 FROM document_access_departments dad
+                WHERE dad.document_id = document.id
+                  AND dad.departamento_id = ANY(:userDepartamentoIds)
+              )
+            )
+          )
+          OR (
+            document.confidencialidade = 'CONFIDENCIAL'
+            AND EXISTS (
+              SELECT 1 FROM document_access_users dau
+              WHERE dau.document_id = document.id AND dau.usuario_id = :userId
+            )
+          )
+        )`,
+        { userDepartamentoIds, userId },
+      );
+    }
 
     const [data, total] = await qb.getManyAndCount();
     return { data, total, page, limit };

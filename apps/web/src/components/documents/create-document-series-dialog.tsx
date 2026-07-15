@@ -53,7 +53,7 @@ export function CreateDocumentSeriesDialog({ onClose }: Props) {
   } = useForm<FormData>({ resolver: zodResolver(schema) });
 
   const watchedDepartamentoId = watch('departamentoId');
-  const { data: seriesDoDepartamento } = useDocumentSeries(watchedDepartamentoId || undefined);
+  const { data: seriesDoDepartamento } = useDocumentSeries(watchedDepartamentoId ?? undefined);
 
   // Ao trocar o departamento, a série pai selecionada (se houver) deixa de ser
   // válida — reseta para evitar submeter um seriePaiId de outro departamento.

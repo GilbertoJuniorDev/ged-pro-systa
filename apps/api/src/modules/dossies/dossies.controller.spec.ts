@@ -6,6 +6,8 @@ import type { Dossie } from '@ged/database';
 import type { JwtPayload } from '@ged/types';
 import type { HttpRequest } from '../../common/interfaces/http-request.interface';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
+import { UserDepartmentsService } from '../user-departments/user-departments.service';
+import { PermissionsGuard } from '../../common/guards/permissions.guard';
 import { DossiesController } from './dossies.controller';
 import { DossiesService, DOSSIE_REPOSITORY } from './dossies.service';
 import type { CreateDossieDto } from './dto/create-dossie.dto';
@@ -66,8 +68,12 @@ describe('DossiesController', () => {
         { provide: DOSSIE_REPOSITORY, useValue: mockRepository },
         { provide: getRepositoryToken(Department), useValue: mockDepartmentRepository },
         { provide: AuditLogsService, useValue: auditLogsService },
+        { provide: UserDepartmentsService, useValue: { findByUserId: jest.fn() } },
       ],
-    }).compile();
+    })
+      .overrideGuard(PermissionsGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
     controller = module.get(DossiesController);
     dossiesService = module.get(DossiesService) as jest.Mocked<DossiesService>;
@@ -78,21 +84,21 @@ describe('DossiesController', () => {
       const dossies = [makeDossie(), makeDossie({ id: 'dossie-2', nome: 'RH 2026' })];
       jest.spyOn(dossiesService, 'findAll').mockResolvedValue(dossies);
 
-      const result = await controller.findAll({});
+      const result = await controller.findAll({}, makeJwtPayload());
 
       expect(result).toHaveLength(2);
       expect(result[0]).toEqual(
         expect.objectContaining({ id: 'dossie-1', nome: 'Contratos 2026' }),
       );
-      expect(dossiesService.findAll).toHaveBeenCalledWith(undefined);
+      expect(dossiesService.findAll).toHaveBeenCalledWith(undefined, makeJwtPayload());
     });
 
     it('should pass departamentoId filter through to the service', async () => {
       jest.spyOn(dossiesService, 'findAll').mockResolvedValue([makeDossie()]);
 
-      await controller.findAll({ departamentoId: 'dept-1' });
+      await controller.findAll({ departamentoId: 'dept-1' }, makeJwtPayload());
 
-      expect(dossiesService.findAll).toHaveBeenCalledWith('dept-1');
+      expect(dossiesService.findAll).toHaveBeenCalledWith('dept-1', makeJwtPayload());
     });
   });
 
@@ -100,16 +106,18 @@ describe('DossiesController', () => {
     it('should return a dossiê by id', async () => {
       jest.spyOn(dossiesService, 'findOne').mockResolvedValue(makeDossie());
 
-      const result = await controller.findOne('dossie-1');
+      const result = await controller.findOne('dossie-1', makeJwtPayload());
 
       expect(result.id).toBe('dossie-1');
-      expect(dossiesService.findOne).toHaveBeenCalledWith('dossie-1');
+      expect(dossiesService.findOne).toHaveBeenCalledWith('dossie-1', makeJwtPayload());
     });
 
     it('should throw NotFoundException when dossiê does not exist', async () => {
       jest.spyOn(dossiesService, 'findOne').mockRejectedValue(new NotFoundException());
 
-      await expect(controller.findOne('non-existent')).rejects.toThrow(NotFoundException);
+      await expect(controller.findOne('non-existent', makeJwtPayload())).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 

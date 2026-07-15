@@ -1,6 +1,7 @@
 import { Test } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { ROLE } from '@ged/database';
+import { ROLE, RefreshToken } from '@ged/database';
 import { UsersService, USER_REPOSITORY } from './users.service';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
 import type { IUserRepository, CreateUserData } from './interfaces/user-repository.interface';
@@ -26,6 +27,7 @@ describe('UsersService', () => {
   let service: UsersService;
   let mockRepository: jest.Mocked<IUserRepository>;
   let mockAuditLogsService: { hasLogsByUser: jest.Mock };
+  let mockRefreshTokenRepo: { delete: jest.Mock };
 
   beforeEach(async () => {
     mockRepository = {
@@ -43,11 +45,16 @@ describe('UsersService', () => {
       hasLogsByUser: jest.fn(),
     };
 
+    mockRefreshTokenRepo = {
+      delete: jest.fn().mockResolvedValue({}),
+    };
+
     const module = await Test.createTestingModule({
       providers: [
         UsersService,
         { provide: USER_REPOSITORY, useValue: mockRepository },
         { provide: AuditLogsService, useValue: mockAuditLogsService },
+        { provide: getRepositoryToken(RefreshToken), useValue: mockRefreshTokenRepo },
       ],
     }).compile();
 
@@ -145,16 +152,16 @@ describe('UsersService', () => {
   describe('update', () => {
     it('should update user when found', async () => {
       const existing = makeUser();
-      const updated = makeUser({ name: 'Novo Nome', role: 'MANAGER' });
+      const updated = makeUser({ name: 'Novo Nome', role: 'VIEWER' });
       mockRepository.findById.mockResolvedValue(existing);
       mockRepository.update.mockResolvedValue(updated);
 
-      const result = await service.update('user-uuid-1', { name: 'Novo Nome', role: 'MANAGER' });
+      const result = await service.update('user-uuid-1', { name: 'Novo Nome', role: 'VIEWER' });
 
       expect(result.name).toBe('Novo Nome');
       expect(mockRepository.update).toHaveBeenCalledWith('user-uuid-1', {
         name: 'Novo Nome',
-        role: 'MANAGER',
+        role: 'VIEWER',
       });
     });
 
@@ -222,6 +229,24 @@ describe('UsersService', () => {
 
       expect(result.isActive).toBe(false);
       expect(mockRepository.setActive).toHaveBeenCalledWith('user-uuid-1', false);
+    });
+
+    it('should revoke refresh tokens when deactivating a user', async () => {
+      mockRepository.findById.mockResolvedValue(makeUser());
+      mockRepository.setActive.mockResolvedValue(makeUser({ isActive: false }));
+
+      await service.setActive('user-uuid-1', false, 'admin-uuid');
+
+      expect(mockRefreshTokenRepo.delete).toHaveBeenCalledWith({ userId: 'user-uuid-1' });
+    });
+
+    it('should NOT revoke refresh tokens when activating a user', async () => {
+      mockRepository.findById.mockResolvedValue(makeUser({ isActive: false }));
+      mockRepository.setActive.mockResolvedValue(makeUser({ isActive: true }));
+
+      await service.setActive('user-uuid-1', true, 'admin-uuid');
+
+      expect(mockRefreshTokenRepo.delete).not.toHaveBeenCalled();
     });
 
     it('should throw BadRequestException when changing own status', async () => {

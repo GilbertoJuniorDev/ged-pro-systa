@@ -21,6 +21,8 @@ export interface CreateDocumentData {
   readonly arquivoChave: string;
   readonly arquivoMimeType: string;
   readonly arquivoTamanho: number;
+  readonly destaque?: boolean;
+  readonly exigeCadastro?: boolean;
 }
 
 export interface UpdateDocumentData {
@@ -33,6 +35,8 @@ export interface UpdateDocumentData {
   readonly isActive?: boolean;
   readonly fase?: DocumentFase;
   readonly faseIntermediarioDesde?: Date;
+  readonly destaque?: boolean;
+  readonly exigeCadastro?: boolean;
 }
 
 export interface DocumentQueryFilter {
@@ -43,6 +47,13 @@ export interface DocumentQueryFilter {
   readonly confidencialidade?: Confidencialidade;
   readonly page?: number;
   readonly limit?: number;
+  // Quando definido, a listagem é restrita ao que o usuário não-privilegiado pode ver
+  // (ver DocumentsService.assertCanAccess para a mesma regra aplicada a um único documento).
+  // `null` (papel privilegiado) = sem restrição alguma.
+  readonly accessScope?: {
+    readonly userId: string;
+    readonly userDepartamentoIds: readonly string[];
+  } | null;
 }
 
 export interface PaginatedDocuments {

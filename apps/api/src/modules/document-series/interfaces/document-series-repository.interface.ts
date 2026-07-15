@@ -25,8 +25,14 @@ export interface UpdateDocumentSeriesData {
   readonly seriePaiId?: string | null;
 }
 
+export interface DocumentSeriesQueryFilter {
+  readonly departamentoId?: string;
+  // Quando definido, restringe a listagem às séries desses departamentos.
+  readonly allowedDepartamentoIds?: readonly string[];
+}
+
 export interface IDocumentSeriesRepository {
-  findAll(filter?: { departamentoId?: string }): Promise<DocumentSeries[]>;
+  findAll(filter?: DocumentSeriesQueryFilter): Promise<DocumentSeries[]>;
   findById(id: string): Promise<DocumentSeries | null>;
   findByDepartamentoAndCodigo(
     departamentoId: string,

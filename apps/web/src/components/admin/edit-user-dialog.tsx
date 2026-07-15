@@ -16,7 +16,7 @@ import { ROLE_LABELS } from '@/lib/role-labels';
 
 const editUserSchema = z.object({
   name: z.string().min(2, 'Nome deve ter ao menos 2 caracteres'),
-  role: z.enum([ROLE.ADMIN, ROLE.MANAGER, ROLE.VIEWER]).optional(),
+  role: z.enum([ROLE.ADMIN, ROLE.VIEWER]).optional(),
   departamentoIds: z.array(z.string().uuid()),
 });
 
@@ -38,8 +38,8 @@ export function EditUserDialog({ user, onClose }: EditUserDialogProps) {
   const assignableRoles = useMemo(
     () =>
       actingRole === ROLE.SUPER_ADMIN
-        ? [ROLE.ADMIN, ROLE.MANAGER, ROLE.VIEWER]
-        : [ROLE.MANAGER, ROLE.VIEWER],
+        ? [ROLE.ADMIN, ROLE.VIEWER]
+        : [ROLE.VIEWER],
     [actingRole],
   );
 
@@ -147,6 +147,7 @@ export function EditUserDialog({ user, onClose }: EditUserDialogProps) {
                 control={control}
                 render={({ field }) => (
                   <Combobox
+                    id="edit-role"
                     value={field.value}
                     onValueChange={field.onChange}
                     placeholder="Selecionar função…"

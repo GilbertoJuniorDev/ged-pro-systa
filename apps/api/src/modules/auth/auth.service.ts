@@ -15,6 +15,9 @@ import type { AuthTokensResponse } from '@ged/types';
 import { UsersService } from '../users/users.service';
 import { MailService } from '../mail/mail.service';
 
+/** Custo (rounds) do bcrypt para hashes gerados pela aplicação */
+const BCRYPT_ROUNDS = 12;
+
 /** Converte uma string de duração (ex: "15m", "7d") para segundos */
 function parseDurationToSeconds(duration: string): number {
   const match = /^(\d+)(ms|s|m|h|d|w)$/.exec(duration);
@@ -54,7 +57,8 @@ export class AuthService {
     const passwordMatches = await bcrypt.compare(password, user.passwordHash);
     if (!passwordMatches) return null;
 
-     
+    if (!user.isActive) return null;
+
     const { passwordHash: _removed, ...result } = user;
     return result as Omit<User, 'passwordHash'>;
   }
@@ -82,7 +86,7 @@ export class AuthService {
       { secret: jwtRefreshSecret, expiresIn: refreshExpiresIn },
     );
 
-    const tokenHash = await bcrypt.hash(refreshToken, 10);
+    const tokenHash = await bcrypt.hash(refreshToken, BCRYPT_ROUNDS);
     const expiresAt = new Date(Date.now() + refreshExpiresIn * 1000);
 
     const rt = this.refreshTokenRepo.create({
@@ -128,7 +132,13 @@ export class AuthService {
       throw new NotFoundException('Usuário não encontrado');
     }
 
-    return this.login(user as Omit<User, 'passwordHash'>);
+    if (!user.isActive) {
+      throw new UnauthorizedException('Usuário inativo');
+    }
+
+    // findById usa select:false para passwordHash — ele não é carregado
+    const { passwordHash: _omit, ...safeUser } = user;
+    return this.login(safeUser);
   }
 
   async logout(userId: string, refreshToken: string): Promise<void> {
@@ -192,8 +202,11 @@ export class AuthService {
       throw new BadRequestException('Token inválido ou expirado');
     }
 
-    const passwordHash = await bcrypt.hash(newPassword, 12);
+    const passwordHash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
     await this.usersService.updatePassword(user.id, passwordHash);
+
+    // Revoga todas as sessões ativas ao trocar a senha
+    await this.refreshTokenRepo.delete({ userId: user.id });
 
     await this.passwordResetTokenRepo.delete({ id: prt.id });
   }

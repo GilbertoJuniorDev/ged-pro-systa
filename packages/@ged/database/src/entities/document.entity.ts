@@ -13,7 +13,6 @@ import { Dossie } from './dossie.entity';
 
 export const CONFIDENCIALIDADE = {
   PUBLICO: 'PUBLICO',
-  INTERNO: 'INTERNO',
   RESTRITO: 'RESTRITO',
   CONFIDENCIAL: 'CONFIDENCIAL',
 } as const;
@@ -44,8 +43,8 @@ export class Document {
   @Column({
     name: 'confidencialidade',
     type: 'enum',
-    enum: ['PUBLICO', 'INTERNO', 'RESTRITO', 'CONFIDENCIAL'],
-    default: CONFIDENCIALIDADE.INTERNO,
+    enum: ['PUBLICO', 'RESTRITO', 'CONFIDENCIAL'],
+    default: CONFIDENCIALIDADE.RESTRITO,
   })
   confidencialidade!: Confidencialidade;
 
@@ -98,6 +97,12 @@ export class Document {
 
   @Column({ name: 'is_active', default: true })
   isActive!: boolean;
+
+  @Column({ name: 'destaque', default: false })
+  destaque!: boolean;
+
+  @Column({ name: 'exige_cadastro', default: false })
+  exigeCadastro!: boolean;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;

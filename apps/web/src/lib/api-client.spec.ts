@@ -2,6 +2,27 @@ import { apiClient, ApiError } from './api-client';
 
 const mockFetch = jest.fn();
 
+/** Resposta bem-sucedida, envelopada como o backend real responde: { success, data, message, timestamp }. */
+function okResponse<T>(data: T) {
+  return {
+    ok: true,
+    status: 200,
+    headers: { get: () => null },
+    json: async () => ({ success: true, data, message: '', timestamp: new Date().toISOString() }),
+  } as unknown as Response;
+}
+
+/** Resposta de erro, envelopada como o AllExceptionsFilter real responde: { success: false, error }. */
+function errorResponse(statusCode: number, statusText: string, error: Record<string, unknown>) {
+  return {
+    ok: false,
+    status: statusCode,
+    statusText,
+    headers: { get: () => null },
+    json: async () => ({ success: false, error, timestamp: new Date().toISOString() }),
+  } as unknown as Response;
+}
+
 describe('apiClient', () => {
   beforeEach(() => {
     global.fetch = mockFetch;
@@ -13,10 +34,7 @@ describe('apiClient', () => {
 
   it('should resolve with data on successful GET request', async () => {
     const mockData = { id: '1', name: 'Doc' };
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: async () => mockData,
-    } as Response);
+    mockFetch.mockResolvedValue(okResponse(mockData));
 
     const result = await apiClient.get<typeof mockData>('/documents/1');
 
@@ -28,12 +46,9 @@ describe('apiClient', () => {
   });
 
   it('should throw ApiError with statusCode and message on non-ok response', async () => {
-    mockFetch.mockResolvedValue({
-      ok: false,
-      status: 401,
-      statusText: 'Unauthorized',
-      json: async () => ({ message: 'Unauthorized', statusCode: 401, code: 'UNAUTHORIZED' }),
-    } as Response);
+    mockFetch.mockResolvedValue(
+      errorResponse(401, 'Unauthorized', { message: 'Unauthorized', statusCode: 401, code: 'UNAUTHORIZED' }),
+    );
 
     await expect(apiClient.get('/protected')).rejects.toThrow(ApiError);
     await expect(apiClient.get('/protected')).rejects.toMatchObject({
@@ -45,10 +60,7 @@ describe('apiClient', () => {
 
   it('should send JSON body on POST request', async () => {
     const payload = { email: 'user@test.com', password: 'password123' };
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: async () => ({ accessToken: 'tok' }),
-    } as Response);
+    mockFetch.mockResolvedValue(okResponse({ accessToken: 'tok' }));
 
     await apiClient.post('/auth/login', payload);
 
@@ -62,10 +74,7 @@ describe('apiClient', () => {
   });
 
   it('should include Authorization header when token is provided', async () => {
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: async () => ({}),
-    } as Response);
+    mockFetch.mockResolvedValue(okResponse({}));
 
     await apiClient.get('/me', { token: 'my-secret-token' });
 

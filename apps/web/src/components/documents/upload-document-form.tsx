@@ -13,8 +13,11 @@ import { useDepartments } from '@/hooks/use-departments';
 import { useDocumentSeries } from '@/hooks/use-document-series';
 import { useDossies } from '@/hooks/use-dossies';
 import { useAuth } from '@/hooks/use-auth';
+import { usePermissions } from '@/hooks/use-permissions';
 import { Combobox } from '@/components/ui/combobox';
 import { DatePicker } from '@/components/ui/date-picker';
+import { ConfidentialitySection } from '@/components/documents/confidentiality-section';
+import { confidentialitySchema } from '@/components/documents/confidentiality-schema';
 
 const ALLOWED_EXTENSIONS = '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.txt';
 const ALLOWED_MIME_TYPES = [
@@ -29,29 +32,14 @@ const ALLOWED_MIME_TYPES = [
 ];
 const MAX_FILE_SIZE = 26_214_400; // 25MB — mesmo limite do backend
 
-const CONFIDENCIALIDADE_OPTIONS = [
-  { value: CONFIDENCIALIDADE.PUBLICO, label: 'Público' },
-  { value: CONFIDENCIALIDADE.INTERNO, label: 'Interno' },
-  { value: CONFIDENCIALIDADE.RESTRITO, label: 'Restrito' },
-  { value: CONFIDENCIALIDADE.CONFIDENCIAL, label: 'Confidencial' },
-];
-
 const schema = z.object({
   nome: z.string().min(2, 'Mínimo 2 caracteres').max(200, 'Máximo 200 caracteres'),
   descricao: z.string().max(1000, 'Máximo 1000 caracteres').optional().or(z.literal('')),
   validade: z.string().optional().or(z.literal('')),
-  confidencialidade: z.enum(
-    [
-      CONFIDENCIALIDADE.PUBLICO,
-      CONFIDENCIALIDADE.INTERNO,
-      CONFIDENCIALIDADE.RESTRITO,
-      CONFIDENCIALIDADE.CONFIDENCIAL,
-    ],
-    { required_error: 'Selecione a confidencialidade' },
-  ),
   departamentoId: z.string().uuid('Selecione um departamento'),
   serieId: z.string().uuid('Selecione uma série'),
   dossieId: z.string().optional().or(z.literal('')),
+  confidentiality: confidentialitySchema,
 });
 
 type FormData = z.infer<typeof schema>;
@@ -60,6 +48,8 @@ export function UploadDocumentForm() {
   const router = useRouter();
   const upload = useUploadDocument();
   const { user } = useAuth();
+  const { hasPermission } = usePermissions();
+  const canManageConfidentiality = hasPermission('DOCUMENTS_MANAGE_CONFIDENTIALITY');
   const { data: departamentos } = useDepartments();
 
   const [file, setFile] = useState<File | null>(null);
@@ -74,7 +64,18 @@ export function UploadDocumentForm() {
     watch,
     setValue,
     formState: { errors },
-  } = useForm<FormData>({ resolver: zodResolver(schema) });
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      confidentiality: {
+        confidencialidade: CONFIDENCIALIDADE.RESTRITO,
+        accessDepartamentoIds: [],
+        accessUserIds: [],
+        exigeCadastro: false,
+        destaque: false,
+      },
+    },
+  });
 
   useEffect(() => {
     if (user?.selectedDepartmentId) {
@@ -129,10 +130,14 @@ export function UploadDocumentForm() {
         nome: data.nome,
         descricao: data.descricao === '' ? undefined : data.descricao,
         validade: data.validade === '' ? undefined : data.validade,
-        confidencialidade: data.confidencialidade,
+        confidencialidade: data.confidentiality.confidencialidade,
         departamentoId: data.departamentoId,
         serieId: data.serieId,
         dossieId: data.dossieId === '' ? undefined : data.dossieId,
+        destaque: data.confidentiality.destaque,
+        exigeCadastro: data.confidentiality.exigeCadastro,
+        accessDepartamentoIds: data.confidentiality.accessDepartamentoIds,
+        accessUserIds: data.confidentiality.accessUserIds,
       },
       { onSuccess: () => router.push('/documents') },
     );
@@ -303,26 +308,22 @@ export function UploadDocumentForm() {
         </div>
       </div>
 
-      <div className="max-w-xs">
-        <label className="block text-sm text-slate-600 dark:text-slate-400 mb-1">
-          Confidencialidade <span className="text-rose-500 dark:text-rose-400">*</span>
-        </label>
+      <div>
         <Controller
-          name="confidencialidade"
+          name="confidentiality"
           control={control}
           render={({ field }) => (
-            <Combobox
+            <ConfidentialitySection
               value={field.value}
-              onValueChange={field.onChange}
-              options={CONFIDENCIALIDADE_OPTIONS}
-              placeholder="Selecione a confidencialidade"
-              error={!!errors.confidencialidade}
+              onChange={field.onChange}
+              canManage={canManageConfidentiality}
+              errors={{
+                confidencialidade: errors.confidentiality?.confidencialidade?.message,
+                accessUserIds: errors.confidentiality?.accessUserIds?.message,
+              }}
             />
           )}
         />
-        {errors.confidencialidade && (
-          <p className="text-rose-500 dark:text-rose-400 text-xs mt-1">{errors.confidencialidade.message}</p>
-        )}
       </div>
 
       <div className="flex justify-end gap-3 border-t border-slate-200 pt-5 dark:border-slate-700">

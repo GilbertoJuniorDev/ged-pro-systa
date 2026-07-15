@@ -14,10 +14,10 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import type { HttpRequest } from '../../common/interfaces/http-request.interface';
-import { ROLE } from '@ged/database';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
-import { Roles } from '../../common/decorators/roles.decorator';
+import { PermissionsGuard } from '../../common/guards/permissions.guard';
+import { Permissions } from '../../common/decorators/permissions.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import type { JwtPayload } from '@ged/types';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
@@ -30,7 +30,7 @@ import { QueryDocumentSeriesDto } from './dto/query-document-series.dto';
 @ApiTags('document-series')
 @ApiBearerAuth()
 @Controller('document-series')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
 export class DocumentSeriesController {
   constructor(
     private readonly documentSeriesService: DocumentSeriesService,
@@ -42,8 +42,12 @@ export class DocumentSeriesController {
   @ApiResponse({ status: 200, description: 'Document series listed successfully' })
   async findAll(
     @Query() query: QueryDocumentSeriesDto,
+    @CurrentUser() user: JwtPayload,
   ): Promise<DocumentSeriesResponseDto[]> {
-    const documentSeries = await this.documentSeriesService.findAll(query.departamentoId);
+    const documentSeries = await this.documentSeriesService.findAll(
+      query.departamentoId,
+      user,
+    );
     return documentSeries.map((d) => new DocumentSeriesResponseDto(d));
   }
 
@@ -51,13 +55,16 @@ export class DocumentSeriesController {
   @ApiOperation({ summary: 'Get document series by ID' })
   @ApiResponse({ status: 200, description: 'Document series found' })
   @ApiResponse({ status: 404, description: 'Document series not found' })
-  async findOne(@Param('id') id: string): Promise<DocumentSeriesResponseDto> {
-    const documentSeries = await this.documentSeriesService.findOne(id);
+  async findOne(
+    @Param('id') id: string,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<DocumentSeriesResponseDto> {
+    const documentSeries = await this.documentSeriesService.findOne(id, user);
     return new DocumentSeriesResponseDto(documentSeries);
   }
 
   @Post()
-  @Roles(ROLE.ADMIN, ROLE.MANAGER)
+  @Permissions('DOCUMENT_SERIES_MANAGE')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new document series' })
   @ApiResponse({ status: 201, description: 'Document series created successfully' })
@@ -95,7 +102,7 @@ export class DocumentSeriesController {
   }
 
   @Patch(':id')
-  @Roles(ROLE.ADMIN, ROLE.MANAGER)
+  @Permissions('DOCUMENT_SERIES_MANAGE')
   @ApiOperation({ summary: 'Update a document series' })
   @ApiResponse({ status: 200, description: 'Document series updated successfully' })
   @ApiResponse({ status: 404, description: 'Document series not found' })
@@ -147,7 +154,7 @@ export class DocumentSeriesController {
   }
 
   @Delete(':id')
-  @Roles(ROLE.ADMIN, ROLE.MANAGER)
+  @Permissions('DOCUMENT_SERIES_MANAGE')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete a document series' })
   @ApiResponse({ status: 204, description: 'Document series deleted successfully' })
