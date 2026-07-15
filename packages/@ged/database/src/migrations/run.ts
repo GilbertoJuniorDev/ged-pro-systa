@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
+import { runMigrationsWithLock } from '../run-migrations-with-lock';
 import { CreateUsersTable1745798400000 } from './1745798400000-CreateUsersTable';
 import { CreateRefreshTokensTable1745798401000 } from './1745798401000-CreateRefreshTokensTable';
 import { CreatePasswordResetTokensTable1746057600000 } from './1746057600000-CreatePasswordResetTokensTable';
@@ -79,7 +80,7 @@ async function runMigrations(): Promise<void> {
   await dataSource.initialize();
 
   console.log('Running pending migrations...');
-  const ran = await dataSource.runMigrations({ transaction: 'each' });
+  const ran = await runMigrationsWithLock(dataSource);
 
   if (ran.length === 0) {
     console.log('No pending migrations.');

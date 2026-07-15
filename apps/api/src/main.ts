@@ -5,9 +5,9 @@ import { DataSource } from 'typeorm';
 import { randomUUID } from 'crypto';
 import helmet from 'helmet';
 import type { NextFunction, Request, Response } from 'express';
+import { runMigrationsWithLock } from '@ged/database';
 import { AppModule } from './app.module';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
-import { runMigrationsWithLock } from './database/run-migrations-with-lock';
 import { seedAdmin } from './database/seeds/admin.seed';
 import { seedPermissions } from './database/seeds/permissions.seed';
 

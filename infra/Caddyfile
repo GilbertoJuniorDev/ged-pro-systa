@@ -1,0 +1,13 @@
+# Template de reverse proxy para produção. Rodar no host da VPS (fora do Docker),
+# apontando para os serviços api/web publicados só em 127.0.0.1 pelo docker-compose.prod.yml.
+#
+# Uso: copiar para /etc/caddy/Caddyfile na VPS, substituir SEU_DOMINIO.com pelo domínio real,
+# depois `systemctl reload caddy`. TLS é emitido e renovado automaticamente via Let's Encrypt.
+
+app.SEU_DOMINIO.com {
+    reverse_proxy 127.0.0.1:3000
+}
+
+api.SEU_DOMINIO.com {
+    reverse_proxy 127.0.0.1:3333
+}

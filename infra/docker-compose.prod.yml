@@ -8,6 +8,8 @@
 # Pré-requisitos no servidor:
 #   1. Arquivo .env com todas as variáveis obrigatórias (JWT_SECRET, etc.)
 #   2. docker login ghcr.io configurado (~/.docker/config.json com PAT read:packages)
+#   3. api/web só ficam expostas em 127.0.0.1 — um reverse proxy no host (ver infra/Caddyfile)
+#      é responsável por TLS e por rotear o tráfego público das portas 80/443 até aqui.
 #
 # Uso pelo CD:
 #   API_IMAGE=ghcr.io/owner/ged-api:latest \
@@ -96,7 +98,7 @@ services:
       MAIL_FROM: ${MAIL_FROM:-noreply@ged.local}
       APP_URL: ${APP_URL:?Variavel APP_URL nao definida no .env}
     ports:
-      - '3333:3333'
+      - '127.0.0.1:3333:3333'
     volumes:
       - uploads_data:/app/uploads
     networks:
@@ -124,7 +126,7 @@ services:
       AUTH_TRUST_HOST: 'true'
       API_INTERNAL_URL: http://api:3333
     ports:
-      - '3000:3000'
+      - '127.0.0.1:3000:3000'
     networks:
       - ged-network
 
