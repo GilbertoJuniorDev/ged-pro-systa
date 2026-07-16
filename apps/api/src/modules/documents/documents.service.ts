@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Inject,
   Injectable,
   Logger,
@@ -154,7 +155,11 @@ export class DocumentsService {
     return document;
   }
 
-  upload(dto: UploadDocumentData, file: Express.Multer.File): Promise<Document> {
+  async upload(dto: UploadDocumentData, file: Express.Multer.File): Promise<Document> {
+    const scope = await resolveAccessScope(dto.actingUser, this.userDepartmentsService);
+    if (scope !== null && !scope.userDepartamentoIds.includes(dto.departamentoId)) {
+      throw new ForbiddenException('Você não tem acesso a este departamento');
+    }
     return this.uploadDocumentUseCase.execute(dto, file);
   }
 

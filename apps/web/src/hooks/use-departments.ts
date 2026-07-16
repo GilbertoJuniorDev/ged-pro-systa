@@ -14,7 +14,7 @@ export interface UpdateDepartmentPayload {
   isActive?: boolean;
 }
 
-export function useDepartments() {
+export function useDepartments(enabled: boolean = true) {
   const { data: session } = useSession();
 
   return useQuery({
@@ -23,7 +23,7 @@ export function useDepartments() {
       apiClient.get<DepartmentDto[]>('/departments', {
         token: session?.user?.accessToken,
       }),
-    enabled: !!session?.user?.accessToken,
+    enabled: enabled && !!session?.user?.accessToken,
   });
 }
 

@@ -9,7 +9,7 @@ interface PermissionsSessionUser {
   role?: string;
 }
 
-function isFullAccessRole(role?: string): boolean {
+export function isFullAccessRole(role?: string): boolean {
   return role === ROLE.ADMIN || role === ROLE.SUPER_ADMIN;
 }
 
