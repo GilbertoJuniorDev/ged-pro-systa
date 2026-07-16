@@ -1,10 +1,13 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useCreateDossie } from '@/hooks/use-dossies';
 import { useDepartments } from '@/hooks/use-departments';
+import { useAuth } from '@/hooks/use-auth';
+import { isFullAccessRole } from '@/hooks/use-permissions';
 import { Combobox } from '@/components/ui/combobox';
 
 const schema = z.object({
@@ -21,15 +24,28 @@ interface Props {
 
 export function CreateDossieDialog({ onClose }: Props) {
   const create = useCreateDossie();
-  const { data: departamentos } = useDepartments();
+  const { user } = useAuth();
+  const isAdmin = isFullAccessRole(user?.role);
+  const { data: departamentos } = useDepartments(isAdmin);
   const {
     register,
     handleSubmit,
     control,
+    setValue,
     formState: { errors },
   } = useForm<FormData>({ resolver: zodResolver(schema) });
 
-  const departmentOptions = (departamentos ?? []).map((d) => ({ value: d.id, label: d.nome }));
+  useEffect(() => {
+    if (user?.selectedDepartmentId) {
+      setValue('departamentoId', user.selectedDepartmentId);
+    }
+  }, [user?.selectedDepartmentId, setValue]);
+
+  const departmentOptions = isAdmin
+    ? (departamentos ?? []).map((d) => ({ value: d.id, label: d.nome }))
+    : (user?.departamentos ?? [])
+        .filter((d) => d.id === user?.selectedDepartmentId)
+        .map((d) => ({ value: d.id, label: d.nome }));
 
   function onSubmit(data: FormData) {
     create.mutate(
@@ -89,6 +105,7 @@ export function CreateDossieDialog({ onClose }: Props) {
                   onValueChange={field.onChange}
                   options={departmentOptions}
                   placeholder="Selecionar departamento…"
+                  disabled={!isAdmin}
                   error={!!errors.departamentoId}
                 />
               )}

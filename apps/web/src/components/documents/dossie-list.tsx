@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { DossieDto } from '@/types';
 import { useDossies, useDeleteDossie } from '@/hooks/use-dossies';
 import { useDepartments } from '@/hooks/use-departments';
+import { useAuth } from '@/hooks/use-auth';
+import { isFullAccessRole } from '@/hooks/use-permissions';
 import { Combobox, type ComboboxOption } from '@/components/ui/combobox';
 import { EditDossieDialog } from './edit-dossie-dialog';
 
@@ -76,8 +78,10 @@ function StatTile({ label, value, accent }: StatTileProps) {
 }
 
 export function DossieList() {
+  const { user } = useAuth();
+  const isAdmin = isFullAccessRole(user?.role);
   const [departamentoFiltro, setDepartamentoFiltro] = useState('');
-  const { data: departamentos } = useDepartments();
+  const { data: departamentos } = useDepartments(isAdmin);
   const {
     data: dossies,
     isLoading,
@@ -87,13 +91,23 @@ export function DossieList() {
   const [editTarget, setEditTarget] = useState<DossieDto | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<DossieDto | null>(null);
 
-  const departmentFilterOptions: ComboboxOption[] = [
-    { value: '', label: 'Todos os departamentos' },
-    ...(departamentos?.map((d) => ({ value: d.id, label: d.nome })) ?? []),
-  ];
+  useEffect(() => {
+    if (!isAdmin && user?.selectedDepartmentId) {
+      setDepartamentoFiltro(user.selectedDepartmentId);
+    }
+  }, [isAdmin, user?.selectedDepartmentId]);
+
+  const departmentFilterOptions: ComboboxOption[] = isAdmin
+    ? [
+        { value: '', label: 'Todos os departamentos' },
+        ...(departamentos?.map((d) => ({ value: d.id, label: d.nome })) ?? []),
+      ]
+    : (user?.departamentos ?? [])
+        .filter((d) => d.id === user?.selectedDepartmentId)
+        .map((d) => ({ value: d.id, label: d.nome }));
 
   function departamentoNome(departamentoId: string): string {
-    return departamentos?.find((d) => d.id === departamentoId)?.nome ?? '—';
+    return (departamentos ?? user?.departamentos)?.find((d) => d.id === departamentoId)?.nome ?? '—';
   }
 
   if (isError) {
@@ -112,6 +126,7 @@ export function DossieList() {
           onValueChange={setDepartamentoFiltro}
           options={departmentFilterOptions}
           placeholder="Todos os departamentos"
+          disabled={!isAdmin}
         />
       </div>
 
