@@ -492,3 +492,48 @@ export interface RegisterAccessResult {
 
 export type PaginatedPublicDocuments = PaginatedResult<PublicDocumentDto>;
 
+// ── GED — Dashboard ─────────────────────────────────────────────────────
+
+export interface DashboardFaseCounts {
+  readonly corrente: number;
+  readonly intermediario: number;
+}
+
+export interface DashboardConfidencialidadeCounts {
+  readonly publico: number;
+  readonly restrito: number;
+  readonly confidencial: number;
+}
+
+export interface DashboardDestinacaoFinalCounts {
+  readonly guardaPermanente: number;
+  readonly eliminacao: number;
+}
+
+export interface DashboardDocumentosPorMes {
+  readonly mes: string;
+  readonly total: number;
+}
+
+export interface DashboardSummaryDto {
+  readonly totalDocumentos: number;
+  readonly documentosPorFase: DashboardFaseCounts;
+  readonly documentosPorConfidencialidade: DashboardConfidencialidadeCounts;
+  readonly documentosPorDestinacaoFinal: DashboardDestinacaoFinalCounts;
+  readonly documentosElegiveisTransferencia: number;
+  readonly armazenamentoTotalBytes: number;
+  readonly documentosCriadosPorMes: readonly DashboardDocumentosPorMes[];
+}
+
+export interface DashboardDepartamentoCount {
+  readonly departamentoId: string;
+  readonly departamentoNome: string;
+  readonly totalDocumentos: number;
+}
+
+export interface DashboardAdminSummaryDto {
+  readonly documentosPorDepartamento: readonly DashboardDepartamentoCount[];
+  readonly totalUsuariosAtivos: number;
+  readonly totalDepartamentos: number;
+}
+

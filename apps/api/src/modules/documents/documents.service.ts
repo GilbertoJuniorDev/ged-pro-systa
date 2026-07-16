@@ -16,13 +16,14 @@ import {
   DocumentAccessUser,
   DocumentSeries,
   Dossie,
-  ROLE,
 } from '@ged/database';
-import type { Confidencialidade, Role } from '@ged/database';
+import type { Confidencialidade } from '@ged/database';
 import type { JwtPayload } from '@ged/types';
 import { STORAGE_SERVICE } from '../storage/interfaces/storage.interface';
 import type { IStorageService } from '../storage/interfaces/storage.interface';
 import { UserDepartmentsService } from '../user-departments/user-departments.service';
+import { resolveAccessScope } from './access-scope';
+import type { AccessScope } from './access-scope';
 import { UploadDocumentUseCase } from './use-cases/upload-document.use-case';
 import type { UploadDocumentData } from './use-cases/upload-document.use-case';
 import { ApplyDocumentConfidentialityUseCase } from './use-cases/apply-document-confidentiality.use-case';
@@ -54,9 +55,6 @@ export interface UpdateDocumentInputData {
   readonly accessDepartamentoIds?: string[];
   readonly accessUserIds?: string[];
 }
-
-// Papéis que enxergam todos os documentos, sem restrição por departamento.
-const PRIVILEGED_ROLES: readonly Role[] = [ROLE.SUPER_ADMIN, ROLE.ADMIN];
 
 function addMonths(date: Date | string, months: number): Date {
   // `date` columns come back from TypeORM/pg as 'YYYY-MM-DD' strings (only when a value was
@@ -99,21 +97,9 @@ export class DocumentsService {
     private readonly applyConfidentiality: ApplyDocumentConfidentialityUseCase,
   ) {}
 
-  // Retorna null para papéis privilegiados (sem restrição). Caso contrário, o escopo de
-  // acesso do usuário (id + departamentos aos quais está vinculado, podendo ser vazia).
-  private async resolveAccessScope(
-    user: JwtPayload,
-  ): Promise<{ userId: string; userDepartamentoIds: readonly string[] } | null> {
-    if (PRIVILEGED_ROLES.includes(user.role)) {
-      return null;
-    }
-    const departments = await this.userDepartmentsService.findByUserId(user.sub);
-    return { userId: user.sub, userDepartamentoIds: departments.map((d) => d.departamentoId) };
-  }
-
   // Não vaza existência: usuário sem acesso recebe 404 (igual a documento inexistente).
   private async assertCanAccess(document: Document, user: JwtPayload): Promise<void> {
-    const scope = await this.resolveAccessScope(user);
+    const scope = await resolveAccessScope(user, this.userDepartmentsService);
     if (scope === null) {
       return;
     }
@@ -123,10 +109,7 @@ export class DocumentsService {
     throw new NotFoundException('Documento não encontrado');
   }
 
-  private async canAccessWithScope(
-    document: Document,
-    scope: { userId: string; userDepartamentoIds: readonly string[] },
-  ): Promise<boolean> {
+  private async canAccessWithScope(document: Document, scope: AccessScope): Promise<boolean> {
     if (document.confidencialidade === CONFIDENCIALIDADE.PUBLICO) {
       return true;
     }
@@ -150,7 +133,7 @@ export class DocumentsService {
   // modelo antigo, restrito a departamento). A query sempre é executada, e o repositório
   // avalia PUBLICO/CONFIDENCIAL de forma independente de userDepartamentoIds estar vazio.
   async findAll(filter: DocumentQueryFilter, user: JwtPayload): Promise<PaginatedDocuments> {
-    const accessScope = await this.resolveAccessScope(user);
+    const accessScope = await resolveAccessScope(user, this.userDepartmentsService);
     return this.documentRepository.findAll({
       ...filter,
       accessScope,

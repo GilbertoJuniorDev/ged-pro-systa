@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Document } from '@ged/database';
+import { accessScopeSqlFragment } from './access-scope';
 import type {
   IDocumentRepository,
   CreateDocumentData,
@@ -50,30 +51,7 @@ export class DocumentsRepository implements IDocumentRepository {
     }
     if (filter.accessScope) {
       const { userId, userDepartamentoIds } = filter.accessScope;
-      qb.andWhere(
-        `(
-          document.confidencialidade = 'PUBLICO'
-          OR (
-            document.confidencialidade = 'RESTRITO'
-            AND (
-              document.departamento_id = ANY(:userDepartamentoIds)
-              OR EXISTS (
-                SELECT 1 FROM document_access_departments dad
-                WHERE dad.document_id = document.id
-                  AND dad.departamento_id = ANY(:userDepartamentoIds)
-              )
-            )
-          )
-          OR (
-            document.confidencialidade = 'CONFIDENCIAL'
-            AND EXISTS (
-              SELECT 1 FROM document_access_users dau
-              WHERE dau.document_id = document.id AND dau.usuario_id = :userId
-            )
-          )
-        )`,
-        { userDepartamentoIds, userId },
-      );
+      qb.andWhere(accessScopeSqlFragment('document'), { userDepartamentoIds, userId });
     }
 
     const [data, total] = await qb.getManyAndCount();
