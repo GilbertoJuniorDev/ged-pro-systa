@@ -114,13 +114,22 @@ jobs:
 
             echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
 
-            API_IMAGE="${{ needs.build-and-push.outputs.image-api }}:latest"
-            WEB_IMAGE="${{ needs.build-and-push.outputs.image-web }}:latest"
+            export API_IMAGE="${{ needs.build-and-push.outputs.image-api }}:latest"
+            export WEB_IMAGE="${{ needs.build-and-push.outputs.image-web }}:latest"
 
             docker pull "$API_IMAGE"
             docker pull "$WEB_IMAGE"
 
-            API_IMAGE="$API_IMAGE" WEB_IMAGE="$WEB_IMAGE" \
-              docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            # Remove containers de nome fixo que nao pertencem a este projeto Compose
+            # (evita "Conflict: name already in use" quando algo foi criado fora dele)
+            OWNED=$(docker compose -f docker-compose.prod.yml ps -a --format '{{.Name}}' 2>/dev/null || true)
+            for name in ged-db ged-redis ged-mongo ged-api ged-web; do
+              if docker inspect "$name" >/dev/null 2>&1 && ! printf '%s\n' "$OWNED" | grep -qx "$name"; then
+                echo "Removendo container orfao '$name' (fora deste projeto Compose)"
+                docker rm -f "$name"
+              fi
+            done
+
+            docker compose -f docker-compose.prod.yml up -d --remove-orphans
 
             docker image prune -f
