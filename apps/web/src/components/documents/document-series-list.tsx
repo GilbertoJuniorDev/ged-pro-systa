@@ -1,10 +1,12 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { FolderTree } from 'lucide-react';
 import type { DocumentSeriesDto } from '@/types';
 import { useDocumentSeries, useDeleteDocumentSeries } from '@/hooks/use-document-series';
 import { useDepartments } from '@/hooks/use-departments';
+import { useAuth } from '@/hooks/use-auth';
+import { isFullAccessRole } from '@/hooks/use-permissions';
 import { Combobox } from '@/components/ui/combobox';
 import { EditDocumentSeriesDialog } from './edit-document-series-dialog';
 
@@ -131,8 +133,11 @@ function StatTile({ label, value, accent }: StatTileProps) {
 // ─── Componente principal ──────────────────────────────────────────────────
 
 export function DocumentSeriesList() {
+  const { user } = useAuth();
+  const isAdmin = isFullAccessRole(user?.role);
+
   const [departamentoFiltro, setDepartamentoFiltro] = useState('');
-  const { data: departamentos } = useDepartments();
+  const { data: departamentos } = useDepartments(isAdmin);
   const {
     data: documentSeries,
     isLoading,
@@ -142,17 +147,28 @@ export function DocumentSeriesList() {
   const [editTarget, setEditTarget] = useState<DocumentSeriesDto | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<DocumentSeriesDto | null>(null);
 
+  useEffect(() => {
+    if (!isAdmin && user?.selectedDepartmentId) {
+      setDepartamentoFiltro(user.selectedDepartmentId);
+    }
+  }, [isAdmin, user?.selectedDepartmentId]);
+
   const departamentoOptions = useMemo(
-    () => [
-      { value: '', label: 'Todos os departamentos' },
-      ...(departamentos ?? []).map((d) => ({ value: d.id, label: d.nome })),
-    ],
-    [departamentos],
+    () =>
+      isAdmin
+        ? [
+            { value: '', label: 'Todos os departamentos' },
+            ...(departamentos ?? []).map((d) => ({ value: d.id, label: d.nome })),
+          ]
+        : (user?.departamentos ?? [])
+            .filter((d) => d.id === user?.selectedDepartmentId)
+            .map((d) => ({ value: d.id, label: d.nome })),
+    [isAdmin, departamentos, user?.departamentos, user?.selectedDepartmentId],
   );
 
   const departamentoNomeById = useMemo(
-    () => new Map((departamentos ?? []).map((d) => [d.id, d.nome])),
-    [departamentos],
+    () => new Map((departamentos ?? user?.departamentos ?? []).map((d) => [d.id, d.nome])),
+    [departamentos, user?.departamentos],
   );
 
   const flatRows = useMemo(() => {
@@ -179,6 +195,7 @@ export function DocumentSeriesList() {
           onValueChange={setDepartamentoFiltro}
           options={departamentoOptions}
           placeholder="Todos os departamentos"
+          disabled={!isAdmin}
         />
       </div>
 
