@@ -58,7 +58,6 @@ describe('Sidebar', () => {
 
     expect(screen.getByText('Dashboard')).toBeInTheDocument();
     expect(screen.getByText('Documentos')).toBeInTheDocument();
-    expect(screen.getByText('Categorias')).toBeInTheDocument();
   });
 
   it('should apply active styles to the current route link', () => {

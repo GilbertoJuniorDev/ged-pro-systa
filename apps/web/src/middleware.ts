@@ -22,7 +22,6 @@ const SUPER_ADMIN_ROUTES_PREFIX = [
  */
 const MODULE_ROUTES: ReadonlyArray<readonly [string, string]> = [
   ['/documents', 'documentos'],
-  ['/categories', 'categorias'],
 ];
 
 export default auth((req) => {
