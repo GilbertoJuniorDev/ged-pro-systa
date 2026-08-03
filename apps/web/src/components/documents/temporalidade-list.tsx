@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { DestinacaoFinal, DocumentSeriesDto } from '@/types';
 import { useDepartments } from '@/hooks/use-departments';
 import { useDocumentSeries } from '@/hooks/use-document-series';
+import { useAuth } from '@/hooks/use-auth';
+import { isFullAccessRole } from '@/hooks/use-permissions';
 import { Combobox } from '@/components/ui/combobox';
 import { EditTemporalidadeDialog } from './edit-temporalidade-dialog';
 
@@ -35,8 +37,10 @@ function SkeletonRow() {
 }
 
 export function TemporalidadeList() {
+  const { user } = useAuth();
+  const isAdmin = isFullAccessRole(user?.role);
   const [departamentoId, setDepartamentoId] = useState('');
-  const { data: departamentos } = useDepartments();
+  const { data: departamentos } = useDepartments(isAdmin);
   const {
     data: series,
     isLoading,
@@ -44,10 +48,20 @@ export function TemporalidadeList() {
   } = useDocumentSeries(departamentoId || undefined);
   const [editTarget, setEditTarget] = useState<DocumentSeriesDto | null>(null);
 
-  const departmentOptions = [
-    { value: '', label: 'Todos os departamentos' },
-    ...(departamentos ?? []).map((d) => ({ value: d.id, label: d.nome })),
-  ];
+  useEffect(() => {
+    if (!isAdmin && user?.selectedDepartmentId) {
+      setDepartamentoId(user.selectedDepartmentId);
+    }
+  }, [isAdmin, user?.selectedDepartmentId]);
+
+  const departmentOptions = isAdmin
+    ? [
+        { value: '', label: 'Todos os departamentos' },
+        ...(departamentos ?? []).map((d) => ({ value: d.id, label: d.nome })),
+      ]
+    : (user?.departamentos ?? [])
+        .filter((d) => d.id === user?.selectedDepartmentId)
+        .map((d) => ({ value: d.id, label: d.nome }));
 
   const total = series?.length ?? 0;
 
@@ -61,6 +75,7 @@ export function TemporalidadeList() {
           placeholder="Todos os departamentos"
           searchPlaceholder="Buscar departamento…"
           className="w-full sm:w-72"
+          disabled={!isAdmin}
         />
       </div>
 

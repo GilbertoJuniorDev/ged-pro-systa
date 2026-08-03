@@ -13,7 +13,7 @@ import { useDepartments } from '@/hooks/use-departments';
 import { useDocumentSeries } from '@/hooks/use-document-series';
 import { useDossies } from '@/hooks/use-dossies';
 import { useAuth } from '@/hooks/use-auth';
-import { usePermissions } from '@/hooks/use-permissions';
+import { usePermissions, isFullAccessRole } from '@/hooks/use-permissions';
 import { Combobox } from '@/components/ui/combobox';
 import { DatePicker } from '@/components/ui/date-picker';
 import { ConfidentialitySection } from '@/components/documents/confidentiality-section';
@@ -50,7 +50,8 @@ export function UploadDocumentForm() {
   const { user } = useAuth();
   const { hasPermission } = usePermissions();
   const canManageConfidentiality = hasPermission('DOCUMENTS_MANAGE_CONFIDENTIALITY');
-  const { data: departamentos } = useDepartments();
+  const isAdmin = isFullAccessRole(user?.role);
+  const { data: departamentos } = useDepartments(isAdmin);
 
   const [file, setFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
@@ -92,7 +93,11 @@ export function UploadDocumentForm() {
     setValue('dossieId', '');
   }, [watchedDepartamentoId, setValue]);
 
-  const departamentoOptions = (departamentos ?? []).map((d) => ({ value: d.id, label: d.nome }));
+  const departamentoOptions = isAdmin
+    ? (departamentos ?? []).map((d) => ({ value: d.id, label: d.nome }))
+    : (user?.departamentos ?? [])
+        .filter((d) => d.id === user?.selectedDepartmentId)
+        .map((d) => ({ value: d.id, label: d.nome }));
   const serieOptions = (series ?? []).map((s) => ({ value: s.id, label: `${s.codigo} — ${s.nome}` }));
   const dossieOptions = [
     { value: '', label: 'Nenhum (avulso)' },
@@ -249,6 +254,7 @@ export function UploadDocumentForm() {
                 onValueChange={field.onChange}
                 options={departamentoOptions}
                 placeholder="Selecione o departamento"
+                disabled={!isAdmin}
                 error={!!errors.departamentoId}
               />
             )}

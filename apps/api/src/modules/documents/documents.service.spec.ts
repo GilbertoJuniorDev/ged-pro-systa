@@ -1,5 +1,10 @@
 import { Test, type TestingModule } from '@nestjs/testing';
-import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { getDataSourceToken, getRepositoryToken } from '@nestjs/typeorm';
 import { In } from 'typeorm';
 import type { DataSource, EntityManager, Repository } from 'typeorm';
@@ -361,6 +366,40 @@ describe('DocumentsService', () => {
       expect(uploadDocumentUseCase.execute).toHaveBeenCalledWith(dto, file);
       expect(result.destaque).toBe(true);
       expect(result.exigeCadastro).toBe(true);
+    });
+
+    it('throws ForbiddenException when a non-privileged user uploads to a department outside their scope', async () => {
+      userDepartmentsService.findByUserId.mockResolvedValue([makeUserDepartment('dept-2')]);
+      const dto = {
+        nome: 'Contrato',
+        confidencialidade: CONFIDENCIALIDADE.RESTRITO,
+        departamentoId: 'dept-1',
+        serieId: 'serie-1',
+        actingUser: makeJwtPayload({ role: ROLE.VIEWER }),
+      };
+      const file = { originalname: 'x.pdf' } as Express.Multer.File;
+
+      await expect(service.upload(dto, file)).rejects.toThrow(ForbiddenException);
+      expect(uploadDocumentUseCase.execute).not.toHaveBeenCalled();
+    });
+
+    it('allows a non-privileged user to upload to a department within their scope', async () => {
+      userDepartmentsService.findByUserId.mockResolvedValue([makeUserDepartment('dept-1')]);
+      const created = makeDocument();
+      uploadDocumentUseCase.execute.mockResolvedValue(created);
+      const dto = {
+        nome: 'Contrato',
+        confidencialidade: CONFIDENCIALIDADE.RESTRITO,
+        departamentoId: 'dept-1',
+        serieId: 'serie-1',
+        actingUser: makeJwtPayload({ role: ROLE.VIEWER }),
+      };
+      const file = { originalname: 'x.pdf' } as Express.Multer.File;
+
+      const result = await service.upload(dto, file);
+
+      expect(uploadDocumentUseCase.execute).toHaveBeenCalledWith(dto, file);
+      expect(result).toEqual(created);
     });
   });
 

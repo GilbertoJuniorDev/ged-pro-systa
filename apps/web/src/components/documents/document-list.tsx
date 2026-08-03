@@ -1,12 +1,14 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { FileStack } from 'lucide-react';
 import type { Confidencialidade, DocumentDto, DocumentFase } from '@/types';
 import { useDeleteDocument, useDocuments, useDownloadDocument } from '@/hooks/use-documents';
 import { useDepartments } from '@/hooks/use-departments';
 import { useDossies } from '@/hooks/use-dossies';
+import { useAuth } from '@/hooks/use-auth';
+import { isFullAccessRole } from '@/hooks/use-permissions';
 import { formatBytes } from '@/lib/utils';
 import { Combobox } from '@/components/ui/combobox';
 
@@ -96,6 +98,9 @@ function SkeletonRow() {
 }
 
 export function DocumentList() {
+  const { user } = useAuth();
+  const isAdmin = isFullAccessRole(user?.role);
+
   const [departamentoId, setDepartamentoId] = useState('');
   const [dossieId, setDossieId] = useState('');
   const [fase, setFase] = useState('');
@@ -103,8 +108,14 @@ export function DocumentList() {
   const [page, setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<DocumentDto | null>(null);
 
-  const { data: departamentos } = useDepartments();
+  const { data: departamentos } = useDepartments(isAdmin);
   const { data: dossies } = useDossies(departamentoId || undefined);
+
+  useEffect(() => {
+    if (!isAdmin && user?.selectedDepartmentId) {
+      setDepartamentoId(user.selectedDepartmentId);
+    }
+  }, [isAdmin, user?.selectedDepartmentId]);
   const { data, isLoading, isError } = useDocuments({
     departamentoId: departamentoId || undefined,
     dossieId: dossieId || undefined,
@@ -117,11 +128,16 @@ export function DocumentList() {
   const downloadDocument = useDownloadDocument();
 
   const departamentoOptions = useMemo(
-    () => [
-      { value: '', label: 'Todos os departamentos' },
-      ...(departamentos ?? []).map((d) => ({ value: d.id, label: d.nome })),
-    ],
-    [departamentos],
+    () =>
+      isAdmin
+        ? [
+            { value: '', label: 'Todos os departamentos' },
+            ...(departamentos ?? []).map((d) => ({ value: d.id, label: d.nome })),
+          ]
+        : (user?.departamentos ?? [])
+            .filter((d) => d.id === user?.selectedDepartmentId)
+            .map((d) => ({ value: d.id, label: d.nome })),
+    [isAdmin, departamentos, user?.departamentos, user?.selectedDepartmentId],
   );
 
   const dossieOptions = useMemo(
@@ -133,8 +149,8 @@ export function DocumentList() {
   );
 
   const departamentoNomeById = useMemo(
-    () => new Map((departamentos ?? []).map((d) => [d.id, d.nome])),
-    [departamentos],
+    () => new Map((departamentos ?? user?.departamentos ?? []).map((d) => [d.id, d.nome])),
+    [departamentos, user?.departamentos],
   );
 
   const dossieNomeById = useMemo(() => new Map((dossies ?? []).map((d) => [d.id, d.nome])), [dossies]);
@@ -164,6 +180,7 @@ export function DocumentList() {
             }}
             options={departamentoOptions}
             placeholder="Todos os departamentos"
+            disabled={!isAdmin}
           />
         </div>
         <div className="w-56">

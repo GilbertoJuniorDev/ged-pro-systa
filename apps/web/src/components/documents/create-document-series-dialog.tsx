@@ -7,6 +7,8 @@ import { z } from 'zod';
 import { DESTINACAO_FINAL } from '@/types';
 import { useCreateDocumentSeries, useDocumentSeries } from '@/hooks/use-document-series';
 import { useDepartments } from '@/hooks/use-departments';
+import { useAuth } from '@/hooks/use-auth';
+import { isFullAccessRole } from '@/hooks/use-permissions';
 import { Combobox } from '@/components/ui/combobox';
 
 const schema = z.object({
@@ -42,7 +44,9 @@ interface Props {
 
 export function CreateDocumentSeriesDialog({ onClose }: Props) {
   const create = useCreateDocumentSeries();
-  const { data: departamentos } = useDepartments();
+  const { user } = useAuth();
+  const isAdmin = isFullAccessRole(user?.role);
+  const { data: departamentos } = useDepartments(isAdmin);
   const {
     register,
     handleSubmit,
@@ -61,7 +65,17 @@ export function CreateDocumentSeriesDialog({ onClose }: Props) {
     setValue('seriePaiId', '');
   }, [watchedDepartamentoId, setValue]);
 
-  const departamentoOptions = (departamentos ?? []).map((d) => ({ value: d.id, label: d.nome }));
+  useEffect(() => {
+    if (user?.selectedDepartmentId) {
+      setValue('departamentoId', user.selectedDepartmentId);
+    }
+  }, [user?.selectedDepartmentId, setValue]);
+
+  const departamentoOptions = isAdmin
+    ? (departamentos ?? []).map((d) => ({ value: d.id, label: d.nome }))
+    : (user?.departamentos ?? [])
+        .filter((d) => d.id === user?.selectedDepartmentId)
+        .map((d) => ({ value: d.id, label: d.nome }));
 
   const seriePaiOptions = [
     { value: '', label: 'Nenhuma (série raiz)' },
@@ -153,6 +167,7 @@ export function CreateDocumentSeriesDialog({ onClose }: Props) {
                     onValueChange={field.onChange}
                     options={departamentoOptions}
                     placeholder="Selecione o departamento"
+                    disabled={!isAdmin}
                     error={!!errors.departamentoId}
                   />
                 )}

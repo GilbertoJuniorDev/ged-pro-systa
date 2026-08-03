@@ -1,10 +1,12 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { DocumentDto } from '@/types';
 import { useDocuments, useTransferDocument } from '@/hooks/use-documents';
 import { useDepartments } from '@/hooks/use-departments';
 import { useDocumentSeries } from '@/hooks/use-document-series';
+import { useAuth } from '@/hooks/use-auth';
+import { isFullAccessRole } from '@/hooks/use-permissions';
 import { Combobox, type ComboboxOption } from '@/components/ui/combobox';
 import { Checkbox } from '@/components/ui/checkbox';
 
@@ -107,7 +109,9 @@ export function TransferenciaList() {
   const [page, setPage] = useState(1);
   const [transferTarget, setTransferTarget] = useState<DocumentDto | null>(null);
 
-  const { data: departamentos } = useDepartments();
+  const { user } = useAuth();
+  const isAdmin = isFullAccessRole(user?.role);
+  const { data: departamentos } = useDepartments(isAdmin);
   const { data: series } = useDocumentSeries(departamentoId || undefined);
   const { data, isLoading, isError } = useDocuments({
     fase: 'CORRENTE',
@@ -118,12 +122,23 @@ export function TransferenciaList() {
   });
   const transferDocument = useTransferDocument();
 
+  useEffect(() => {
+    if (!isAdmin && user?.selectedDepartmentId) {
+      setDepartamentoId(user.selectedDepartmentId);
+    }
+  }, [isAdmin, user?.selectedDepartmentId]);
+
   const departamentoOptions: ComboboxOption[] = useMemo(
-    () => [
-      { value: '', label: 'Todos os departamentos' },
-      ...(departamentos?.map((d) => ({ value: d.id, label: d.nome })) ?? []),
-    ],
-    [departamentos],
+    () =>
+      isAdmin
+        ? [
+            { value: '', label: 'Todos os departamentos' },
+            ...(departamentos?.map((d) => ({ value: d.id, label: d.nome })) ?? []),
+          ]
+        : (user?.departamentos ?? [])
+            .filter((d) => d.id === user?.selectedDepartmentId)
+            .map((d) => ({ value: d.id, label: d.nome })),
+    [isAdmin, departamentos, user?.departamentos, user?.selectedDepartmentId],
   );
 
   const serieOptions: ComboboxOption[] = useMemo(
@@ -140,7 +155,7 @@ export function TransferenciaList() {
   }
 
   function resolveDepartamentoNome(id: string): string {
-    return departamentos?.find((d) => d.id === id)?.nome ?? '—';
+    return (departamentos ?? user?.departamentos)?.find((d) => d.id === id)?.nome ?? '—';
   }
 
   if (isError) {
@@ -183,6 +198,7 @@ export function TransferenciaList() {
             }}
             options={departamentoOptions}
             placeholder="Todos os departamentos"
+            disabled={!isAdmin}
           />
         </div>
         <div className="w-64">
