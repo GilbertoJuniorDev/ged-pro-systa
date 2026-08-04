@@ -56,7 +56,7 @@ export class AuthController {
     if (!user) {
       throw new UnauthorizedException('Credenciais inválidas');
     }
-    const result = await this.authService.login(user);
+    const result = await this.authService.login(user, dto.rememberMe ?? false);
     void this.auditLogsService.log({
       usuarioId: user.id,
       acao: 'LOGIN',
@@ -80,13 +80,18 @@ export class AuthController {
     // Precisamos decodificar o sub sem verificar via guard, então o service faz isso.
     const decoded = this.authService['jwtService'].decode(dto.refreshToken) as {
       sub?: string;
+      rememberMe?: boolean;
     } | null;
 
     if (!decoded?.sub) {
       throw new UnauthorizedException('Refresh token inválido');
     }
 
-    return this.authService.refreshTokens(decoded.sub, dto.refreshToken);
+    return this.authService.refreshTokens(
+      decoded.sub,
+      dto.refreshToken,
+      decoded.rememberMe ?? false,
+    );
   }
 
   @Post('logout')

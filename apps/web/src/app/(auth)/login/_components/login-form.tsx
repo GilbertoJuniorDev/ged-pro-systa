@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { signIn } from 'next-auth/react';
@@ -14,6 +14,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 const loginSchema = z.object({
   email: z.string().email('E-mail inválido'),
   password: z.string().min(8, 'A senha deve ter pelo menos 8 caracteres'),
+  rememberMe: z.boolean(),
 });
 
 interface LoginFormProps {
@@ -28,14 +29,19 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
-  } = useForm<LoginFormData>({ resolver: zodResolver(loginSchema) });
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { rememberMe: false },
+  });
 
   function onSubmit(data: LoginFormData) {
     startTransition(async () => {
       const result = await signIn('credentials', {
         email: data.email,
         password: data.password,
+        rememberMe: String(data.rememberMe),
         redirect: false,
       });
       if (result?.error) {
@@ -117,7 +123,17 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
         </div>
 
         <div className="flex items-center gap-2">
-          <Checkbox id="remember" />
+          <Controller
+            name="rememberMe"
+            control={control}
+            render={({ field }) => (
+              <Checkbox
+                id="remember"
+                checked={field.value}
+                onChange={(e) => field.onChange(e.target.checked)}
+              />
+            )}
+          />
           <label htmlFor="remember" className="text-sm text-slate-600 dark:text-slate-400 cursor-pointer select-none">
             Lembrar de mim neste dispositivo
           </label>
