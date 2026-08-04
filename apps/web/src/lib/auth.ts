@@ -13,6 +13,7 @@ const config: NextAuthConfig = {
       credentials: {
         email: { label: 'E-mail', type: 'email' },
         password: { label: 'Senha', type: 'password' },
+        rememberMe: { label: 'Lembrar de mim', type: 'checkbox' },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
@@ -21,6 +22,7 @@ const config: NextAuthConfig = {
           const response = await apiClient.post<AuthTokensResponse>('/auth/login', {
             email: credentials.email,
             password: credentials.password,
+            rememberMe: credentials.rememberMe === 'true',
           });
 
           const meData = await apiClient.get<MeResponseDto>('/auth/me', {

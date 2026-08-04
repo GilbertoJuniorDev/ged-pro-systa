@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { PermissionDto } from '@/types';
 import { usePermissionsManagement, useDeletePermission } from '@/hooks/use-permission-management';
+import { permissionLabel } from '@/lib/permission-labels';
 import { EditPermissaoDialog } from './edit-permissao-dialog';
 
 interface DeleteConfirmProps {
@@ -94,9 +95,11 @@ export function PermissaoList() {
                     </td>
                   </tr>
                 )
-                : permissoes?.map((p) => (
+                : permissoes?.map((p) => {
+                  const { label, description } = permissionLabel(p.nome, p.descricao);
+                  return (
                   <tr key={p.id} className="hover:bg-slate-800/40 transition-colors">
-                    <td className="px-4 py-3 text-slate-200 font-medium">{p.nome}</td>
+                    <td className="px-4 py-3 text-slate-200 font-medium">{label}</td>
                     <td className="px-4 py-3">
                       {p.modulo ? (
                         <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-950/50 text-indigo-300">
@@ -106,7 +109,7 @@ export function PermissaoList() {
                         <span className="text-slate-600 text-xs">—</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-slate-400">{p.descricao ?? '—'}</td>
+                    <td className="px-4 py-3 text-slate-400">{description}</td>
                     <td className="px-4 py-3 text-slate-400">
                       {new Date(p.createdAt).toLocaleDateString('pt-BR')}
                     </td>
@@ -127,7 +130,8 @@ export function PermissaoList() {
                       </div>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
           </tbody>
         </table>
       </div>

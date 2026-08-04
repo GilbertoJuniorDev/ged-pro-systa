@@ -63,15 +63,19 @@ export class AuthService {
     return result as Omit<User, 'passwordHash'>;
   }
 
-  async login(user: Omit<User, 'passwordHash'>): Promise<AuthTokensResponse> {
+  async login(
+    user: Omit<User, 'passwordHash'>,
+    rememberMe = false,
+  ): Promise<AuthTokensResponse> {
     const payload = { sub: user.id, email: user.email, role: user.role };
 
     const jwtSecret = this.config.getOrThrow<string>('JWT_SECRET');
     const jwtExpiry = this.config.get<string>('JWT_EXPIRES_IN') ?? '15m';
     const jwtRefreshSecret =
       this.config.getOrThrow<string>('JWT_REFRESH_SECRET');
-    const jwtRefreshExpiry =
-      this.config.get<string>('JWT_REFRESH_EXPIRES_IN') ?? '7d';
+    const jwtRefreshExpiry = rememberMe
+      ? (this.config.get<string>('JWT_REFRESH_EXPIRES_IN') ?? '7d')
+      : (this.config.get<string>('JWT_REFRESH_EXPIRES_IN_SHORT') ?? '1d');
 
     const accessExpiresIn = parseDurationToSeconds(jwtExpiry);
     const refreshExpiresIn = parseDurationToSeconds(jwtRefreshExpiry);
@@ -82,7 +86,7 @@ export class AuthService {
     });
 
     const refreshToken = this.jwtService.sign(
-      { sub: user.id },
+      { sub: user.id, rememberMe },
       { secret: jwtRefreshSecret, expiresIn: refreshExpiresIn },
     );
 
@@ -102,6 +106,7 @@ export class AuthService {
   async refreshTokens(
     userId: string,
     refreshToken: string,
+    rememberMe = false,
   ): Promise<AuthTokensResponse> {
     const storedTokens = await this.refreshTokenRepo.find({
       where: { userId },
@@ -138,7 +143,7 @@ export class AuthService {
 
     // findById usa select:false para passwordHash — ele não é carregado
     const { passwordHash: _omit, ...safeUser } = user;
-    return this.login(safeUser);
+    return this.login(safeUser, rememberMe);
   }
 
   async logout(userId: string, refreshToken: string): Promise<void> {
