@@ -5,6 +5,7 @@ import { useUsuarioPermissoes, useAssignPermissao, useRevokePermissao } from '@/
 import { usePermissionsManagement } from '@/hooks/use-permission-management';
 import { useModules } from '@/hooks/use-modules';
 import { Checkbox } from '@/components/ui/checkbox';
+import { permissionLabel } from '@/lib/permission-labels';
 
 interface ContentProps {
   userId: string;
@@ -69,6 +70,7 @@ export function UsuarioPermissoesContent({ userId }: ContentProps) {
           {permissoes.map((permissao) => {
             const isAssigned = atribuidasSet.has(permissao.id);
             const isPending = pendingId === permissao.id;
+            const { label, description } = permissionLabel(permissao.nome, permissao.descricao);
             return (
               <label
                 key={permissao.id}
@@ -82,13 +84,11 @@ export function UsuarioPermissoesContent({ userId }: ContentProps) {
                 />
                 <div className="min-w-0">
                   <span className="text-sm text-slate-300 group-hover:text-slate-100 transition-colors leading-tight block">
-                    {permissao.nome}
+                    {label}
                   </span>
-                  {permissao.descricao && (
-                    <span className="text-xs text-slate-500 leading-tight block mt-0.5">
-                      {permissao.descricao}
-                    </span>
-                  )}
+                  <span className="text-xs text-slate-500 leading-tight block mt-0.5">
+                    {description}
+                  </span>
                 </div>
               </label>
             );
