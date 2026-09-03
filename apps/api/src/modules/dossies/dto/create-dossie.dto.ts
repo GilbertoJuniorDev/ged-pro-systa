@@ -17,4 +17,8 @@ export class CreateDossieDto {
 
   @IsUUID()
   readonly departamentoId!: string;
+
+  @IsOptional()
+  @IsUUID()
+  readonly arquivoId?: string | null;
 }

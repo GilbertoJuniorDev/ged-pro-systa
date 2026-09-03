@@ -7,7 +7,7 @@ import type { Confidencialidade, DocumentFase } from '@/types';
 import { useDocument, useDeleteDocument, useDownloadDocument } from '@/hooks/use-documents';
 import { useDepartments } from '@/hooks/use-departments';
 import { useDocumentSeries } from '@/hooks/use-document-series';
-import { useDossies } from '@/hooks/use-dossies';
+import { useDossieOptions } from '@/hooks/use-dossies';
 import { useUsers } from '@/hooks/use-users';
 import { usePermissions } from '@/hooks/use-permissions';
 import { formatBytes } from '@/lib/utils';
@@ -96,7 +96,7 @@ export function DocumentDetailPageClient({ id }: { id: string }) {
   const { data: document, isLoading, isError } = useDocument(id);
   const { data: departamentos } = useDepartments();
   const { data: series } = useDocumentSeries(document?.departamentoId);
-  const { data: dossies } = useDossies(document?.departamentoId);
+  const { data: dossies } = useDossieOptions(document?.departamentoId);
   const { data: users } = useUsers();
   const downloadDocument = useDownloadDocument();
   const deleteDocument = useDeleteDocument();

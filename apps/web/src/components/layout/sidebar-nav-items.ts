@@ -2,7 +2,8 @@ import type { Role } from '@ged/types';
 
 export interface NavItem {
   readonly label: string;
-  readonly href: string;
+  /** Ausente = cabeçalho de grupo: a linha só expande/recolhe os filhos. */
+  readonly href?: string;
   readonly iconPaths: readonly string[];
   readonly moduloSlug?: string | null;
   readonly children?: readonly NavItem[];
@@ -20,12 +21,19 @@ export const NAV_ITEMS: readonly NavItem[] = [
   },
   {
     label: 'Documentos',
-    href: '/documents',
     moduloSlug: 'documentos',
     iconPaths: [
       'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
     ],
     children: [
+      {
+        label: 'Explorador',
+        href: '/documents',
+        moduloSlug: 'documentos',
+        iconPaths: [
+          'M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z',
+        ],
+      },
       {
         label: 'Upload',
         href: '/documents/upload',
@@ -48,14 +56,6 @@ export const NAV_ITEMS: readonly NavItem[] = [
         moduloSlug: 'documentos',
         iconPaths: [
           'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
-        ],
-      },
-      {
-        label: 'Dossiês',
-        href: '/documents/dossies',
-        moduloSlug: 'documentos',
-        iconPaths: [
-          'M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z',
         ],
       },
       {

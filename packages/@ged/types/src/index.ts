@@ -364,6 +364,8 @@ export interface DossieDto {
   readonly descricao: string | null;
   readonly isActive: boolean;
   readonly departamentoId: string;
+  readonly arquivoId: string | null;
+  readonly documentsCount: number;
   readonly createdAt: string;
   readonly updatedAt: string;
 }
@@ -373,6 +375,79 @@ export interface UpsertDossieInput {
   readonly descricao?: string | null;
   readonly isActive?: boolean;
   readonly departamentoId: string;
+  readonly arquivoId?: string | null;
+}
+
+export interface DossieQuery {
+  readonly departamentoId?: string;
+  readonly arquivoId?: string;
+  readonly semArquivo?: boolean;
+  readonly search?: string;
+  readonly page?: number;
+  readonly limit?: number;
+}
+
+// ── GED — Arquivo ───────────────────────────────────────────────────────
+
+export const ARQUIVO_STATUS = {
+  ABERTO: 'ABERTO',
+  FECHADO: 'FECHADO',
+} as const;
+
+export type ArquivoStatus = (typeof ARQUIVO_STATUS)[keyof typeof ARQUIVO_STATUS];
+
+export interface ArquivoDto {
+  readonly id: string;
+  readonly codigo: string;
+  readonly ano: number;
+  readonly sequencia: number;
+  readonly nome: string;
+  readonly descricao: string | null;
+  readonly status: ArquivoStatus;
+  readonly dataEncerramento: string | null;
+  readonly encerradoPorId: string | null;
+  readonly predio: string | null;
+  readonly sala: string | null;
+  readonly estante: string | null;
+  readonly prateleira: string | null;
+  readonly caixa: string | null;
+  readonly departamentoId: string;
+  readonly departamentoIds: readonly string[];
+  readonly dossiesCount: number;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+export interface CreateArquivoInput {
+  readonly nome: string;
+  readonly descricao?: string | null;
+  readonly predio?: string | null;
+  readonly sala?: string | null;
+  readonly estante?: string | null;
+  readonly prateleira?: string | null;
+  readonly caixa?: string | null;
+  readonly departamentoId: string;
+  readonly departamentoIds?: readonly string[];
+}
+
+export interface UpdateArquivoInput {
+  readonly nome?: string;
+  readonly descricao?: string | null;
+  readonly predio?: string | null;
+  readonly sala?: string | null;
+  readonly estante?: string | null;
+  readonly prateleira?: string | null;
+  readonly caixa?: string | null;
+  readonly departamentoIds?: readonly string[];
+}
+
+export interface ArquivoQuery {
+  readonly departamentoId?: string;
+  readonly status?: ArquivoStatus;
+  readonly ano?: number;
+  readonly search?: string;
+  readonly page?: number;
+  readonly limit?: number;
 }
 
 // ── GED — Document ──────────────────────────────────────────────────────
@@ -450,9 +525,11 @@ export interface UpdateDocumentInput {
 export interface DocumentQuery {
   readonly departamentoId?: string;
   readonly dossieId?: string;
+  readonly semDossie?: boolean;
   readonly serieId?: string;
   readonly fase?: DocumentFase;
   readonly confidencialidade?: Confidencialidade;
+  readonly search?: string;
   readonly page?: number;
   readonly limit?: number;
 }

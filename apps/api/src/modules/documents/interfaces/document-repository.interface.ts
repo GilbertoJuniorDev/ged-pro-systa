@@ -42,9 +42,13 @@ export interface UpdateDocumentData {
 export interface DocumentQueryFilter {
   readonly departamentoId?: string;
   readonly dossieId?: string;
+  // Quando true, restringe a listagem a documentos sem dossiê (dossieId IS NULL).
+  // Mutuamente exclusivo com dossieId — ver DocumentsService.findAll.
+  readonly semDossie?: boolean;
   readonly serieId?: string;
   readonly fase?: DocumentFase;
   readonly confidencialidade?: Confidencialidade;
+  readonly search?: string;
   readonly page?: number;
   readonly limit?: number;
   // Quando definido, a listagem é restrita ao que o usuário não-privilegiado pode ver

@@ -21,6 +21,7 @@ import { SystemSettingsModule } from './modules/system-settings/system-settings.
 import { StorageModule } from './modules/storage/storage.module';
 import { DocumentSeriesModule } from './modules/document-series/document-series.module';
 import { DossiesModule } from './modules/dossies/dossies.module';
+import { ArquivosModule } from './modules/arquivos/arquivos.module';
 import { DocumentsModule } from './modules/documents/documents.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { PublicModule } from './modules/public/public.module';
@@ -64,6 +65,7 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
     SystemSettingsModule,
     StorageModule,
     DocumentSeriesModule,
+    ArquivosModule,
     DossiesModule,
     DocumentsModule,
     DashboardModule,

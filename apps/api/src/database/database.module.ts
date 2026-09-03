@@ -27,6 +27,8 @@ import {
   DocumentLead,
   DocumentAccessDepartment,
   DocumentAccessUser,
+  Arquivo,
+  ArquivoDepartment,
 } from '@ged/database';
 
 @Module({
@@ -63,6 +65,8 @@ import {
           DocumentLead,
           DocumentAccessDepartment,
           DocumentAccessUser,
+          Arquivo,
+          ArquivoDepartment,
         ],
         synchronize: false,
         migrationsRun: false,

@@ -8,6 +8,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { Department } from './department.entity';
+import { Arquivo } from './arquivo.entity';
 
 @Entity('dossies')
 export class Dossie {
@@ -29,6 +30,13 @@ export class Dossie {
   @ManyToOne(() => Department, { onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'departamento_id' })
   departamento!: Department;
+
+  @Column({ name: 'arquivo_id', type: 'uuid', nullable: true })
+  arquivoId!: string | null;
+
+  @ManyToOne(() => Arquivo, { onDelete: 'RESTRICT', nullable: true })
+  @JoinColumn({ name: 'arquivo_id' })
+  arquivo!: Arquivo | null;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;

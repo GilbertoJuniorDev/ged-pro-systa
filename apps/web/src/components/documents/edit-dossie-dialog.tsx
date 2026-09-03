@@ -1,18 +1,21 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import type { DossieDto } from '@/types';
 import { useUpdateDossie } from '@/hooks/use-dossies';
+import { useArquivos } from '@/hooks/use-arquivos';
 import { useDepartments } from '@/hooks/use-departments';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Combobox } from '@/components/ui/combobox';
 
 const schema = z.object({
   nome: z.string().min(2, 'Mínimo 2 caracteres').max(150, 'Máximo 150 caracteres'),
   descricao: z.string().max(500).optional().or(z.literal('')),
   isActive: z.boolean().optional(),
+  arquivoId: z.string().uuid().optional().or(z.literal('')),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -28,6 +31,7 @@ export function EditDossieDialog({ dossie, onClose }: Props) {
   const {
     register,
     handleSubmit,
+    control,
     reset,
     formState: { errors },
   } = useForm<FormData>({ resolver: zodResolver(schema) });
@@ -37,10 +41,20 @@ export function EditDossieDialog({ dossie, onClose }: Props) {
       nome: dossie.nome,
       descricao: dossie.descricao ?? '',
       isActive: dossie.isActive,
+      arquivoId: dossie.arquivoId ?? '',
     });
   }, [dossie, reset]);
 
   const departamentoNome = departamentos?.find((d) => d.id === dossie.departamentoId)?.nome ?? '—';
+  const { data: arquivosAbertos } = useArquivos({
+    departamentoId: dossie.departamentoId,
+    status: 'ABERTO',
+    limit: 100,
+  });
+  const arquivoOptions = [
+    { value: '', label: 'Nenhum (dossiê avulso)' },
+    ...(arquivosAbertos?.data.map((a) => ({ value: a.id, label: `${a.codigo} — ${a.nome}` })) ?? []),
+  ];
 
   function onSubmit(data: FormData) {
     update.mutate(
@@ -50,6 +64,7 @@ export function EditDossieDialog({ dossie, onClose }: Props) {
           nome: data.nome,
           descricao: data.descricao ?? null,
           isActive: data.isActive,
+          arquivoId: data.arquivoId === '' ? null : (data.arquivoId ?? null),
         },
       },
       { onSuccess: onClose },
@@ -90,6 +105,23 @@ export function EditDossieDialog({ dossie, onClose }: Props) {
               className="w-full rounded-lg bg-slate-800 border border-slate-600 px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
             />
             {errors.descricao && <p className="text-rose-400 text-xs mt-1">{errors.descricao.message}</p>}
+          </div>
+          <div>
+            <label className="block text-sm text-slate-400 mb-1" htmlFor="edit-arquivoId">
+              Arquivo
+            </label>
+            <Controller
+              name="arquivoId"
+              control={control}
+              render={({ field }) => (
+                <Combobox
+                  value={field.value ?? ''}
+                  onValueChange={field.onChange}
+                  options={arquivoOptions}
+                  placeholder="Nenhum (dossiê avulso)"
+                />
+              )}
+            />
           </div>
           <div className="flex items-center gap-3">
             <Checkbox

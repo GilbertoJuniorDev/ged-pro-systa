@@ -31,11 +31,26 @@ interface AccordionItemProps {
   readonly onLinkClick: (href: string) => void;
 }
 
+function matchesHref(pathname: string, href: string): boolean {
+  return pathname === href || pathname.startsWith(href + '/');
+}
+
+/**
+ * Entre os filhos que casam com a rota atual, vence o href mais longo — assim
+ * `/documents/upload` acende só "Upload", e não também "Inventário" (`/documents`).
+ */
+function findActiveChildHref(children: readonly NavItem[] | undefined, pathname: string) {
+  return (
+    children?.reduce<string | null>((longest, child) => {
+      if (child.href == null || !matchesHref(pathname, child.href)) return longest;
+      return longest == null || child.href.length > longest.length ? child.href : longest;
+    }, null) ?? null
+  );
+}
+
 function AccordionItem({ item, pathname, pendingHref, onLinkClick }: AccordionItemProps) {
-  const isParentActive =
-    pathname === item.href ||
-    (item.children != null &&
-      item.children.some((c) => pathname === c.href || pathname.startsWith(c.href + '/')));
+  const activeChildHref = findActiveChildHref(item.children, pathname);
+  const isParentActive = (item.href != null && pathname === item.href) || activeChildHref != null;
 
   const [isOpen, setIsOpen] = useState<boolean>(isParentActive);
 
@@ -44,12 +59,14 @@ function AccordionItem({ item, pathname, pendingHref, onLinkClick }: AccordionIt
   }, [isParentActive]);
 
   if (!item.children || item.children.length === 0) {
-    const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
-    const isPending = pendingHref === item.href;
+    if (item.href == null) return null;
+    const leafHref = item.href;
+    const isActive = matchesHref(pathname, leafHref);
+    const isPending = pendingHref === leafHref;
     return (
       <Link
-        href={item.href}
-        onClick={() => onLinkClick(item.href)}
+        href={leafHref}
+        onClick={() => onLinkClick(leafHref)}
         className={`flex items-center px-3 py-2.5 rounded-lg font-medium transition-all duration-200 ease-in-out ${
           isActive
             ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400'
@@ -70,51 +87,81 @@ function AccordionItem({ item, pathname, pendingHref, onLinkClick }: AccordionIt
     );
   }
 
-  const isPending = pendingHref === item.href;
+  const parentHref = item.href;
+  const isPending = parentHref != null && pendingHref === parentHref;
+
+  const parentIcon = isPending ? (
+    <Spinner size="sm" className="mr-3 text-indigo-400" />
+  ) : (
+    <svg className="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+      {item.iconPaths.map((d, i) => (
+        <path key={i} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
+      ))}
+    </svg>
+  );
+
+  const chevron = (
+    <svg
+      className={`h-4 w-4 shrink-0 transition-transform duration-200 ease-in-out ${isOpen ? 'rotate-180' : ''}`}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+    </svg>
+  );
+
+  const idleClasses =
+    'text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100';
 
   return (
     <div>
-      <div
-        className={`flex items-center rounded-lg font-medium transition-all duration-200 ease-in-out ${
-          isParentActive
-            ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400'
-            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'
-        }`}
-      >
-        <Link
-          href={item.href}
-          onClick={() => onLinkClick(item.href)}
-          className="flex min-w-0 flex-1 items-center px-3 py-2.5"
-        >
-          {isPending ? (
-            <Spinner size="sm" className="mr-3 text-indigo-400" />
-          ) : (
-            <svg className="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              {item.iconPaths.map((d, i) => (
-                <path key={i} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
-              ))}
-            </svg>
-          )}
-          <span className="truncate">{item.label}</span>
-        </Link>
+      {parentHref == null ? (
+        // Cabeçalho de grupo: não navega, só expande. O preenchimento indigo é
+        // reservado para a página atual, então aqui o ativo é só no texto.
         <button
           type="button"
           onClick={() => setIsOpen((prev) => !prev)}
           aria-expanded={isOpen}
           aria-label={isOpen ? `Recolher ${item.label}` : `Expandir ${item.label}`}
-          className="shrink-0 rounded-md p-2.5 pr-3 text-slate-400 transition-colors hover:text-indigo-600 dark:text-slate-500 dark:hover:text-indigo-400"
+          className={`flex w-full items-center rounded-lg px-3 py-2.5 font-medium transition-all duration-200 ease-in-out ${
+            isParentActive
+              ? 'font-semibold text-indigo-700 hover:bg-slate-100 dark:text-indigo-400 dark:hover:bg-slate-800'
+              : idleClasses
+          }`}
         >
-          <svg
-            className={`h-4 w-4 transition-transform duration-200 ease-in-out ${isOpen ? 'rotate-180' : ''}`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
+          {parentIcon}
+          <span className="min-w-0 flex-1 truncate text-left">{item.label}</span>
+          {chevron}
         </button>
-      </div>
+      ) : (
+        <div
+          className={`flex items-center rounded-lg font-medium transition-all duration-200 ease-in-out ${
+            isParentActive
+              ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400'
+              : idleClasses
+          }`}
+        >
+          <Link
+            href={parentHref}
+            onClick={() => onLinkClick(parentHref)}
+            className="flex min-w-0 flex-1 items-center px-3 py-2.5"
+          >
+            {parentIcon}
+            <span className="truncate">{item.label}</span>
+          </Link>
+          <button
+            type="button"
+            onClick={() => setIsOpen((prev) => !prev)}
+            aria-expanded={isOpen}
+            aria-label={isOpen ? `Recolher ${item.label}` : `Expandir ${item.label}`}
+            className="shrink-0 rounded-md p-2.5 pr-3 text-slate-400 transition-colors hover:text-indigo-600 dark:text-slate-500 dark:hover:text-indigo-400"
+          >
+            {chevron}
+          </button>
+        </div>
+      )}
 
       <div
         className={`grid transition-all duration-300 ease-in-out ${
@@ -124,13 +171,15 @@ function AccordionItem({ item, pathname, pendingHref, onLinkClick }: AccordionIt
         <div className="overflow-hidden">
           <div className="mt-1 space-y-0.5 pb-1">
             {item.children.map((child) => {
-              const isChildActive = pathname === child.href || pathname.startsWith(child.href + '/');
-              const isChildPending = pendingHref === child.href;
+              if (child.href == null) return null;
+              const childHref = child.href;
+              const isChildActive = childHref === activeChildHref;
+              const isChildPending = pendingHref === childHref;
               return (
                 <Link
-                  key={child.href}
-                  href={child.href}
-                  onClick={() => onLinkClick(child.href)}
+                  key={childHref}
+                  href={childHref}
+                  onClick={() => onLinkClick(childHref)}
                   className={`flex items-center pl-9 pr-3 py-2 text-sm rounded-lg font-medium transition-all duration-200 ease-in-out ${
                     isChildActive
                       ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400'
@@ -232,7 +281,7 @@ export function Sidebar({
           {viewMode !== 'admin' &&
             visibleNavItems.map((item) => (
               <AccordionItem
-                key={item.href}
+                key={item.href ?? item.label}
                 item={item}
                 pathname={pathname}
                 pendingHref={pendingHref}
@@ -250,7 +299,7 @@ export function Sidebar({
               </div>
               {visibleAdminNavItems.map((item) => (
                 <AccordionItem
-                  key={item.href}
+                  key={item.href ?? item.label}
                   item={item}
                   pathname={pathname}
                   pendingHref={pendingHref}

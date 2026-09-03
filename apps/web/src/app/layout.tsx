@@ -7,6 +7,7 @@ import { ThemeAwareToaster } from '@/providers/theme-aware-toaster';
 import { QueryProvider } from '@/providers/query-provider';
 import { NavigationProvider } from '@/providers/navigation-provider';
 import { ErrorTrackingProvider } from '@/providers/error-tracking-provider';
+import { SessionExpiryProvider } from '@/providers/session-expiry-provider';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -26,11 +27,12 @@ export default async function RootLayout({
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <body className={inter.className}>
-        <SessionProvider session={session} refetchOnWindowFocus={false}>
+        <SessionProvider session={session}>
           <ThemeProvider>
             <QueryProvider>
               <NavigationProvider>{children}</NavigationProvider>
             </QueryProvider>
+            <SessionExpiryProvider />
             <ErrorTrackingProvider />
             <ThemeAwareToaster />
           </ThemeProvider>

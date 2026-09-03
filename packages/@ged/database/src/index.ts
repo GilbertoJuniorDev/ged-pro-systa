@@ -26,6 +26,8 @@ export {
   type DestinacaoFinal,
 } from './entities/document-series.entity';
 export { Dossie } from './entities/dossie.entity';
+export { Arquivo, ARQUIVO_STATUS, type ArquivoStatus } from './entities/arquivo.entity';
+export { ArquivoDepartment } from './entities/arquivo-department.entity';
 export {
   Document,
   CONFIDENCIALIDADE,

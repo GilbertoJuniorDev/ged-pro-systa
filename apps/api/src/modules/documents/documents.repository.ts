@@ -27,6 +27,7 @@ export class DocumentsRepository implements IDocumentRepository {
       .createQueryBuilder('document')
       .leftJoinAndSelect('document.serie', 'serie')
       .orderBy('document.createdAt', 'DESC')
+      .addOrderBy('document.id', 'DESC')
       .skip(skip)
       .take(limit);
 
@@ -35,8 +36,11 @@ export class DocumentsRepository implements IDocumentRepository {
         departamentoId: filter.departamentoId,
       });
     }
-    if (filter.dossieId) {
+    if (filter.dossieId !== undefined) {
       qb.andWhere('document.dossie_id = :dossieId', { dossieId: filter.dossieId });
+    }
+    if (filter.semDossie) {
+      qb.andWhere('document.dossie_id IS NULL');
     }
     if (filter.serieId) {
       qb.andWhere('document.serie_id = :serieId', { serieId: filter.serieId });
@@ -47,6 +51,11 @@ export class DocumentsRepository implements IDocumentRepository {
     if (filter.confidencialidade) {
       qb.andWhere('document.confidencialidade = :confidencialidade', {
         confidencialidade: filter.confidencialidade,
+      });
+    }
+    if (filter.search) {
+      qb.andWhere('(document.nome ILIKE :search OR document.arquivo_nome ILIKE :search)', {
+        search: `%${filter.search}%`,
       });
     }
     if (filter.accessScope) {

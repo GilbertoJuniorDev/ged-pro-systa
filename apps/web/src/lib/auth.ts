@@ -2,6 +2,7 @@ import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import type { NextAuthConfig } from 'next-auth';
 import { apiClient } from '@/lib/api-client';
+import { SESSION_ERROR } from '@/lib/session-expiry';
 import type { AuthUser } from '@/types';
 import type { AuthTokensResponse, MeResponseDto, Role } from '@ged/types';
 
@@ -88,6 +89,12 @@ const config: NextAuthConfig = {
         return token;
       }
 
+      // O refresh já falhou antes: não adianta martelar a API a cada request.
+      // Middleware, cada render RSC e cada refetch de sessão passam por aqui.
+      if (token.error === SESSION_ERROR.REFRESH_TOKEN) {
+        return token;
+      }
+
       try {
         const refreshed = await apiClient.post<AuthTokensResponse>(
           '/auth/refresh',
@@ -97,12 +104,18 @@ const config: NextAuthConfig = {
         token.refreshToken = refreshed.refreshToken;
         token.expiresAt = Date.now() + refreshed.expiresIn * 1000;
       } catch {
-        token.error = 'RefreshTokenError';
+        token.error = SESSION_ERROR.REFRESH_TOKEN;
       }
 
       return token;
     },
     async session({ session, token }) {
+      // Sinaliza para o middleware e para o SessionExpiryProvider que o refresh token
+      // morreu — sem isso a sessão continua truthy e o usuário navega um app quebrado.
+      if (token.error === SESSION_ERROR.REFRESH_TOKEN) {
+        session.error = SESSION_ERROR.REFRESH_TOKEN;
+      }
+
       session.user = {
         ...session.user,
         // @ts-expect-error — extending default session user type

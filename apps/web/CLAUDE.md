@@ -6,7 +6,7 @@ Regras gerais e de TypeScript: [`/AGENTS.md`](../../AGENTS.md). Este guia cobre 
 
 - `page.tsx` = **Server Component**: define `metadata` e o shell/heading; delega interatividade.
 - Interatividade em `*-page-client.tsx` (ou form/list) com `'use client'`, sob pasta co-localizada `_components/`. Ex.: `admin/users/page.tsx` → `components/admin/user-list.tsx`.
-- Route groups: `(auth)` (login, reset-password — sem chrome) e `(dashboard)` (protegido). O guard é `auth()` em `app/(dashboard)/layout.tsx` (redirect p/ `/login`). **Não existe `middleware.ts`.**
+- Route groups: `(auth)` (login, reset-password — sem chrome) e `(dashboard)` (protegido). Guards em duas camadas: `src/middleware.ts` (redirect de não-autenticado, gating por role/módulo, redirect para `/sessao-expirada` quando o refresh token morre) e `auth()` em `app/(dashboard)/layout.tsx`.
 - Nomes: arquivos kebab-case, componentes PascalCase, hooks `useX`.
 
 ## Dados — sempre via apiClient + React Query

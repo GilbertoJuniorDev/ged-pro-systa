@@ -127,6 +127,17 @@ describe('DocumentsController', () => {
       expect(documentsService.findAll).toHaveBeenCalledWith({}, makeJwtPayload());
       expect(documentsService.toResponseDto).toHaveBeenCalledWith(documents[0]);
     });
+
+    it('forwards search and semDossie query params to the service untouched', async () => {
+      documentsService.findAll.mockResolvedValue({ data: [], total: 0, page: 1, limit: 20 });
+
+      await controller.findAll({ search: 'contrato', semDossie: true }, makeJwtPayload());
+
+      expect(documentsService.findAll).toHaveBeenCalledWith(
+        { search: 'contrato', semDossie: true },
+        makeJwtPayload(),
+      );
+    });
   });
 
   describe('findOne', () => {

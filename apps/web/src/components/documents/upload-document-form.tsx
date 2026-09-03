@@ -11,7 +11,7 @@ import { CONFIDENCIALIDADE } from '@/types';
 import { useUploadDocument } from '@/hooks/use-documents';
 import { useDepartments } from '@/hooks/use-departments';
 import { useDocumentSeries } from '@/hooks/use-document-series';
-import { useDossies } from '@/hooks/use-dossies';
+import { useDossieOptions } from '@/hooks/use-dossies';
 import { useAuth } from '@/hooks/use-auth';
 import { usePermissions, isFullAccessRole } from '@/hooks/use-permissions';
 import { Combobox } from '@/components/ui/combobox';
@@ -86,7 +86,7 @@ export function UploadDocumentForm() {
 
   const watchedDepartamentoId = watch('departamentoId');
   const { data: series } = useDocumentSeries(watchedDepartamentoId || undefined);
-  const { data: dossies } = useDossies(watchedDepartamentoId || undefined);
+  const { data: dossies } = useDossieOptions(watchedDepartamentoId || undefined);
 
   useEffect(() => {
     setValue('serieId', '');

@@ -8,6 +8,11 @@ export default function DocumentsLoading() {
         <Skeleton className="h-10 w-36 rounded-lg" />
       </div>
 
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <Skeleton className="h-9 w-72 rounded-lg" />
+        <Skeleton className="h-9 w-56 rounded-lg" />
+      </div>
+
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
         <div className="border-b border-slate-200 p-4 dark:border-slate-800">
           <Skeleton className="h-10 w-64 rounded-lg" />

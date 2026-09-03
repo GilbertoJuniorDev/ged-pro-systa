@@ -20,12 +20,20 @@ import { PermissionsGuard } from '../../common/guards/permissions.guard';
 import { Permissions } from '../../common/decorators/permissions.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import type { JwtPayload } from '@ged/types';
+import type { Dossie } from '@ged/database';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
 import { DossiesService } from './dossies.service';
 import { CreateDossieDto } from './dto/create-dossie.dto';
 import { UpdateDossieDto } from './dto/update-dossie.dto';
 import { DossieResponseDto } from './dto/dossie-response.dto';
 import { QueryDossieDto } from './dto/query-dossie.dto';
+
+interface PaginatedDossieResponse {
+  readonly data: DossieResponseDto[];
+  readonly total: number;
+  readonly page: number;
+  readonly limit: number;
+}
 
 @ApiTags('dossies')
 @ApiBearerAuth()
@@ -37,15 +45,28 @@ export class DossiesController {
     private readonly auditLogsService: AuditLogsService,
   ) {}
 
+  private async toResponse(dossie: Dossie, user: JwtPayload): Promise<DossieResponseDto> {
+    const counts = await this.dossiesService.countDocumentsByDossie([dossie.id], user);
+    return new DossieResponseDto({ ...dossie, documentsCount: counts.get(dossie.id) ?? 0 });
+  }
+
   @Get()
   @ApiOperation({ summary: 'List all dossiês' })
   @ApiResponse({ status: 200, description: 'Dossiês listed successfully' })
   async findAll(
     @Query() query: QueryDossieDto,
     @CurrentUser() user: JwtPayload,
-  ): Promise<DossieResponseDto[]> {
-    const dossies = await this.dossiesService.findAll(query.departamentoId, user);
-    return dossies.map((d) => new DossieResponseDto(d));
+  ): Promise<PaginatedDossieResponse> {
+    const result = await this.dossiesService.findAll(query, user);
+    const counts = await this.dossiesService.countDocumentsByDossie(
+      result.data.map((d) => d.id),
+      user,
+    );
+    const data = result.data.map(
+      (dossie) =>
+        new DossieResponseDto({ ...dossie, documentsCount: counts.get(dossie.id) ?? 0 }),
+    );
+    return { data, total: result.total, page: result.page, limit: result.limit };
   }
 
   @Get(':id')
@@ -57,7 +78,7 @@ export class DossiesController {
     @CurrentUser() user: JwtPayload,
   ): Promise<DossieResponseDto> {
     const dossie = await this.dossiesService.findOne(id, user);
-    return new DossieResponseDto(dossie);
+    return this.toResponse(dossie, user);
   }
 
   @Post()
@@ -88,7 +109,7 @@ export class DossiesController {
       ipCliente: req.ip ?? null,
       userAgent: req.headers['user-agent'] ?? null,
     });
-    return new DossieResponseDto(dossie);
+    return new DossieResponseDto({ ...dossie, documentsCount: 0 });
   }
 
   @Patch(':id')
@@ -126,7 +147,7 @@ export class DossiesController {
       ipCliente: req.ip ?? null,
       userAgent: req.headers['user-agent'] ?? null,
     });
-    return new DossieResponseDto(dossie);
+    return this.toResponse(dossie, currentUser);
   }
 
   @Delete(':id')

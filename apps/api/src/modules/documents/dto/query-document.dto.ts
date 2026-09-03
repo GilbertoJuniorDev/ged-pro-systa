@@ -1,11 +1,12 @@
-import { IsIn, IsInt, IsOptional, IsUUID, Min } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsBoolean, IsIn, IsInt, IsOptional, IsString, IsUUID, MaxLength, Min } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
 import {
   CONFIDENCIALIDADE,
   type Confidencialidade,
   DOCUMENT_FASE,
   type DocumentFase,
 } from '@ged/database';
+import { toBoolean } from '../../../common/transforms/to-boolean';
 
 export class QueryDocumentDto {
   @IsOptional()
@@ -15,6 +16,11 @@ export class QueryDocumentDto {
   @IsOptional()
   @IsUUID()
   readonly dossieId?: string;
+
+  @IsOptional()
+  @Transform(toBoolean)
+  @IsBoolean()
+  readonly semDossie?: boolean;
 
   @IsOptional()
   @IsUUID()
@@ -27,6 +33,11 @@ export class QueryDocumentDto {
   @IsOptional()
   @IsIn(Object.values(CONFIDENCIALIDADE))
   readonly confidencialidade?: Confidencialidade;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  readonly search?: string;
 
   @IsOptional()
   @Type(() => Number)

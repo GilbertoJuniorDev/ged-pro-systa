@@ -34,6 +34,24 @@ interface ErrorBody {
 // Client (browser): API_INTERNAL_URL is undefined (no NEXT_PUBLIC_ prefix), falls back to NEXT_PUBLIC_API_URL
 const BASE_URL = process.env.API_INTERNAL_URL ?? process.env.NEXT_PUBLIC_API_URL ?? '';
 
+type UnauthorizedHandler = () => void;
+
+/**
+ * Handler chamado quando a API responde 401 fora de `/auth/*`.
+ *
+ * Só é registrado no browser (por `SessionExpiryProvider`). No servidor — onde
+ * `lib/auth.ts` chama /auth/login, /auth/refresh e /auth/me — este módulo tem outra
+ * instância e o handler permanece `null`, então nunca dispara lá.
+ */
+let unauthorizedHandler: UnauthorizedHandler | null = null;
+
+export function setUnauthorizedHandler(handler: UnauthorizedHandler | null): void {
+  unauthorizedHandler = handler;
+}
+
+/** Em `/auth/*` um 401 é o resultado esperado (credencial inválida), não sessão expirada. */
+const AUTH_PATHS_PREFIX = '/auth/';
+
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { body, token, headers: extraHeaders, ...rest } = options;
   const isFormData = body instanceof FormData;
@@ -57,9 +75,18 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   if (!response.ok) {
     const errorBody = (await response.json().catch(() => ({}))) as Partial<ErrorBody>;
     const errorDetails = errorBody.error ?? {};
+    const statusCode = errorDetails.statusCode ?? response.status;
+
+    // 401 = access token ausente/inválido/expirado (permissão negada é 403 na API).
+    // Não decide nada aqui: só avisa o guard, que revalida a sessão. O access token
+    // vive 15min, então um 401 sozinho não significa que a sessão morreu.
+    if (statusCode === 401 && !path.startsWith(AUTH_PATHS_PREFIX)) {
+      unauthorizedHandler?.();
+    }
+
     throw new ApiError(
       errorDetails.message ?? response.statusText,
-      errorDetails.statusCode ?? response.status,
+      statusCode,
       errorDetails.code ?? 'UNKNOWN_ERROR',
     );
   }

@@ -134,6 +134,9 @@ export class DocumentsService {
   // modelo antigo, restrito a departamento). A query sempre é executada, e o repositório
   // avalia PUBLICO/CONFIDENCIAL de forma independente de userDepartamentoIds estar vazio.
   async findAll(filter: DocumentQueryFilter, user: JwtPayload): Promise<PaginatedDocuments> {
+    if (filter.dossieId !== undefined && filter.semDossie === true) {
+      throw new BadRequestException('Informe dossieId ou semDossie, não ambos');
+    }
     const accessScope = await resolveAccessScope(user, this.userDepartmentsService);
     return this.documentRepository.findAll({
       ...filter,

@@ -74,6 +74,10 @@ const MODULE_SEEDS: ReadonlyArray<ModuleSeed> = [
         descricao: 'Criar, editar e remover dossiês',
       },
       {
+        nome: 'ARQUIVOS_MANAGE',
+        descricao: 'Criar, editar, encerrar e remover arquivos',
+      },
+      {
         nome: 'DOCUMENT_SERIES_MANAGE',
         descricao: 'Criar, editar e remover séries documentais',
       },

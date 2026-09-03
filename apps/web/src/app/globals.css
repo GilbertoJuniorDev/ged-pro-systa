@@ -161,3 +161,27 @@
     &::-webkit-scrollbar { display: none; }
   }
 }
+
+/* ─── Movimento reduzido ─────────────────────────────────────────────────────
+   Fora de `@layer utilities` de propósito: em CSS cascade layers, regras SEM layer
+   sempre vencem regras dentro de qualquer layer — então isto neutraliza as utilities
+   acima independentemente da ordem do arquivo.
+
+   `animate-spin` (Spinner) e `animate-pulse` (Skeleton) ficam de FORA de propósito:
+   são feedback de carregamento, não decoração — congelá-los faria o usuário perder
+   o sinal de que algo está em curso. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-slide-up,
+  .animate-scale-in,
+  .animate-dropdown-in,
+  .animate-blob {
+    animation: none;
+  }
+
+  /* Sem os keyframes a barra ficaria com `width: 0` (invisível) — deixa cheia. */
+  .animate-progress-bar {
+    animation: none;
+    width: 100%;
+  }
+}

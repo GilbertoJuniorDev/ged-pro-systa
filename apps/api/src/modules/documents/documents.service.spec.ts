@@ -326,6 +326,36 @@ describe('DocumentsService', () => {
       );
       expect(result).toEqual({ data: [], total: 0, page: 2, limit: 10 });
     });
+
+    it('throws BadRequestException when both dossieId and semDossie are provided', async () => {
+      await expect(
+        service.findAll(
+          { dossieId: 'dossie-1', semDossie: true },
+          makeJwtPayload({ role: ROLE.ADMIN }),
+        ),
+      ).rejects.toThrow(BadRequestException);
+      expect(documentRepository.findAll).not.toHaveBeenCalled();
+    });
+
+    it('forwards semDossie to the repository', async () => {
+      documentRepository.findAll.mockResolvedValue(emptyPage);
+
+      await service.findAll({ semDossie: true }, makeJwtPayload({ role: ROLE.ADMIN }));
+
+      expect(documentRepository.findAll).toHaveBeenCalledWith(
+        expect.objectContaining({ semDossie: true }),
+      );
+    });
+
+    it('forwards search to the repository', async () => {
+      documentRepository.findAll.mockResolvedValue(emptyPage);
+
+      await service.findAll({ search: 'contrato' }, makeJwtPayload({ role: ROLE.ADMIN }));
+
+      expect(documentRepository.findAll).toHaveBeenCalledWith(
+        expect.objectContaining({ search: 'contrato' }),
+      );
+    });
   });
 
   describe('upload', () => {

@@ -2,11 +2,14 @@ import { BadRequestException, Inject, Injectable, NotFoundException } from '@nes
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import type { Dossie, Role } from '@ged/database';
-import { Department, ROLE } from '@ged/database';
+import { ARQUIVO_STATUS, Arquivo, Department, ROLE } from '@ged/database';
 import type { JwtPayload } from '@ged/types';
 import { UserDepartmentsService } from '../user-departments/user-departments.service';
+import { resolveAccessScope } from '../documents/access-scope';
 import type {
   IDossieRepository,
+  DossieQueryFilter,
+  PaginatedDossies,
   CreateDossieData,
   UpdateDossieData,
 } from './interfaces/dossie-repository.interface';
@@ -23,8 +26,23 @@ export class DossiesService {
     private readonly dossieRepository: IDossieRepository,
     @InjectRepository(Department)
     private readonly departmentRepository: Repository<Department>,
+    @InjectRepository(Arquivo)
+    private readonly arquivoRepository: Repository<Arquivo>,
     private readonly userDepartmentsService: UserDepartmentsService,
   ) {}
+
+  private async assertArquivoValido(arquivoId: string, departamentoId: string): Promise<void> {
+    const arquivo = await this.arquivoRepository.findOne({ where: { id: arquivoId } });
+    if (!arquivo) {
+      throw new BadRequestException('Arquivo não encontrado');
+    }
+    if (arquivo.departamentoId !== departamentoId) {
+      throw new BadRequestException('O arquivo deve pertencer ao mesmo departamento do dossiê');
+    }
+    if (arquivo.status === ARQUIVO_STATUS.FECHADO) {
+      throw new BadRequestException('Não é possível vincular dossiês a um arquivo encerrado');
+    }
+  }
 
   // null = papel privilegiado (sem restrição); caso contrário a lista de departamentoIds
   // vinculados ao usuário (pode ser vazia).
@@ -48,22 +66,32 @@ export class DossiesService {
     }
   }
 
-  async findAll(departamentoId: string | undefined, user: JwtPayload): Promise<Dossie[]> {
+  async findAll(
+    filter: Omit<DossieQueryFilter, 'allowedDepartamentoIds'>,
+    user: JwtPayload,
+  ): Promise<PaginatedDossies> {
     const allowed = await this.resolveAllowedDepartamentos(user);
+    const page = filter.page ?? 1;
+    const limit = filter.limit ?? 20;
     if (allowed === null) {
-      return this.dossieRepository.findAll({ departamentoId });
+      return this.dossieRepository.findAll(filter);
     }
     if (allowed.length === 0) {
-      return [];
+      return { data: [], total: 0, page, limit };
     }
-    if (departamentoId) {
+    if (filter.departamentoId && !allowed.includes(filter.departamentoId)) {
       // Um departamento fora do escopo do usuário não deve vazar dados.
-      if (!allowed.includes(departamentoId)) {
-        return [];
-      }
-      return this.dossieRepository.findAll({ departamentoId });
+      return { data: [], total: 0, page, limit };
     }
-    return this.dossieRepository.findAll({ allowedDepartamentoIds: allowed });
+    return this.dossieRepository.findAll({ ...filter, allowedDepartamentoIds: allowed });
+  }
+
+  async countDocumentsByDossie(
+    dossieIds: readonly string[],
+    user: JwtPayload,
+  ): Promise<Map<string, number>> {
+    const accessScope = await resolveAccessScope(user, this.userDepartmentsService);
+    return this.dossieRepository.countDocumentsByDossie(dossieIds, accessScope);
   }
 
   // `user` opcional: o caminho de escrita (update/remove, já restrito por @Permissions via
@@ -86,11 +114,18 @@ export class DossiesService {
       throw new BadRequestException('Departamento não encontrado');
     }
 
+    if (data.arquivoId) {
+      await this.assertArquivoValido(data.arquivoId, data.departamentoId);
+    }
+
     return this.dossieRepository.create(data);
   }
 
   async update(id: string, data: UpdateDossieData): Promise<Dossie> {
-    await this.findOne(id);
+    const current = await this.findOne(id);
+    if (data.arquivoId) {
+      await this.assertArquivoValido(data.arquivoId, current.departamentoId);
+    }
     return this.dossieRepository.update(id, data);
   }
 

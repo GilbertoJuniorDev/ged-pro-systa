@@ -10,17 +10,7 @@ import {
 } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { CONFIDENCIALIDADE, type Confidencialidade } from '@ged/database';
-
-// multipart/form-data (used by POST /documents, see FileInterceptor in
-// documents.controller.ts) always sends field values as raw strings. Coerce the
-// "true"/"false" strings a checkbox/form field sends into real booleans before
-// @IsBoolean() runs, while still accepting a real boolean (e.g. JSON callers, tests).
-const toBoolean = ({ value }: { value: unknown }): unknown => {
-  if (typeof value === 'boolean') return value;
-  if (value === 'true') return true;
-  if (value === 'false') return false;
-  return value;
-};
+import { toBoolean } from '../../../common/transforms/to-boolean';
 
 export class CreateDocumentDto {
   @IsString()

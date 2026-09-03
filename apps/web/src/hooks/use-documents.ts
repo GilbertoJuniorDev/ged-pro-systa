@@ -15,9 +15,11 @@ import type {
 export interface DocumentFilters {
   departamentoId?: string;
   dossieId?: string;
+  semDossie?: boolean;
   serieId?: string;
   fase?: DocumentFase;
   confidencialidade?: Confidencialidade;
+  search?: string;
   page?: number;
   limit?: number;
 }
@@ -48,9 +50,11 @@ function buildQueryString(filters: DocumentFilters): string {
   const params = new URLSearchParams();
   if (filters.departamentoId) params.set('departamentoId', filters.departamentoId);
   if (filters.dossieId) params.set('dossieId', filters.dossieId);
+  if (filters.semDossie) params.set('semDossie', 'true');
   if (filters.serieId) params.set('serieId', filters.serieId);
   if (filters.fase) params.set('fase', filters.fase);
   if (filters.confidencialidade) params.set('confidencialidade', filters.confidencialidade);
+  if (filters.search) params.set('search', filters.search);
   if (filters.page) params.set('page', String(filters.page));
   if (filters.limit) params.set('limit', String(filters.limit));
   const qs = params.toString();

@@ -1,7 +1,7 @@
 import { Test, type TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { ROLE, Department } from '@ged/database';
+import { ROLE, Department, Arquivo } from '@ged/database';
 import type { Dossie } from '@ged/database';
 import type { JwtPayload } from '@ged/types';
 import type { HttpRequest } from '../../common/interfaces/http-request.interface';
@@ -20,9 +20,11 @@ const makeDossie = (overrides: Partial<Dossie> = {}): Dossie =>
     descricao: null,
     isActive: true,
     departamentoId: 'dept-1',
+    arquivoId: null,
     createdAt: new Date('2026-01-01'),
     updatedAt: new Date('2026-01-01'),
     departamento: {} as Department,
+    arquivo: null,
     ...overrides,
   }) as Dossie;
 
@@ -43,17 +45,30 @@ describe('DossiesController', () => {
   let controller: DossiesController;
   let dossiesService: jest.Mocked<DossiesService>;
   let auditLogsService: jest.Mocked<Pick<AuditLogsService, 'log'>>;
+  let mockRepository: {
+    findAll: jest.Mock;
+    findById: jest.Mock;
+    create: jest.Mock;
+    update: jest.Mock;
+    delete: jest.Mock;
+    countDocumentsByDossie: jest.Mock;
+  };
 
   beforeEach(async () => {
-    const mockRepository = {
+    mockRepository = {
       findAll: jest.fn(),
       findById: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
+      countDocumentsByDossie: jest.fn().mockResolvedValue(new Map()),
     };
 
     const mockDepartmentRepository = {
+      findOne: jest.fn(),
+    };
+
+    const mockArquivoRepository = {
       findOne: jest.fn(),
     };
 
@@ -67,6 +82,7 @@ describe('DossiesController', () => {
         DossiesService,
         { provide: DOSSIE_REPOSITORY, useValue: mockRepository },
         { provide: getRepositoryToken(Department), useValue: mockDepartmentRepository },
+        { provide: getRepositoryToken(Arquivo), useValue: mockArquivoRepository },
         { provide: AuditLogsService, useValue: auditLogsService },
         { provide: UserDepartmentsService, useValue: { findByUserId: jest.fn() } },
       ],
@@ -80,25 +96,31 @@ describe('DossiesController', () => {
   });
 
   describe('findAll', () => {
-    it('should return list of dossiês as DossieResponseDto', async () => {
+    it('should return a paginated list of dossiês as DossieResponseDto', async () => {
       const dossies = [makeDossie(), makeDossie({ id: 'dossie-2', nome: 'RH 2026' })];
-      jest.spyOn(dossiesService, 'findAll').mockResolvedValue(dossies);
+      mockRepository.findAll.mockResolvedValue({ data: dossies, total: 2, page: 1, limit: 20 });
+      mockRepository.countDocumentsByDossie.mockResolvedValue(new Map([['dossie-2', 4]]));
 
       const result = await controller.findAll({}, makeJwtPayload());
 
-      expect(result).toHaveLength(2);
-      expect(result[0]).toEqual(
-        expect.objectContaining({ id: 'dossie-1', nome: 'Contratos 2026' }),
+      expect(result.total).toBe(2);
+      expect(result.data).toHaveLength(2);
+      expect(result.data[0]).toEqual(
+        expect.objectContaining({ id: 'dossie-1', nome: 'Contratos 2026', documentsCount: 0 }),
       );
-      expect(dossiesService.findAll).toHaveBeenCalledWith(undefined, makeJwtPayload());
+      expect(result.data[1]).toEqual(
+        expect.objectContaining({ id: 'dossie-2', documentsCount: 4 }),
+      );
     });
 
     it('should pass departamentoId filter through to the service', async () => {
-      jest.spyOn(dossiesService, 'findAll').mockResolvedValue([makeDossie()]);
+      mockRepository.findAll.mockResolvedValue({ data: [makeDossie()], total: 1, page: 1, limit: 20 });
 
       await controller.findAll({ departamentoId: 'dept-1' }, makeJwtPayload());
 
-      expect(dossiesService.findAll).toHaveBeenCalledWith('dept-1', makeJwtPayload());
+      expect(mockRepository.findAll).toHaveBeenCalledWith(
+        expect.objectContaining({ departamentoId: 'dept-1' }),
+      );
     });
   });
 

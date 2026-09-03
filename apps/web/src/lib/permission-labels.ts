@@ -11,6 +11,10 @@ export const PERMISSION_LABELS: Record<string, { label: string; description: str
   DOCUMENTS_EDIT: { label: 'Editar documentos', description: 'Editar e transferir documentos existentes.' },
   DOCUMENTS_DELETE: { label: 'Excluir documentos', description: 'Remover documentos do sistema.' },
   DOSSIES_MANAGE: { label: 'Gerenciar dossiês', description: 'Criar, editar e remover dossiês.' },
+  ARQUIVOS_MANAGE: {
+    label: 'Gerenciar arquivos',
+    description: 'Criar, editar, encerrar e remover arquivos.',
+  },
   DOCUMENT_SERIES_MANAGE: {
     label: 'Gerenciar séries documentais',
     description: 'Criar, editar e remover séries documentais.',
