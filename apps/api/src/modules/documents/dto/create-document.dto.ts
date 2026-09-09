@@ -11,12 +11,15 @@ import {
 import { Transform } from 'class-transformer';
 import { CONFIDENCIALIDADE, type Confidencialidade } from '@ged/database';
 import { toBoolean } from '../../../common/transforms/to-boolean';
+import { emptyToUndefined } from '../../../common/transforms/empty-to-undefined';
 
 export class CreateDocumentDto {
+  @IsOptional()
+  @Transform(emptyToUndefined)
   @IsString()
   @MinLength(2)
   @MaxLength(200)
-  readonly nome!: string;
+  readonly nome?: string;
 
   @IsOptional()
   @IsString()
@@ -31,11 +34,15 @@ export class CreateDocumentDto {
   @IsIn(Object.values(CONFIDENCIALIDADE))
   readonly confidencialidade?: Confidencialidade;
 
+  @IsOptional()
+  @Transform(emptyToUndefined)
   @IsUUID()
-  readonly departamentoId!: string;
+  readonly departamentoId?: string;
 
+  @IsOptional()
+  @Transform(emptyToUndefined)
   @IsUUID()
-  readonly serieId!: string;
+  readonly serieId?: string;
 
   @IsOptional()
   @IsUUID()

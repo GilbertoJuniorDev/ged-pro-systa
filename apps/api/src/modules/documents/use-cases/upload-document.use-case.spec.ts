@@ -222,6 +222,90 @@ describe('UploadDocumentUseCase', () => {
     });
   });
 
+  describe('upload apenas para o repositório', () => {
+    beforeEach(() => {
+      manager.save.mockResolvedValue({ id: 'doc-1' });
+      applyConfidentiality.execute.mockResolvedValue({
+        confidencialidade: CONFIDENCIALIDADE.RESTRITO,
+      });
+      manager.findOneOrFail.mockResolvedValue(makeDocument());
+      storageService.save.mockResolvedValue({ chave: 'drive-file-id', tamanho: 8 });
+    });
+
+    it('creates the document with null departamentoId/serieId without consulting the FK repositories', async () => {
+      await useCase.execute(
+        makeUploadData({ departamentoId: undefined, serieId: undefined }),
+        makeFile(),
+      );
+
+      expect(departmentRepo.findOne).not.toHaveBeenCalled();
+      expect(documentSeriesRepo.findOne).not.toHaveBeenCalled();
+      expect(manager.create).toHaveBeenCalledWith(
+        Document,
+        expect.objectContaining({ departamentoId: null, serieId: null }),
+      );
+    });
+
+    it('records criadoPor as the acting user', async () => {
+      const actingUser = makeJwtPayload({ sub: 'uploader-1' });
+
+      await useCase.execute(
+        makeUploadData({ departamentoId: undefined, serieId: undefined, actingUser }),
+        makeFile(),
+      );
+
+      expect(manager.create).toHaveBeenCalledWith(
+        Document,
+        expect.objectContaining({ criadoPor: 'uploader-1' }),
+      );
+    });
+
+    it('derives nome from the uploaded file name (without extension) when nome is omitted', async () => {
+      await useCase.execute(
+        makeUploadData({ nome: undefined, departamentoId: undefined, serieId: undefined }),
+        makeFile({ originalname: 'Relatório Financeiro.pdf' }),
+      );
+
+      expect(manager.create).toHaveBeenCalledWith(
+        Document,
+        expect.objectContaining({ nome: 'Relatório Financeiro' }),
+      );
+    });
+
+    it('keeps the explicit nome when provided', async () => {
+      await useCase.execute(
+        makeUploadData({ nome: 'Nome escolhido', departamentoId: undefined, serieId: undefined }),
+        makeFile({ originalname: 'arquivo-original.pdf' }),
+      );
+
+      expect(manager.create).toHaveBeenCalledWith(
+        Document,
+        expect.objectContaining({ nome: 'Nome escolhido' }),
+      );
+    });
+
+    it('throws BadRequestException when serieId is provided without departamentoId', async () => {
+      await expect(
+        useCase.execute(makeUploadData({ departamentoId: undefined }), makeFile()),
+      ).rejects.toThrow(
+        new BadRequestException('Informe o departamento ao enviar o documento com série'),
+      );
+      expect(storageService.save).not.toHaveBeenCalled();
+    });
+
+    it('throws BadRequestException when dossieId is provided without departamentoId', async () => {
+      await expect(
+        useCase.execute(
+          makeUploadData({ departamentoId: undefined, serieId: undefined, dossieId: 'dossie-1' }),
+          makeFile(),
+        ),
+      ).rejects.toThrow(
+        new BadRequestException('Informe o departamento ao vincular o documento a um dossiê'),
+      );
+      expect(storageService.save).not.toHaveBeenCalled();
+    });
+  });
+
   describe('FK validation failures (must not touch storage)', () => {
     it('throws BadRequestException when departamento does not exist', async () => {
       departmentRepo.findOne.mockResolvedValue(null);

@@ -33,12 +33,12 @@ export interface PaginatedDocuments {
 
 export interface UploadDocumentPayload {
   file: File;
-  nome: string;
+  nome?: string;
   descricao?: string | null;
   validade?: string | null;
-  confidencialidade: Confidencialidade;
-  departamentoId: string;
-  serieId: string;
+  confidencialidade?: Confidencialidade;
+  departamentoId?: string;
+  serieId?: string;
   dossieId?: string | null;
   destaque?: boolean;
   exigeCadastro?: boolean;
@@ -95,12 +95,12 @@ export function useUploadDocument() {
     mutationFn: (payload: UploadDocumentPayload) => {
       const formData = new FormData();
       formData.append('arquivo', payload.file);
-      formData.append('nome', payload.nome);
+      if (payload.nome) formData.append('nome', payload.nome);
       if (payload.descricao) formData.append('descricao', payload.descricao);
       if (payload.validade) formData.append('validade', payload.validade);
-      formData.append('confidencialidade', payload.confidencialidade);
-      formData.append('departamentoId', payload.departamentoId);
-      formData.append('serieId', payload.serieId);
+      if (payload.confidencialidade) formData.append('confidencialidade', payload.confidencialidade);
+      if (payload.departamentoId) formData.append('departamentoId', payload.departamentoId);
+      if (payload.serieId) formData.append('serieId', payload.serieId);
       if (payload.dossieId) formData.append('dossieId', payload.dossieId);
       if (payload.destaque !== undefined) formData.append('destaque', String(payload.destaque));
       if (payload.exigeCadastro !== undefined) formData.append('exigeCadastro', String(payload.exigeCadastro));

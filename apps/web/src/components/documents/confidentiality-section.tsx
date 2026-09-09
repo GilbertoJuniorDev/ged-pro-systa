@@ -102,7 +102,7 @@ export function ConfidentialitySection({ value, onChange, canManage, errors }: C
     <div className="space-y-4">
       <div className="max-w-xs">
         <label className="mb-1 flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-400">
-          Confidencialidade <span className="text-rose-500 dark:text-rose-400">*</span>
+          Confidencialidade
           {!canManage && <Lock className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" aria-hidden="true" />}
         </label>
         <Combobox
@@ -115,6 +115,9 @@ export function ConfidentialitySection({ value, onChange, canManage, errors }: C
         />
         {canManage && errors?.confidencialidade && (
           <p className="mt-1 text-xs text-rose-500 dark:text-rose-400">{errors.confidencialidade}</p>
+        )}
+        {canManage && !errors?.confidencialidade && (
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-500">Padrão: Restrito.</p>
         )}
         {!canManage && (
           <p className="mt-1.5 flex items-start gap-1.5 text-xs text-slate-500 dark:text-slate-500">

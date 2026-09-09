@@ -45,7 +45,9 @@ function TransferConfirm({ document, serieLabel, onConfirm, onCancel, isPending 
           <div className="flex justify-between gap-4">
             <dt className="text-slate-500">Vencimento</dt>
             <dd className="text-slate-300 text-right">
-              {new Date(document.vencimentoCorrente).toLocaleDateString('pt-BR')}
+              {document.vencimentoCorrente
+                ? new Date(document.vencimentoCorrente).toLocaleDateString('pt-BR')
+                : '—'}
             </dd>
           </div>
         </dl>
@@ -149,12 +151,14 @@ export function TransferenciaList() {
     [series],
   );
 
-  function resolveSerieLabel(id: string): string {
+  function resolveSerieLabel(id: string | null): string {
+    if (!id) return '—';
     const serie = series?.find((s) => s.id === id);
     return serie ? `${serie.codigo} — ${serie.nome}` : '—';
   }
 
-  function resolveDepartamentoNome(id: string): string {
+  function resolveDepartamentoNome(id: string | null): string {
+    if (!id) return '—';
     return (departamentos ?? user?.departamentos)?.find((d) => d.id === id)?.nome ?? '—';
   }
 
@@ -162,7 +166,8 @@ export function TransferenciaList() {
     return <p className="text-rose-400 text-sm py-4">Erro ao carregar documentos.</p>;
   }
 
-  const documentos = data?.data ?? [];
+  // Documento não classificado (sem série) não tem temporalidade a calcular — fora da lista.
+  const documentos = (data?.data ?? []).filter((d) => d.serieId !== null);
   const filteredDocumentos = onlyEligible
     ? documentos.filter((d) => d.elegivelTransferencia)
     : documentos;
@@ -270,7 +275,7 @@ export function TransferenciaList() {
                     {new Date(doc.faseCorrenteDesde).toLocaleDateString('pt-BR')}
                   </td>
                   <td className="px-4 py-3 text-slate-400">
-                    {new Date(doc.vencimentoCorrente).toLocaleDateString('pt-BR')}
+                    {doc.vencimentoCorrente ? new Date(doc.vencimentoCorrente).toLocaleDateString('pt-BR') : '—'}
                   </td>
                   <td className="px-4 py-3">
                     <span

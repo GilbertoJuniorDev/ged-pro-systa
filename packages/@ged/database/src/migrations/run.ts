@@ -32,6 +32,7 @@ import { CreateDocumentAccessGrantsTable1782950400010 } from './1782950400010-Cr
 import { RemoveManagerFromUsersRoleEnum1782950400011 } from './1782950400011-RemoveManagerFromUsersRoleEnum';
 import { CreateArquivosTables1782950400012 } from './1782950400012-CreateArquivosTables';
 import { AddArquivoIdToDossies1782950400013 } from './1782950400013-AddArquivoIdToDossies';
+import { MakeDocumentClassificationOptional1782950400014 } from './1782950400014-MakeDocumentClassificationOptional';
 const DATABASE_URL = process.env['DATABASE_URL'];
 
 if (!DATABASE_URL) {
@@ -75,6 +76,7 @@ const dataSource = new DataSource({
     RemoveManagerFromUsersRoleEnum1782950400011,
     CreateArquivosTables1782950400012,
     AddArquivoIdToDossies1782950400013,
+    MakeDocumentClassificationOptional1782950400014,
   ],
   migrationsTableName: 'migrations',
 });

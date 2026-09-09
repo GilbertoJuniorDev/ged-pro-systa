@@ -97,7 +97,11 @@ export function DocumentsTable({
                   </Link>
                 </DataTableTd>
                 <DataTableTd className="text-slate-600 dark:text-slate-400">
-                  {departamentoNomeById(doc.departamentoId)}
+                  {doc.departamentoId ? (
+                    departamentoNomeById(doc.departamentoId)
+                  ) : (
+                    <span className="italic text-slate-500 dark:text-slate-600">Não classificado</span>
+                  )}
                 </DataTableTd>
                 {showDossieColumn && (
                   <DataTableTd className="text-slate-600 dark:text-slate-400">

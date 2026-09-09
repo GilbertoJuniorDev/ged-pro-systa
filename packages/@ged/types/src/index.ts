@@ -473,8 +473,8 @@ export interface DocumentDto {
   readonly descricao: string | null;
   readonly validade: string | null;
   readonly confidencialidade: Confidencialidade;
-  readonly departamentoId: string;
-  readonly serieId: string;
+  readonly departamentoId: string | null;
+  readonly serieId: string | null;
   readonly dossieId: string | null;
   readonly fase: DocumentFase;
   readonly faseCorrenteDesde: string;
@@ -483,7 +483,7 @@ export interface DocumentDto {
   readonly arquivoMimeType: string;
   readonly arquivoTamanho: number;
   readonly isActive: boolean;
-  readonly vencimentoCorrente: string;
+  readonly vencimentoCorrente: string | null;
   readonly vencimentoIntermediario: string | null;
   readonly elegivelTransferencia: boolean;
   readonly destaque: boolean;
@@ -495,12 +495,12 @@ export interface DocumentDto {
 }
 
 export interface UploadDocumentInput {
-  readonly nome: string;
+  readonly nome?: string;
   readonly descricao?: string | null;
   readonly validade?: string | null;
-  readonly confidencialidade: Confidencialidade;
-  readonly departamentoId: string;
-  readonly serieId: string;
+  readonly confidencialidade?: Confidencialidade;
+  readonly departamentoId?: string;
+  readonly serieId?: string;
   readonly dossieId?: string | null;
   readonly destaque?: boolean;
   readonly exigeCadastro?: boolean;

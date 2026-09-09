@@ -95,8 +95,8 @@ export function DocumentDetailPageClient({ id }: { id: string }) {
   const router = useRouter();
   const { data: document, isLoading, isError } = useDocument(id);
   const { data: departamentos } = useDepartments();
-  const { data: series } = useDocumentSeries(document?.departamentoId);
-  const { data: dossies } = useDossieOptions(document?.departamentoId);
+  const { data: series } = useDocumentSeries(document?.departamentoId ?? undefined);
+  const { data: dossies } = useDossieOptions(document?.departamentoId ?? undefined);
   const { data: users } = useUsers();
   const downloadDocument = useDownloadDocument();
   const deleteDocument = useDeleteDocument();
@@ -139,8 +139,11 @@ export function DocumentDetailPageClient({ id }: { id: string }) {
     );
   }
 
-  const departamentoNome = departamentos?.find((d) => d.id === document.departamentoId)?.nome ?? '—';
+  const departamentoNome = document.departamentoId
+    ? (departamentos?.find((d) => d.id === document.departamentoId)?.nome ?? '—')
+    : 'Não classificado';
   const serieLabel = (() => {
+    if (!document.serieId) return 'Não classificada';
     const serie = series?.find((s) => s.id === document.serieId);
     return serie ? `${serie.codigo} — ${serie.nome}` : '—';
   })();

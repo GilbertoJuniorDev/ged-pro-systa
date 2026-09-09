@@ -37,6 +37,13 @@ export function accessScopeSqlFragment(documentAlias: string = 'document'): stri
             ${documentAlias}.confidencialidade = 'RESTRITO'
             AND (
               ${documentAlias}.departamento_id = ANY(:userDepartamentoIds)
+              OR (
+                -- Documento enviado "só para o repositório": sem departamento não há a
+                -- quem comparar (NULL = ANY(...) devolve NULL, i.e. invisível), então o
+                -- autor do upload é o único acesso implícito até a classificação.
+                ${documentAlias}.departamento_id IS NULL
+                AND ${documentAlias}.criado_por = :userId
+              )
               OR EXISTS (
                 SELECT 1 FROM document_access_departments dad
                 WHERE dad.document_id = ${documentAlias}.id

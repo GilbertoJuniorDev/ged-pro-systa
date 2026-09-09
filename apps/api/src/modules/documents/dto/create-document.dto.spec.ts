@@ -8,6 +8,8 @@ import { CreateDocumentDto } from './create-document.dto';
 // ("true"/"false") from a form/checkbox, not real booleans. This exercises the
 // @Transform coercion added to the DTO so @IsBoolean() doesn't reject them.
 describe('CreateDocumentDto', () => {
+  // Nenhum destes é mais obrigatório (upload "só repositório") — usados só como
+  // payload-base válido nos testes de coerção de boolean abaixo.
   const requiredFields = {
     nome: 'Contrato',
     confidencialidade: CONFIDENCIALIDADE.RESTRITO,
@@ -55,5 +57,36 @@ describe('CreateDocumentDto', () => {
     const flagErrors = errors.filter((e) => e.property === 'destaque');
     expect(flagErrors).toHaveLength(1);
     expect(flagErrors[0]?.constraints).toHaveProperty('isBoolean');
+  });
+
+  it('validates an empty body when only the file is sent (upload só repositório)', async () => {
+    const instance = plainToInstance(CreateDocumentDto, {});
+
+    const errors = await validate(instance);
+    expect(errors).toEqual([]);
+  });
+
+  it('coerces empty multipart strings to undefined instead of failing @IsUUID', async () => {
+    const instance = plainToInstance(CreateDocumentDto, {
+      nome: '',
+      departamentoId: '',
+      serieId: '',
+    });
+
+    expect(instance.nome).toBeUndefined();
+    expect(instance.departamentoId).toBeUndefined();
+    expect(instance.serieId).toBeUndefined();
+
+    const errors = await validate(instance);
+    expect(errors).toEqual([]);
+  });
+
+  it('still rejects a malformed serieId', async () => {
+    const instance = plainToInstance(CreateDocumentDto, { serieId: 'nope' });
+
+    const errors = await validate(instance);
+    const serieErrors = errors.filter((e) => e.property === 'serieId');
+    expect(serieErrors).toHaveLength(1);
+    expect(serieErrors[0]?.constraints).toHaveProperty('isUuid');
   });
 });
