@@ -35,6 +35,14 @@ export const NAV_ITEMS: readonly NavItem[] = [
         ],
       },
       {
+        label: 'Arquivos',
+        href: '/documents/arquivos',
+        moduloSlug: 'documentos',
+        iconPaths: [
+          'M3 21h18M5 21V7l8-4v18M19 21V11l-6-4M9 9v.01M9 12v.01M9 15v.01',
+        ],
+      },
+      {
         label: 'Upload',
         href: '/documents/upload',
         moduloSlug: 'documentos',

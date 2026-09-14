@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { Archive } from 'lucide-react';
 import type { ArquivoDto, ArquivoStatus } from '@/types';
 import {
   useArquivos,
@@ -11,22 +10,10 @@ import {
 } from '@/hooks/use-arquivos';
 import { useDepartmentFilter } from '@/hooks/use-department-filter';
 import { useExplorerParams } from '@/hooks/use-explorer-params';
+import { usePermissions } from '@/hooks/use-permissions';
 import { Combobox, type ComboboxOption } from '@/components/ui/combobox';
-import {
-  DataTable,
-  DataTableHead,
-  DataTableTh,
-  DataTableBody,
-  DataTableRow,
-  DataTableTd,
-} from '@/components/ui/data-table';
-import { TableSkeletonRows } from '@/components/ui/table-skeleton-rows';
-import { StatTile } from '@/components/ui/stat-tile';
-import { Pagination } from '@/components/ui/pagination';
-import { EmptyState } from '@/components/ui/empty-state';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { localizacaoArquivo } from '@/lib/utils';
-import { ArquivoStatusBadge } from '../arquivo-status-badge';
+import { ArquivosDataTable } from '../arquivos/arquivos-data-table';
 import { EditArquivoDialog } from '../edit-arquivo-dialog';
 
 const PAGE_LIMIT = 20;
@@ -37,11 +24,10 @@ const STATUS_OPTIONS: ComboboxOption[] = [
   { value: 'FECHADO', label: 'Fechado' },
 ];
 
-const ACTION_BTN =
-  'cursor-pointer rounded-lg border px-3 py-1 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-50';
-
 export function ArquivosPanel() {
   const { params, setParams, drillArquivo } = useExplorerParams();
+  const { hasPermission } = usePermissions();
+  const canManage = hasPermission('ARQUIVOS_MANAGE');
   const { isAdmin, options: departmentOptions, nomeById } = useDepartmentFilter(
     params.depto,
     (v) => setParams({ depto: v, page: undefined }),
@@ -70,8 +56,6 @@ export function ArquivosPanel() {
 
   const arquivos = data?.data ?? [];
   const total = data?.total ?? 0;
-  const abertos = arquivos.filter((a) => a.status === 'ABERTO').length;
-  const fechados = arquivos.filter((a) => a.status === 'FECHADO').length;
   const filtersActive = Boolean(params.q) || Boolean(params.status) || Boolean(params.depto);
 
   return (
@@ -96,103 +80,21 @@ export function ArquivosPanel() {
         </div>
       </div>
 
-      {!isLoading && total > 0 && (
-        <div className="mb-6 grid max-w-xl grid-cols-2 gap-3 sm:grid-cols-3">
-          <StatTile label="Total" value={total} accent="text-slate-950 dark:text-slate-100" />
-          <StatTile label="Abertos (página)" value={abertos} accent="text-emerald-500 dark:text-emerald-400" />
-          <StatTile label="Fechados (página)" value={fechados} accent="text-slate-500" />
-        </div>
-      )}
-
-      <DataTable>
-        <DataTableHead>
-          <DataTableTh>Código</DataTableTh>
-          <DataTableTh>Nome</DataTableTh>
-          <DataTableTh>Departamento</DataTableTh>
-          <DataTableTh>Localização</DataTableTh>
-          <DataTableTh>Status</DataTableTh>
-          <DataTableTh align="right">Dossiês</DataTableTh>
-          <DataTableTh align="right">Ações</DataTableTh>
-        </DataTableHead>
-        <DataTableBody>
-          {isLoading ? (
-            <TableSkeletonRows columns={7} />
-          ) : total === 0 ? (
-            <tr>
-              <td colSpan={7}>
-                <EmptyState
-                  icon={<Archive className="h-8 w-8" strokeWidth={1.5} />}
-                  title={
-                    filtersActive
-                      ? 'Nenhum arquivo encontrado com os filtros atuais.'
-                      : 'Nenhum arquivo cadastrado.'
-                  }
-                  suggestions={
-                    filtersActive
-                      ? ['Verifique a ortografia', 'Remova o filtro de status ou departamento']
-                      : ['Crie o primeiro arquivo para organizar a guarda física dos documentos.']
-                  }
-                />
-              </td>
-            </tr>
-          ) : (
-            arquivos.map((a) => (
-              <DataTableRow key={a.id} onClick={() => drillArquivo(a.id)}>
-                <DataTableTd className="font-mono text-slate-700 dark:text-slate-300">{a.codigo}</DataTableTd>
-                <DataTableTd className="font-medium text-slate-900 dark:text-slate-200">{a.nome}</DataTableTd>
-                <DataTableTd className="text-slate-600 dark:text-slate-400">{nomeById(a.departamentoId)}</DataTableTd>
-                <DataTableTd className="text-slate-600 dark:text-slate-400">{localizacaoArquivo(a)}</DataTableTd>
-                <DataTableTd>
-                  <ArquivoStatusBadge status={a.status} />
-                </DataTableTd>
-                <DataTableTd align="right" className="tabular-nums text-slate-600 dark:text-slate-400">
-                  {a.dossiesCount}
-                </DataTableTd>
-                <DataTableTd align="right">
-                  <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
-                    {a.status === 'ABERTO' ? (
-                      <>
-                        <button
-                          onClick={() => setEditTarget(a)}
-                          className={`${ACTION_BTN} border-indigo-300 text-indigo-600 hover:border-indigo-500 hover:text-indigo-800 dark:border-indigo-700 dark:text-indigo-300 dark:hover:border-indigo-500 dark:hover:text-indigo-100`}
-                        >
-                          Editar
-                        </button>
-                        <button
-                          onClick={() => setEncerrarTarget(a)}
-                          className={`${ACTION_BTN} border-slate-300 text-slate-600 hover:border-slate-500 hover:text-slate-900 dark:border-slate-700 dark:text-slate-400 dark:hover:border-slate-500 dark:hover:text-slate-100`}
-                        >
-                          Encerrar
-                        </button>
-                      </>
-                    ) : (
-                      <button
-                        onClick={() => setReabrirTarget(a)}
-                        className={`${ACTION_BTN} border-emerald-300 text-emerald-600 hover:border-emerald-500 hover:text-emerald-800 dark:border-emerald-700 dark:text-emerald-300 dark:hover:border-emerald-500 dark:hover:text-emerald-100`}
-                      >
-                        Reabrir
-                      </button>
-                    )}
-                    <button
-                      onClick={() => setDeleteTarget(a)}
-                      className={`${ACTION_BTN} border-rose-300 text-rose-600 hover:border-rose-500 hover:text-rose-800 dark:border-rose-800 dark:text-rose-400 dark:hover:border-rose-600 dark:hover:text-rose-200`}
-                    >
-                      Remover
-                    </button>
-                  </div>
-                </DataTableTd>
-              </DataTableRow>
-            ))
-          )}
-        </DataTableBody>
-      </DataTable>
-
-      <Pagination
+      <ArquivosDataTable
+        arquivos={arquivos}
+        isLoading={isLoading}
         total={total}
         page={params.page}
         limit={PAGE_LIMIT}
+        filtersActive={filtersActive}
+        nomeById={nomeById}
+        canManage={canManage}
+        onRowClick={(a) => drillArquivo(a.id)}
         onPageChange={(p) => setParams({ page: p })}
-        itemLabel={['arquivo', 'arquivos']}
+        onEdit={setEditTarget}
+        onEncerrar={setEncerrarTarget}
+        onReabrir={setReabrirTarget}
+        onDelete={setDeleteTarget}
       />
 
       {editTarget && <EditArquivoDialog arquivo={editTarget} onClose={() => setEditTarget(null)} />}

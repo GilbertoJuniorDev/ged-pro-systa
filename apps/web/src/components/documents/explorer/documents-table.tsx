@@ -6,6 +6,7 @@ import { FileStack } from 'lucide-react';
 import type { Confidencialidade, DocumentDto, DocumentFase } from '@/types';
 import { useDeleteDocument, useDownloadDocument } from '@/hooks/use-documents';
 import { useExplorerParams } from '@/hooks/use-explorer-params';
+import { usePermissions } from '@/hooks/use-permissions';
 import {
   DataTable,
   DataTableHead,
@@ -17,6 +18,7 @@ import {
 import { TableSkeletonRows } from '@/components/ui/table-skeleton-rows';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { EditDocumentClassificationDialog } from '@/components/documents/edit-document-classification-dialog';
 import { formatBytes } from '@/lib/utils';
 
 const CONFIDENCIALIDADE_BADGE: Record<Confidencialidade, string> = {
@@ -56,7 +58,10 @@ export function DocumentsTable({
   const { drillDossie } = useExplorerParams();
   const downloadDocument = useDownloadDocument();
   const deleteDocument = useDeleteDocument();
+  const { hasPermission } = usePermissions();
+  const canEdit = hasPermission('DOCUMENTS_EDIT');
   const [deleteTarget, setDeleteTarget] = useState<DocumentDto | null>(null);
+  const [editTarget, setEditTarget] = useState<DocumentDto | null>(null);
 
   const columns = showDossieColumn ? 7 : 6;
 
@@ -147,6 +152,14 @@ export function DocumentsTable({
                     >
                       Baixar
                     </button>
+                    {canEdit && (
+                      <button
+                        onClick={() => setEditTarget(doc)}
+                        className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1 text-xs text-slate-600 transition-colors hover:border-slate-500 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-500 dark:hover:text-slate-100"
+                      >
+                        Editar
+                      </button>
+                    )}
                     <button
                       onClick={() => setDeleteTarget(doc)}
                       className="cursor-pointer rounded-lg border border-rose-300 px-3 py-1 text-xs text-rose-600 transition-colors hover:border-rose-500 hover:text-rose-800 dark:border-rose-800 dark:text-rose-400 dark:hover:border-rose-600 dark:hover:text-rose-200"
@@ -172,6 +185,10 @@ export function DocumentsTable({
           onConfirm={() => deleteDocument.mutate(deleteTarget.id, { onSettled: () => setDeleteTarget(null) })}
           onCancel={() => setDeleteTarget(null)}
         />
+      )}
+
+      {editTarget && (
+        <EditDocumentClassificationDialog document={editTarget} onClose={() => setEditTarget(null)} />
       )}
     </>
   );
