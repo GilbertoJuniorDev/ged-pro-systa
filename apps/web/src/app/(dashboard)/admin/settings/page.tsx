@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { auth } from '@/lib/auth';
-import { GoogleDriveCard } from './_components/google-drive-card';
 import { BackupCard } from './_components/backup-card';
 import { ActivityLogsCard } from './_components/activity-logs-card';
 import { ErrorLogsCard } from './_components/error-logs-card';
@@ -29,7 +28,6 @@ export default async function AdminSettingsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <CompanyCard />
         {isSuperAdmin && <SubscriptionCard />}
-        {isSuperAdmin && <GoogleDriveCard />}
         {isSuperAdmin && <BackupCard />}
         {isSuperAdmin && <ActivityLogsCard />}
         {isSuperAdmin && <ErrorLogsCard />}
