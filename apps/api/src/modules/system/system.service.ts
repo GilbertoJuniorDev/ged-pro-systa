@@ -2,11 +2,21 @@ import { Injectable, Inject } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import type { RedisClientType } from 'redis';
+import * as os from 'node:os';
+import { statfs } from 'node:fs/promises';
 import {
   SystemVersionDto,
   AdminSystemVersionDto,
   DependencyDto,
 } from './dto/system-version.dto';
+import {
+  SystemResourcesDto,
+  CpuResourceDto,
+  MemoryResourceDto,
+  DiskResourceDto,
+} from './dto/system-resources.dto';
+
+const CPU_SAMPLE_INTERVAL_MS = 100;
 
 export const REDIS_CLIENT = 'REDIS_CLIENT';
 
@@ -53,6 +63,81 @@ export class SystemService {
       redisStatus,
       dependencies: MAIN_DEPENDENCIES,
     });
+  }
+
+  async getResources(): Promise<SystemResourcesDto> {
+    const [cpu, memory, disk] = await Promise.all([
+      this.readCpuUsage(),
+      Promise.resolve(this.readMemoryUsage()),
+      this.readDiskUsage(),
+    ]);
+
+    return new SystemResourcesDto({ cpu, memory, disk });
+  }
+
+  private async readCpuUsage(): Promise<CpuResourceDto> {
+    const start = os.cpus();
+    await new Promise((resolve) => setTimeout(resolve, CPU_SAMPLE_INTERVAL_MS));
+    const end = os.cpus();
+
+    let idleDelta = 0;
+    let totalDelta = 0;
+    for (let i = 0; i < end.length; i++) {
+      const startTimes = start[i]?.times;
+      const endTimes = end[i]?.times;
+      if (!startTimes || !endTimes) continue;
+
+      const startTotal = startTimes.user + startTimes.nice + startTimes.sys + startTimes.idle + startTimes.irq;
+      const endTotal = endTimes.user + endTimes.nice + endTimes.sys + endTimes.idle + endTimes.irq;
+
+      idleDelta += endTimes.idle - startTimes.idle;
+      totalDelta += endTotal - startTotal;
+    }
+
+    const usagePercent = totalDelta > 0 ? ((totalDelta - idleDelta) / totalDelta) * 100 : 0;
+
+    return new CpuResourceDto({
+      usagePercent: Math.round(usagePercent * 10) / 10,
+      cores: end.length,
+    });
+  }
+
+  private readMemoryUsage(): MemoryResourceDto {
+    const totalBytes = os.totalmem();
+    const freeBytes = os.freemem();
+    const usedBytes = totalBytes - freeBytes;
+    const usagePercent = totalBytes > 0 ? (usedBytes / totalBytes) * 100 : 0;
+
+    return new MemoryResourceDto({
+      usagePercent: Math.round(usagePercent * 10) / 10,
+      totalBytes,
+      usedBytes,
+      freeBytes,
+    });
+  }
+
+  private async readDiskUsage(): Promise<DiskResourceDto> {
+    try {
+      const stats = await statfs(process.cwd());
+      const totalBytes = stats.blocks * stats.bsize;
+      const freeBytes = stats.bfree * stats.bsize;
+      const usedBytes = totalBytes - freeBytes;
+      const usagePercent = totalBytes > 0 ? (usedBytes / totalBytes) * 100 : 0;
+
+      return new DiskResourceDto({
+        available: true,
+        usagePercent: Math.round(usagePercent * 10) / 10,
+        totalBytes,
+        usedBytes,
+      });
+    } catch {
+      return new DiskResourceDto({
+        available: false,
+        usagePercent: null,
+        totalBytes: null,
+        usedBytes: null,
+      });
+    }
   }
 
   private async pingDatabase(): Promise<['online' | 'offline', string]> {

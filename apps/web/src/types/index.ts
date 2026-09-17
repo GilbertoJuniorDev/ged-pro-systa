@@ -100,6 +100,25 @@ export interface AdminSystemVersionDto extends SystemVersionDto {
   readonly dependencies: readonly DependencyInfo[];
 }
 
+export interface SystemResourcesDto {
+  readonly cpu: {
+    readonly usagePercent: number;
+    readonly cores: number;
+  };
+  readonly memory: {
+    readonly usagePercent: number;
+    readonly totalBytes: number;
+    readonly usedBytes: number;
+    readonly freeBytes: number;
+  };
+  readonly disk: {
+    readonly available: boolean;
+    readonly usagePercent: number | null;
+    readonly totalBytes: number | null;
+    readonly usedBytes: number | null;
+  };
+}
+
 export interface LoginFormData {
   email: string;
   password: string;

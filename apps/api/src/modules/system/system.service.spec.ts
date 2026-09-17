@@ -103,4 +103,33 @@ describe('SystemService', () => {
       await expect(service.getAdminVersion()).resolves.toBeDefined();
     });
   });
+
+  describe('getResources', () => {
+    it('should return cpu, memory and disk usage percentages within 0-100', async () => {
+      const result = await service.getResources();
+
+      expect(result.cpu.usagePercent).toBeGreaterThanOrEqual(0);
+      expect(result.cpu.usagePercent).toBeLessThanOrEqual(100);
+      expect(result.cpu.cores).toBeGreaterThan(0);
+
+      expect(result.memory.usagePercent).toBeGreaterThanOrEqual(0);
+      expect(result.memory.usagePercent).toBeLessThanOrEqual(100);
+      expect(result.memory.totalBytes).toBeGreaterThan(0);
+      expect(result.memory.usedBytes).toBe(result.memory.totalBytes - result.memory.freeBytes);
+    });
+
+    it('should mark disk as unavailable instead of throwing when statfs is unsupported', async () => {
+      const fsPromises = await import('node:fs/promises');
+      jest.spyOn(fsPromises, 'statfs').mockRejectedValueOnce(new Error('ENOSYS'));
+
+      const result = await service.getResources();
+
+      expect(result.disk).toEqual({
+        available: false,
+        usagePercent: null,
+        totalBytes: null,
+        usedBytes: null,
+      });
+    });
+  });
 });
