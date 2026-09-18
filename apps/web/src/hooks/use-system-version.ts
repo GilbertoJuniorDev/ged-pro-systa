@@ -3,7 +3,7 @@
 import { useSession } from 'next-auth/react';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../lib/api-client';
-import type { SystemVersionDto, AdminSystemVersionDto } from '../types';
+import type { SystemVersionDto, AdminSystemVersionDto, SystemResourcesDto } from '../types';
 
 export function useSystemVersion() {
   const { data: session } = useSession();
@@ -30,5 +30,19 @@ export function useAdminSystemVersion() {
       }),
     enabled: !!session?.user?.accessToken,
     staleTime: 30 * 1000,
+  });
+}
+
+export function useSystemResources() {
+  const { data: session } = useSession();
+
+  return useQuery({
+    queryKey: ['system-resources'],
+    queryFn: () =>
+      apiClient.get<SystemResourcesDto>('/system/resources', {
+        token: session?.user?.accessToken,
+      }),
+    enabled: !!session?.user?.accessToken,
+    refetchInterval: 15 * 1000,
   });
 }

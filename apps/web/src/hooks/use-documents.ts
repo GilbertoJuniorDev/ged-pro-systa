@@ -15,9 +15,11 @@ import type {
 export interface DocumentFilters {
   departamentoId?: string;
   dossieId?: string;
+  semDossie?: boolean;
   serieId?: string;
   fase?: DocumentFase;
   confidencialidade?: Confidencialidade;
+  search?: string;
   page?: number;
   limit?: number;
 }
@@ -31,12 +33,12 @@ export interface PaginatedDocuments {
 
 export interface UploadDocumentPayload {
   file: File;
-  nome: string;
+  nome?: string;
   descricao?: string | null;
   validade?: string | null;
-  confidencialidade: Confidencialidade;
-  departamentoId: string;
-  serieId: string;
+  confidencialidade?: Confidencialidade;
+  departamentoId?: string;
+  serieId?: string;
   dossieId?: string | null;
   destaque?: boolean;
   exigeCadastro?: boolean;
@@ -48,9 +50,11 @@ function buildQueryString(filters: DocumentFilters): string {
   const params = new URLSearchParams();
   if (filters.departamentoId) params.set('departamentoId', filters.departamentoId);
   if (filters.dossieId) params.set('dossieId', filters.dossieId);
+  if (filters.semDossie) params.set('semDossie', 'true');
   if (filters.serieId) params.set('serieId', filters.serieId);
   if (filters.fase) params.set('fase', filters.fase);
   if (filters.confidencialidade) params.set('confidencialidade', filters.confidencialidade);
+  if (filters.search) params.set('search', filters.search);
   if (filters.page) params.set('page', String(filters.page));
   if (filters.limit) params.set('limit', String(filters.limit));
   const qs = params.toString();
@@ -91,12 +95,12 @@ export function useUploadDocument() {
     mutationFn: (payload: UploadDocumentPayload) => {
       const formData = new FormData();
       formData.append('arquivo', payload.file);
-      formData.append('nome', payload.nome);
+      if (payload.nome) formData.append('nome', payload.nome);
       if (payload.descricao) formData.append('descricao', payload.descricao);
       if (payload.validade) formData.append('validade', payload.validade);
-      formData.append('confidencialidade', payload.confidencialidade);
-      formData.append('departamentoId', payload.departamentoId);
-      formData.append('serieId', payload.serieId);
+      if (payload.confidencialidade) formData.append('confidencialidade', payload.confidencialidade);
+      if (payload.departamentoId) formData.append('departamentoId', payload.departamentoId);
+      if (payload.serieId) formData.append('serieId', payload.serieId);
       if (payload.dossieId) formData.append('dossieId', payload.dossieId);
       if (payload.destaque !== undefined) formData.append('destaque', String(payload.destaque));
       if (payload.exigeCadastro !== undefined) formData.append('exigeCadastro', String(payload.exigeCadastro));

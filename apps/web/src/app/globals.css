@@ -2,6 +2,45 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ─── Aparência do sistema — aliases semânticos ────────────────────
+   NENHUM hex de paleta aqui de propósito: estes nomes são apenas apelidos para
+   paradas das rampas do Tailwind. Quem define as rampas em runtime é o <style>
+   injetado por RootLayout (ver lib/theme-style.ts) com a cor que o admin escolheu
+   em /admin/aparencia-sistema; quando ele não existe, valem as rampas do próprio
+   Tailwind. Assim existe UMA fonte da verdade para a paleta, nunca duas.
+
+   Sem @layer de propósito — regra sem layer vence o `@layer theme` do Tailwind. */
+:root {
+  --color-primary: var(--color-indigo-600);
+  --color-primary-hover: var(--color-indigo-700);
+  --color-primary-soft: var(--color-indigo-950);
+  --color-primary-foreground: #ffffff;
+  --color-secondary: var(--color-sky-500);
+  --color-surface: var(--color-slate-950);
+  --color-surface-elevated: var(--color-slate-900);
+}
+.light {
+  --color-primary: var(--color-indigo-700);
+  --color-primary-hover: var(--color-indigo-800);
+  --color-primary-soft: var(--color-indigo-50);
+  --color-primary-foreground: #ffffff;
+  --color-secondary: var(--color-sky-600);
+  --color-surface: var(--color-slate-50);
+  --color-surface-elevated: #ffffff;
+}
+
+/* Fallback estático do tema do portal — sobrescrito em runtime pelo <style> de
+   portal/layout.tsx, que usa `.ged-portal.ged-portal` (0-2-0) e vence este. */
+.ged-portal {
+  --portal-color-primary: var(--color-indigo-700);
+  --portal-color-primary-hover: var(--color-indigo-800);
+  --portal-color-primary-soft: var(--color-indigo-50);
+  --portal-color-primary-foreground: #ffffff;
+  --portal-color-secondary: var(--color-sky-600);
+  --portal-color-surface: var(--color-slate-50);
+  --portal-color-surface-elevated: #ffffff;
+}
+
 /* ─── Keyframes ──────────────────────────────────────────── */
 @keyframes fadeIn {
   from { opacity: 0; }
@@ -81,43 +120,43 @@
   .animate-blob     { animation: blobFloat 8s ease-in-out infinite; }
   .animate-progress-bar { animation: progressBar 2.5s cubic-bezier(0.1, 0.4, 0.6, 1) forwards; }
 
-  .light .bg-slate-950 { background-color: rgb(248 250 252); }
-  .light .bg-slate-900 { background-color: rgb(255 255 255); }
-  .light .bg-slate-900\/60 { background-color: rgb(248 250 252 / 0.9); }
-  .light .bg-slate-800 { background-color: rgb(241 245 249); }
-  .light .bg-slate-800\/50 { background-color: rgb(248 250 252 / 0.82); }
-  .light .bg-slate-800\/40 { background-color: rgb(248 250 252 / 0.76); }
-  .light .bg-slate-800\/30 { background-color: rgb(248 250 252 / 0.7); }
-  .light .bg-slate-700 { background-color: rgb(226 232 240); }
-  .light .bg-slate-700\/80 { background-color: rgb(226 232 240 / 0.8); }
-  .light .bg-slate-700\/60 { background-color: rgb(226 232 240 / 0.65); }
+  .light .bg-slate-950 { background-color: var(--color-slate-50); }
+  .light .bg-slate-900 { background-color: #ffffff; }
+  .light .bg-slate-900\/60 { background-color: color-mix(in oklab, var(--color-slate-50) 90%, transparent); }
+  .light .bg-slate-800 { background-color: var(--color-slate-100); }
+  .light .bg-slate-800\/50 { background-color: color-mix(in oklab, var(--color-slate-50) 82%, transparent); }
+  .light .bg-slate-800\/40 { background-color: color-mix(in oklab, var(--color-slate-50) 76%, transparent); }
+  .light .bg-slate-800\/30 { background-color: color-mix(in oklab, var(--color-slate-50) 70%, transparent); }
+  .light .bg-slate-700 { background-color: var(--color-slate-200); }
+  .light .bg-slate-700\/80 { background-color: color-mix(in oklab, var(--color-slate-200) 80%, transparent); }
+  .light .bg-slate-700\/60 { background-color: color-mix(in oklab, var(--color-slate-200) 65%, transparent); }
 
-  .light .hover\:bg-slate-800:hover { background-color: rgb(241 245 249); }
-  .light .hover\:bg-slate-800\/40:hover { background-color: rgb(241 245 249 / 0.9); }
-  .light .hover\:bg-slate-800\/30:hover { background-color: rgb(241 245 249 / 0.82); }
-  .light .hover\:bg-slate-700:hover { background-color: rgb(226 232 240); }
+  .light .hover\:bg-slate-800:hover { background-color: var(--color-slate-100); }
+  .light .hover\:bg-slate-800\/40:hover { background-color: color-mix(in oklab, var(--color-slate-100) 90%, transparent); }
+  .light .hover\:bg-slate-800\/30:hover { background-color: color-mix(in oklab, var(--color-slate-100) 82%, transparent); }
+  .light .hover\:bg-slate-700:hover { background-color: var(--color-slate-200); }
 
   .light .border-slate-800,
   .light .border-slate-700,
   .light .border-slate-700\/60,
-  .light .border-slate-700\/50 { border-color: rgb(226 232 240); }
-  .light .border-slate-600 { border-color: rgb(203 213 225); }
-  .light .hover\:border-slate-500:hover { border-color: rgb(148 163 184); }
-  .light .hover\:border-slate-600:hover { border-color: rgb(203 213 225); }
+  .light .border-slate-700\/50 { border-color: var(--color-slate-200); }
+  .light .border-slate-600 { border-color: var(--color-slate-300); }
+  .light .hover\:border-slate-500:hover { border-color: var(--color-slate-400); }
+  .light .hover\:border-slate-600:hover { border-color: var(--color-slate-300); }
 
   .light .divide-slate-800 > :not(:last-child),
-  .light .divide-slate-800\/60 > :not(:last-child) { border-color: rgb(226 232 240); }
+  .light .divide-slate-800\/60 > :not(:last-child) { border-color: var(--color-slate-200); }
 
-  .light .text-slate-100 { color: rgb(15 23 42); }
-  .light .text-slate-200 { color: rgb(30 41 59); }
-  .light .text-slate-300 { color: rgb(51 65 85); }
-  .light .text-slate-400 { color: rgb(71 85 105); }
-  .light .text-slate-500 { color: rgb(100 116 139); }
-  .light .hover\:text-slate-100:hover { color: rgb(15 23 42); }
-  .light .hover\:text-slate-200:hover { color: rgb(30 41 59); }
-  .light .hover\:text-slate-300:hover { color: rgb(51 65 85); }
+  .light .text-slate-100 { color: var(--color-slate-900); }
+  .light .text-slate-200 { color: var(--color-slate-800); }
+  .light .text-slate-300 { color: var(--color-slate-700); }
+  .light .text-slate-400 { color: var(--color-slate-600); }
+  .light .text-slate-500 { color: var(--color-slate-500); }
+  .light .hover\:text-slate-100:hover { color: var(--color-slate-900); }
+  .light .hover\:text-slate-200:hover { color: var(--color-slate-800); }
+  .light .hover\:text-slate-300:hover { color: var(--color-slate-700); }
 
-  .light .ring-slate-600 { --tw-ring-color: rgb(203 213 225); }
+  .light .ring-slate-600 { --tw-ring-color: var(--color-slate-300); }
 
   /* Portal público: força a Combobox (que usa `dark:` internamente, ao contrário do
      resto do app "dark-first") a renderizar clara mesmo com `.dark` ambiente no <html>
@@ -135,16 +174,16 @@
      Tailwind é gerado como `.dark\:X:where(.dark, .dark *)` — `:where()` tem
      especificidade zero — então mesmo com 3 classes (0-3-0) o seletor abaixo ainda
      vence a regra compilada (0-1-0) no caso aninhado do portal. */
-  .dark .light .dark\:bg-slate-800 { background-color: rgb(255 255 255); }
-  .dark .light .dark\:bg-slate-900 { background-color: rgb(255 255 255); }
-  .dark .light .dark\:bg-slate-700\/80 { background-color: rgb(241 245 249); }
-  .dark .light .dark\:hover\:bg-slate-800:hover { background-color: rgb(241 245 249); }
-  .dark .light .dark\:border-slate-700 { border-color: rgb(226 232 240); }
-  .dark .light .dark\:border-slate-700\/60 { border-color: rgb(226 232 240); }
-  .dark .light .dark\:text-slate-100 { color: rgb(15 23 42); }
-  .dark .light .dark\:text-slate-200 { color: rgb(51 65 85); }
-  .dark .light .dark\:text-slate-400 { color: rgb(100 116 139); }
-  .dark .light .dark\:text-indigo-300 { color: rgb(67 56 202); }
+  .dark .light .dark\:bg-slate-800 { background-color: #ffffff; }
+  .dark .light .dark\:bg-slate-900 { background-color: #ffffff; }
+  .dark .light .dark\:bg-slate-700\/80 { background-color: var(--color-slate-100); }
+  .dark .light .dark\:hover\:bg-slate-800:hover { background-color: var(--color-slate-100); }
+  .dark .light .dark\:border-slate-700 { border-color: var(--color-slate-200); }
+  .dark .light .dark\:border-slate-700\/60 { border-color: var(--color-slate-200); }
+  .dark .light .dark\:text-slate-100 { color: var(--color-slate-900); }
+  .dark .light .dark\:text-slate-200 { color: var(--color-slate-700); }
+  .dark .light .dark\:text-slate-400 { color: var(--color-slate-500); }
+  .dark .light .dark\:text-indigo-300 { color: var(--color-indigo-700); }
   .dark .light .dark\:shadow-2xl,
   .dark .light .dark\:shadow-black\/40 {
     box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
@@ -159,5 +198,29 @@
   .scrollbar-none {
     scrollbar-width: none;
     &::-webkit-scrollbar { display: none; }
+  }
+}
+
+/* ─── Movimento reduzido ─────────────────────────────────────────────────────
+   Fora de `@layer utilities` de propósito: em CSS cascade layers, regras SEM layer
+   sempre vencem regras dentro de qualquer layer — então isto neutraliza as utilities
+   acima independentemente da ordem do arquivo.
+
+   `animate-spin` (Spinner) e `animate-pulse` (Skeleton) ficam de FORA de propósito:
+   são feedback de carregamento, não decoração — congelá-los faria o usuário perder
+   o sinal de que algo está em curso. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-slide-up,
+  .animate-scale-in,
+  .animate-dropdown-in,
+  .animate-blob {
+    animation: none;
+  }
+
+  /* Sem os keyframes a barra ficaria com `width: 0` (invisível) — deixa cheia. */
+  .animate-progress-bar {
+    animation: none;
+    width: 100%;
   }
 }

@@ -1,4 +1,5 @@
 import type { AuthTokensResponse, JwtPayload } from '@ged/types';
+import type { SessionError } from '@/lib/session-expiry';
 
 export type {
   AuthTokensResponse,
@@ -45,6 +46,12 @@ export type {
   UpsertDocumentSeriesInput,
   DossieDto,
   UpsertDossieInput,
+  DossieQuery,
+  ArquivoDto,
+  ArquivoStatus,
+  CreateArquivoInput,
+  UpdateArquivoInput,
+  ArquivoQuery,
   Confidencialidade,
   DocumentFase,
   DocumentDto,
@@ -63,8 +70,20 @@ export type {
   DashboardSummaryDto,
   DashboardDepartamentoCount,
   DashboardAdminSummaryDto,
+  SystemAppearanceDto,
+  UpdateSystemAppearanceInput,
+  SystemAppearanceAdminDto,
+  PortalAppearanceDto,
+  UpdatePortalAppearanceInput,
+  PortalAppearanceAdminDto,
 } from '@ged/types';
-export { SUBSCRIPTION_STATUS, DESTINACAO_FINAL, CONFIDENCIALIDADE, DOCUMENT_FASE } from '@ged/types';
+export {
+  SUBSCRIPTION_STATUS,
+  DESTINACAO_FINAL,
+  CONFIDENCIALIDADE,
+  DOCUMENT_FASE,
+  ARQUIVO_STATUS,
+} from '@ged/types';
 
 export interface SystemVersionDto {
   readonly appName: string;
@@ -85,6 +104,25 @@ export interface AdminSystemVersionDto extends SystemVersionDto {
   readonly dbStatus: 'online' | 'offline';
   readonly redisStatus: 'online' | 'offline';
   readonly dependencies: readonly DependencyInfo[];
+}
+
+export interface SystemResourcesDto {
+  readonly cpu: {
+    readonly usagePercent: number;
+    readonly cores: number;
+  };
+  readonly memory: {
+    readonly usagePercent: number;
+    readonly totalBytes: number;
+    readonly usedBytes: number;
+    readonly freeBytes: number;
+  };
+  readonly disk: {
+    readonly available: boolean;
+    readonly usagePercent: number | null;
+    readonly totalBytes: number | null;
+    readonly usedBytes: number | null;
+  };
 }
 
 export interface LoginFormData {
@@ -122,6 +160,8 @@ export interface AuthUser {
 // next-auth module augmentation — expõe campos customizados em session.user
 declare module 'next-auth' {
   interface Session {
+    /** Preenchido pelo callback `jwt` quando o refresh token morre (ver `lib/auth.ts`). */
+    error?: SessionError;
     user: {
       id?: string;
       name?: string | null;

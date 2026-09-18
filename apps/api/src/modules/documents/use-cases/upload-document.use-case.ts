@@ -15,20 +15,34 @@ import { ApplyDocumentConfidentialityUseCase } from './apply-document-confidenti
 // a Date for validade and includes the derived fase/arquivo fields) to avoid confusing
 // the two shapes.
 export interface UploadDocumentData {
-  readonly nome: string;
+  // Optional: upload "só repositório" — sem nome, herda o do arquivo enviado (ver
+  // nomeFromFile abaixo).
+  readonly nome?: string;
   readonly descricao?: string | null;
   readonly validade?: string | null;
   // Optional here (mirrors CreateDocumentDto, see Task 4) — resolved by
   // ApplyDocumentConfidentialityUseCase below (defaults to RESTRITO when omitted).
   readonly confidencialidade?: Document['confidencialidade'];
-  readonly departamentoId: string;
-  readonly serieId: string;
+  // Optional: sem departamento/série o documento fica "não classificado" até um
+  // PATCH posterior (ver DocumentsService.update, que adota o departamento da série).
+  readonly departamentoId?: string;
+  readonly serieId?: string;
   readonly dossieId?: string | null;
   readonly destaque?: boolean;
   readonly exigeCadastro?: boolean;
   readonly accessDepartamentoIds?: string[];
   readonly accessUserIds?: string[];
   readonly actingUser: JwtPayload;
+}
+
+const NOME_MAX_LENGTH = 200;
+
+// Sem `nome` explícito o documento herda o nome do arquivo enviado (sem extensão),
+// mantendo `documents.nome` NOT NULL e a busca/ordenação por nome intactas.
+function nomeFromFile(originalName: string): string {
+  const semExtensao = originalName.replace(/\.[^./\\]+$/, '').trim();
+  const base = semExtensao.length >= 2 ? semExtensao : originalName.trim();
+  return base.slice(0, NOME_MAX_LENGTH);
 }
 
 @Injectable()
@@ -50,21 +64,36 @@ export class UploadDocumentUseCase {
   ) {}
 
   async execute(data: UploadDocumentData, file: Express.Multer.File): Promise<Document> {
-    const departamento = await this.departmentRepo.findOne({
-      where: { id: data.departamentoId },
-    });
-    if (!departamento) {
-      throw new BadRequestException('Departamento não encontrado');
+    const departamentoId = data.departamentoId ?? null;
+    const serieId = data.serieId ?? null;
+
+    // Uma série sem departamento fecharia o buraco do guard de escopo em
+    // DocumentsService.upload() (que só valida departamentoId quando presente).
+    if (serieId !== null && departamentoId === null) {
+      throw new BadRequestException('Informe o departamento ao enviar o documento com série');
     }
 
-    const serie = await this.documentSeriesRepo.findOne({ where: { id: data.serieId } });
-    if (!serie) {
-      throw new BadRequestException('Série não encontrada');
+    if (data.dossieId && departamentoId === null) {
+      throw new BadRequestException('Informe o departamento ao vincular o documento a um dossiê');
     }
-    if (serie.departamentoId !== data.departamentoId) {
-      throw new BadRequestException(
-        'A série deve pertencer ao mesmo departamento do documento',
-      );
+
+    if (departamentoId !== null) {
+      const departamento = await this.departmentRepo.findOne({ where: { id: departamentoId } });
+      if (!departamento) {
+        throw new BadRequestException('Departamento não encontrado');
+      }
+    }
+
+    if (serieId !== null) {
+      const serie = await this.documentSeriesRepo.findOne({ where: { id: serieId } });
+      if (!serie) {
+        throw new BadRequestException('Série não encontrada');
+      }
+      if (serie.departamentoId !== departamentoId) {
+        throw new BadRequestException(
+          'A série deve pertencer ao mesmo departamento do documento',
+        );
+      }
     }
 
     if (data.dossieId) {
@@ -72,7 +101,7 @@ export class UploadDocumentUseCase {
       if (!dossie) {
         throw new BadRequestException('Dossiê não encontrado');
       }
-      if (dossie.departamentoId !== data.departamentoId) {
+      if (dossie.departamentoId !== departamentoId) {
         throw new BadRequestException(
           'O dossiê deve pertencer ao mesmo departamento do documento',
         );
@@ -88,12 +117,12 @@ export class UploadDocumentUseCase {
     try {
       return await this.dataSource.transaction(async (manager) => {
         const created = manager.create(Document, {
-          nome: data.nome,
+          nome: data.nome?.trim() ? data.nome.trim() : nomeFromFile(file.originalname),
           descricao: data.descricao ?? null,
           validade: data.validade ? new Date(data.validade) : null,
           confidencialidade: 'RESTRITO', // valor provisório, resolvido pelo use-case abaixo
-          departamentoId: data.departamentoId,
-          serieId: data.serieId,
+          departamentoId,
+          serieId,
           dossieId: data.dossieId ?? null,
           fase: DOCUMENT_FASE.CORRENTE,
           faseCorrenteDesde: new Date(),
@@ -103,6 +132,7 @@ export class UploadDocumentUseCase {
           arquivoTamanho: saved.tamanho,
           destaque: data.destaque ?? false,
           exigeCadastro: data.exigeCadastro ?? false,
+          criadoPor: data.actingUser.sub,
         });
         const savedDocument = await manager.save(Document, created);
 

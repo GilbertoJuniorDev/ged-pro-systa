@@ -23,6 +23,10 @@ jest.mock('./theme-toggle', () => ({
   ThemeToggle: () => <button type="button" aria-label="Alternar tema" />,
 }));
 
+jest.mock('@/components/branding/logo', () => ({
+  Logo: () => <span data-testid="logo-mock">GED Pro</span>,
+}));
+
 jest.mock('next/link', () => ({
   __esModule: true,
   default: function MockLink({
@@ -92,6 +96,51 @@ describe('Sidebar', () => {
     fireEvent.click(screen.getByLabelText('Fechar menu'));
 
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('should render Explorador as an active child link when on /documents', () => {
+    mockUsePathname.mockReturnValue('/documents');
+
+    render(<Sidebar user={defaultUser} isOpen={false} onClose={jest.fn()} />);
+
+    const inventarioLink = screen.getByText('Explorador').closest('a');
+    expect(inventarioLink).toHaveAttribute('href', '/documents');
+    expect(inventarioLink).toHaveClass('bg-indigo-50');
+  });
+
+  it('should render Documentos as a non-navigable group header', () => {
+    mockUsePathname.mockReturnValue('/documents');
+
+    render(<Sidebar user={defaultUser} isOpen={false} onClose={jest.fn()} />);
+
+    const documentos = screen.getByText('Documentos');
+    expect(documentos.closest('a')).toBeNull();
+
+    const header = documentos.closest('button');
+    expect(header).not.toBeNull();
+    expect(header).not.toHaveClass('bg-indigo-50');
+  });
+
+  it('should activate only the deepest matching child on a nested route', () => {
+    mockUsePathname.mockReturnValue('/documents/upload');
+
+    render(<Sidebar user={defaultUser} isOpen={false} onClose={jest.fn()} />);
+
+    expect(screen.getByText('Upload').closest('a')).toHaveClass('bg-indigo-50');
+    expect(screen.getByText('Explorador').closest('a')).not.toHaveClass('bg-indigo-50');
+  });
+
+  it('should toggle the Documentos group header without navigating', () => {
+    mockUsePathname.mockReturnValue('/');
+
+    render(<Sidebar user={defaultUser} isOpen={false} onClose={jest.fn()} />);
+
+    const header = screen.getByLabelText('Expandir Documentos');
+    expect(header).toHaveAttribute('aria-expanded', 'false');
+
+    fireEvent.click(header);
+
+    expect(screen.getByLabelText('Recolher Documentos')).toHaveAttribute('aria-expanded', 'true');
   });
 
   it('should render UserMenu component in the footer', () => {

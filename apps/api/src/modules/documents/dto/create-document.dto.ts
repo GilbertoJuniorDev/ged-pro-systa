@@ -10,23 +10,16 @@ import {
 } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { CONFIDENCIALIDADE, type Confidencialidade } from '@ged/database';
-
-// multipart/form-data (used by POST /documents, see FileInterceptor in
-// documents.controller.ts) always sends field values as raw strings. Coerce the
-// "true"/"false" strings a checkbox/form field sends into real booleans before
-// @IsBoolean() runs, while still accepting a real boolean (e.g. JSON callers, tests).
-const toBoolean = ({ value }: { value: unknown }): unknown => {
-  if (typeof value === 'boolean') return value;
-  if (value === 'true') return true;
-  if (value === 'false') return false;
-  return value;
-};
+import { toBoolean } from '../../../common/transforms/to-boolean';
+import { emptyToUndefined } from '../../../common/transforms/empty-to-undefined';
 
 export class CreateDocumentDto {
+  @IsOptional()
+  @Transform(emptyToUndefined)
   @IsString()
   @MinLength(2)
   @MaxLength(200)
-  readonly nome!: string;
+  readonly nome?: string;
 
   @IsOptional()
   @IsString()
@@ -41,11 +34,15 @@ export class CreateDocumentDto {
   @IsIn(Object.values(CONFIDENCIALIDADE))
   readonly confidencialidade?: Confidencialidade;
 
+  @IsOptional()
+  @Transform(emptyToUndefined)
   @IsUUID()
-  readonly departamentoId!: string;
+  readonly departamentoId?: string;
 
+  @IsOptional()
+  @Transform(emptyToUndefined)
   @IsUUID()
-  readonly serieId!: string;
+  readonly serieId?: string;
 
   @IsOptional()
   @IsUUID()

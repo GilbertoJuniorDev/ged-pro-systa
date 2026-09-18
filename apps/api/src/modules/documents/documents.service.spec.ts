@@ -278,6 +278,33 @@ describe('DocumentsService', () => {
         service.findOne('doc-1', makeJwtPayload({ sub: 'viewer-1', role: ROLE.VIEWER })),
       ).rejects.toThrow(new NotFoundException('Documento não encontrado'));
     });
+
+    it('grants access to a RESTRITO document with no departamento when criadoPor matches the scope user', async () => {
+      documentRepository.findById.mockResolvedValue(
+        makeDocument({ departamentoId: null, serieId: null, criadoPor: 'viewer-1' }),
+      );
+      userDepartmentsService.findByUserId.mockResolvedValue([]);
+
+      const result = await service.findOne(
+        'doc-1',
+        makeJwtPayload({ sub: 'viewer-1', role: ROLE.VIEWER }),
+      );
+
+      expect(result.departamentoId).toBeNull();
+      expect(documentAccessDepartmentRepo.exists).not.toHaveBeenCalled();
+    });
+
+    it('denies access to a RESTRITO document with no departamento when criadoPor is a different user', async () => {
+      documentRepository.findById.mockResolvedValue(
+        makeDocument({ departamentoId: null, serieId: null, criadoPor: 'other-user' }),
+      );
+      userDepartmentsService.findByUserId.mockResolvedValue([]);
+      documentAccessDepartmentRepo.exists.mockResolvedValue(false);
+
+      await expect(
+        service.findOne('doc-1', makeJwtPayload({ sub: 'viewer-1', role: ROLE.VIEWER })),
+      ).rejects.toThrow(new NotFoundException('Documento não encontrado'));
+    });
   });
 
   describe('findAll', () => {
@@ -325,6 +352,36 @@ describe('DocumentsService', () => {
         }),
       );
       expect(result).toEqual({ data: [], total: 0, page: 2, limit: 10 });
+    });
+
+    it('throws BadRequestException when both dossieId and semDossie are provided', async () => {
+      await expect(
+        service.findAll(
+          { dossieId: 'dossie-1', semDossie: true },
+          makeJwtPayload({ role: ROLE.ADMIN }),
+        ),
+      ).rejects.toThrow(BadRequestException);
+      expect(documentRepository.findAll).not.toHaveBeenCalled();
+    });
+
+    it('forwards semDossie to the repository', async () => {
+      documentRepository.findAll.mockResolvedValue(emptyPage);
+
+      await service.findAll({ semDossie: true }, makeJwtPayload({ role: ROLE.ADMIN }));
+
+      expect(documentRepository.findAll).toHaveBeenCalledWith(
+        expect.objectContaining({ semDossie: true }),
+      );
+    });
+
+    it('forwards search to the repository', async () => {
+      documentRepository.findAll.mockResolvedValue(emptyPage);
+
+      await service.findAll({ search: 'contrato' }, makeJwtPayload({ role: ROLE.ADMIN }));
+
+      expect(documentRepository.findAll).toHaveBeenCalledWith(
+        expect.objectContaining({ search: 'contrato' }),
+      );
     });
   });
 
@@ -401,6 +458,21 @@ describe('DocumentsService', () => {
       expect(uploadDocumentUseCase.execute).toHaveBeenCalledWith(dto, file);
       expect(result).toEqual(created);
     });
+
+    it('does not throw Forbidden when departamentoId is omitted (upload só repositório) for a non-privileged user', async () => {
+      userDepartmentsService.findByUserId.mockResolvedValue([makeUserDepartment('dept-2')]);
+      const created = makeDocument({ departamentoId: null, serieId: null });
+      uploadDocumentUseCase.execute.mockResolvedValue(created);
+      const dto = {
+        actingUser: makeJwtPayload({ role: ROLE.VIEWER }),
+      };
+      const file = { originalname: 'x.pdf' } as Express.Multer.File;
+
+      const result = await service.upload(dto, file);
+
+      expect(uploadDocumentUseCase.execute).toHaveBeenCalledWith(dto, file);
+      expect(result).toEqual(created);
+    });
   });
 
   describe('update', () => {
@@ -453,6 +525,43 @@ describe('DocumentsService', () => {
       ).rejects.toThrow(
         new BadRequestException('O dossiê deve pertencer ao mesmo departamento do documento'),
       );
+      expect(manager.update).not.toHaveBeenCalled();
+    });
+
+    it('adopts the série departamento when classifying a document with departamentoId null', async () => {
+      const current = makeDocument({ departamentoId: null, serieId: null });
+      const serie = makeSerie({ id: 'serie-9', departamentoId: 'dept-9' });
+      const updated = makeDocument({ departamentoId: 'dept-9', serieId: 'serie-9' });
+      documentRepository.findById.mockResolvedValue(current);
+      documentSeriesRepo.findOne.mockResolvedValue(serie);
+      manager.findOneOrFail.mockResolvedValue(updated);
+
+      const result = await service.update(
+        'doc-1',
+        { serieId: 'serie-9' },
+        makeJwtPayload({ role: ROLE.ADMIN }),
+      );
+
+      expect(manager.update).toHaveBeenCalledWith(
+        Document,
+        'doc-1',
+        expect.objectContaining({ departamentoId: 'dept-9', serieId: 'serie-9' }),
+      );
+      expect(result).toEqual(updated);
+    });
+
+    it('throws BadRequest when dossieId is set on a document without série nor departamento', async () => {
+      const current = makeDocument({ departamentoId: null, serieId: null });
+      documentRepository.findById.mockResolvedValue(current);
+
+      await expect(
+        service.update('doc-1', { dossieId: 'dossie-1' }, makeJwtPayload({ role: ROLE.ADMIN })),
+      ).rejects.toThrow(
+        new BadRequestException(
+          'Classifique o documento em uma série antes de vinculá-lo a um dossiê',
+        ),
+      );
+      expect(dossieRepo.findOne).not.toHaveBeenCalled();
       expect(manager.update).not.toHaveBeenCalled();
     });
 
@@ -666,6 +775,17 @@ describe('DocumentsService', () => {
       );
       expect(documentRepository.update).not.toHaveBeenCalled();
     });
+
+    it('throws ConflictException when the document has no série', async () => {
+      documentRepository.findById.mockResolvedValue(
+        makeDocument({ fase: DOCUMENT_FASE.CORRENTE, serieId: null, serie: null }),
+      );
+
+      await expect(service.transferir('doc-1')).rejects.toThrow(
+        new ConflictException('Documento sem série não pode ser transferido de fase'),
+      );
+      expect(documentRepository.update).not.toHaveBeenCalled();
+    });
   });
 
   describe('getDownload', () => {
@@ -843,6 +963,24 @@ describe('DocumentsService', () => {
       expect(dto.faseIntermediarioDesde).toBe('2026-07-01');
       expect(dto.vencimentoCorrente).toBe('2026-07-01');
       expect(dto.vencimentoIntermediario).toBe('2027-07-01');
+    });
+
+    it('returns null vencimentos and elegivelTransferencia false for an unclassified document', () => {
+      const document = makeDocument({ departamentoId: null, serieId: null, serie: null });
+
+      const dto = service.toResponseDto(document);
+
+      expect(dto.vencimentoCorrente).toBeNull();
+      expect(dto.vencimentoIntermediario).toBeNull();
+      expect(dto.elegivelTransferencia).toBe(false);
+    });
+
+    it('still throws when serieId is set but the serie relation was not loaded', () => {
+      const document = makeDocument({ serieId: 'serie-1', serie: null });
+
+      expect(() => service.toResponseDto(document)).toThrow(
+        `Documento ${document.id} carregado sem a série associada (serieId=${document.serieId})`,
+      );
     });
 
     it('never includes arquivoChave in the response', () => {

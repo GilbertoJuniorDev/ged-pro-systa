@@ -1,6 +1,6 @@
 import { Module as NestModule } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Dossie, Department } from '@ged/database';
+import { Dossie, Department, Arquivo, Document } from '@ged/database';
 import { DossiesRepository } from './dossies.repository';
 import { DossiesService, DOSSIE_REPOSITORY } from './dossies.service';
 import { DossiesController } from './dossies.controller';
@@ -12,7 +12,7 @@ import { UserPermissionsModule } from '../user-permissions/user-permissions.modu
 
 @NestModule({
   imports: [
-    TypeOrmModule.forFeature([Dossie, Department]),
+    TypeOrmModule.forFeature([Dossie, Department, Arquivo, Document]),
     AuditLogsModule,
     UserDepartmentsModule,
     UserPermissionsModule,

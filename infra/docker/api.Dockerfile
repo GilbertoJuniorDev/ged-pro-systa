@@ -36,6 +36,10 @@ ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nestjs
 
+# uploads_data (volume) precisa ser gravável pelo usuário não-root abaixo —
+# storage local de branding (logo do sistema/portal) grava em uploads/branding/*.
+RUN mkdir -p /app/uploads && chown -R nestjs:nodejs /app/uploads
+
 # pnpm virtual store — alvos dos symlinks
 COPY --from=builder /app/node_modules ./node_modules
 

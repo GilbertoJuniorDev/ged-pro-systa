@@ -14,6 +14,7 @@ import {
   SystemVersionDto,
   AdminSystemVersionDto,
 } from './dto/system-version.dto';
+import { SystemResourcesDto } from './dto/system-resources.dto';
 
 @ApiTags('system')
 @ApiBearerAuth()
@@ -46,5 +47,16 @@ export class SystemController {
   @ApiResponse({ status: 403, description: 'Acesso negado — requer ADMIN' })
   getAdminVersion(): Promise<AdminSystemVersionDto> {
     return this.systemService.getAdminVersion();
+  }
+
+  @Get('resources')
+  @UseGuards(RolesGuard)
+  @Roles(ROLE.ADMIN)
+  @ApiOperation({ summary: 'Retorna uso de CPU, memória e disco do servidor (ADMIN)' })
+  @ApiResponse({ status: 200, type: SystemResourcesDto, description: 'Uso de recursos do servidor' })
+  @ApiResponse({ status: 401, description: 'Não autenticado' })
+  @ApiResponse({ status: 403, description: 'Acesso negado — requer ADMIN' })
+  getResources(): Promise<SystemResourcesDto> {
+    return this.systemService.getResources();
   }
 }

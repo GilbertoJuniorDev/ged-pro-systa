@@ -364,6 +364,8 @@ export interface DossieDto {
   readonly descricao: string | null;
   readonly isActive: boolean;
   readonly departamentoId: string;
+  readonly arquivoId: string | null;
+  readonly documentsCount: number;
   readonly createdAt: string;
   readonly updatedAt: string;
 }
@@ -373,6 +375,79 @@ export interface UpsertDossieInput {
   readonly descricao?: string | null;
   readonly isActive?: boolean;
   readonly departamentoId: string;
+  readonly arquivoId?: string | null;
+}
+
+export interface DossieQuery {
+  readonly departamentoId?: string;
+  readonly arquivoId?: string;
+  readonly semArquivo?: boolean;
+  readonly search?: string;
+  readonly page?: number;
+  readonly limit?: number;
+}
+
+// ── GED — Arquivo ───────────────────────────────────────────────────────
+
+export const ARQUIVO_STATUS = {
+  ABERTO: 'ABERTO',
+  FECHADO: 'FECHADO',
+} as const;
+
+export type ArquivoStatus = (typeof ARQUIVO_STATUS)[keyof typeof ARQUIVO_STATUS];
+
+export interface ArquivoDto {
+  readonly id: string;
+  readonly codigo: string;
+  readonly ano: number;
+  readonly sequencia: number;
+  readonly nome: string;
+  readonly descricao: string | null;
+  readonly status: ArquivoStatus;
+  readonly dataEncerramento: string | null;
+  readonly encerradoPorId: string | null;
+  readonly predio: string | null;
+  readonly sala: string | null;
+  readonly estante: string | null;
+  readonly prateleira: string | null;
+  readonly caixa: string | null;
+  readonly departamentoId: string;
+  readonly departamentoIds: readonly string[];
+  readonly dossiesCount: number;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+export interface CreateArquivoInput {
+  readonly nome: string;
+  readonly descricao?: string | null;
+  readonly predio?: string | null;
+  readonly sala?: string | null;
+  readonly estante?: string | null;
+  readonly prateleira?: string | null;
+  readonly caixa?: string | null;
+  readonly departamentoId: string;
+  readonly departamentoIds?: readonly string[];
+}
+
+export interface UpdateArquivoInput {
+  readonly nome?: string;
+  readonly descricao?: string | null;
+  readonly predio?: string | null;
+  readonly sala?: string | null;
+  readonly estante?: string | null;
+  readonly prateleira?: string | null;
+  readonly caixa?: string | null;
+  readonly departamentoIds?: readonly string[];
+}
+
+export interface ArquivoQuery {
+  readonly departamentoId?: string;
+  readonly status?: ArquivoStatus;
+  readonly ano?: number;
+  readonly search?: string;
+  readonly page?: number;
+  readonly limit?: number;
 }
 
 // ── GED — Document ──────────────────────────────────────────────────────
@@ -398,8 +473,8 @@ export interface DocumentDto {
   readonly descricao: string | null;
   readonly validade: string | null;
   readonly confidencialidade: Confidencialidade;
-  readonly departamentoId: string;
-  readonly serieId: string;
+  readonly departamentoId: string | null;
+  readonly serieId: string | null;
   readonly dossieId: string | null;
   readonly fase: DocumentFase;
   readonly faseCorrenteDesde: string;
@@ -408,7 +483,7 @@ export interface DocumentDto {
   readonly arquivoMimeType: string;
   readonly arquivoTamanho: number;
   readonly isActive: boolean;
-  readonly vencimentoCorrente: string;
+  readonly vencimentoCorrente: string | null;
   readonly vencimentoIntermediario: string | null;
   readonly elegivelTransferencia: boolean;
   readonly destaque: boolean;
@@ -420,12 +495,12 @@ export interface DocumentDto {
 }
 
 export interface UploadDocumentInput {
-  readonly nome: string;
+  readonly nome?: string;
   readonly descricao?: string | null;
   readonly validade?: string | null;
-  readonly confidencialidade: Confidencialidade;
-  readonly departamentoId: string;
-  readonly serieId: string;
+  readonly confidencialidade?: Confidencialidade;
+  readonly departamentoId?: string;
+  readonly serieId?: string;
   readonly dossieId?: string | null;
   readonly destaque?: boolean;
   readonly exigeCadastro?: boolean;
@@ -450,9 +525,11 @@ export interface UpdateDocumentInput {
 export interface DocumentQuery {
   readonly departamentoId?: string;
   readonly dossieId?: string;
+  readonly semDossie?: boolean;
   readonly serieId?: string;
   readonly fase?: DocumentFase;
   readonly confidencialidade?: Confidencialidade;
+  readonly search?: string;
   readonly page?: number;
   readonly limit?: number;
 }
@@ -537,3 +614,83 @@ export interface DashboardAdminSummaryDto {
   readonly totalDepartamentos: number;
 }
 
+// ── Appearance — customização visual do sistema e do portal público ────
+// (ambas singleton, single-tenant — mesma lógica de Company/Subscription)
+
+export interface SystemAppearanceDto {
+  readonly primaryColor: string;
+  readonly secondaryColor: string;
+  readonly backgroundColor: string;
+  readonly hasLogo: boolean;
+  readonly logoVersion: number;
+  readonly updatedAt: string;
+}
+
+export interface UpdateSystemAppearanceInput {
+  readonly primaryColor: string;
+  readonly secondaryColor: string;
+  readonly backgroundColor: string;
+  readonly useDefaultTheme: boolean;
+}
+
+// *AdminDto — exclusivos do admin autenticado (`GET /admin/appearance/*`), que precisa
+// do valor CRU salvo no banco (inclusive a flag `useDefaultTheme`) para poder restaurar
+// a última cor customizada ao desmarcar o checkbox "Usar tema padrão". A flag NÃO entra
+// em SystemAppearanceDto/PortalAppearanceDto: essas alimentam o endpoint público
+// (`GET /public/appearance/*`), que devolve o valor EFETIVO já resolvido.
+export interface SystemAppearanceAdminDto extends SystemAppearanceDto {
+  readonly useDefaultTheme: boolean;
+}
+
+export interface PortalAppearanceDto {
+  readonly primaryColor: string;
+  readonly secondaryColor: string;
+  readonly backgroundColor: string;
+  readonly hasLogo: boolean;
+  readonly logoVersion: number;
+  readonly heroTitle: string;
+  readonly heroSubtitle: string;
+  readonly footerMessage: string;
+  readonly updatedAt: string;
+}
+
+export interface PortalAppearanceAdminDto extends PortalAppearanceDto {
+  readonly useDefaultTheme: boolean;
+}
+
+export interface UpdatePortalAppearanceInput {
+  readonly primaryColor: string;
+  readonly secondaryColor: string;
+  readonly backgroundColor: string;
+  readonly heroTitle: string;
+  readonly heroSubtitle: string;
+  readonly footerMessage: string;
+  readonly useDefaultTheme: boolean;
+}
+
+
+// Defaults da aparência — fonte única compartilhada entre o fallback de SSR
+// (apps/web/src/lib/appearance.ts), os formulários do admin e o CSS estático de
+// globals.css. Batem 1:1 com paradas do Tailwind: #4f46e5=indigo-600,
+// #0ea5e9=sky-500, #0f172a=slate-900, #f8fafc=slate-50.
+
+export const DEFAULT_SYSTEM_APPEARANCE = {
+  primaryColor: '#4f46e5',
+  secondaryColor: '#0ea5e9',
+  backgroundColor: '#0f172a',
+  hasLogo: false,
+  logoVersion: 0,
+} as const satisfies Omit<SystemAppearanceDto, 'updatedAt'>;
+
+export const DEFAULT_PORTAL_APPEARANCE = {
+  primaryColor: '#4f46e5',
+  secondaryColor: '#0ea5e9',
+  backgroundColor: '#f8fafc',
+  hasLogo: false,
+  logoVersion: 0,
+  heroTitle: 'Portal de Documentos Públicos',
+  heroSubtitle:
+    'Consulte e baixe documentos disponibilizados publicamente. Busque por nome, filtre por série e acesse o conteúdo em poucos cliques.',
+  footerMessage:
+    'Portal público de consulta e download de documentos. Alguns arquivos exigem um cadastro rápido antes do download.',
+} as const satisfies Omit<PortalAppearanceDto, 'updatedAt'>;

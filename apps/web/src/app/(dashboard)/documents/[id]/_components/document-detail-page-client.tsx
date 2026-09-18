@@ -7,11 +7,12 @@ import type { Confidencialidade, DocumentFase } from '@/types';
 import { useDocument, useDeleteDocument, useDownloadDocument } from '@/hooks/use-documents';
 import { useDepartments } from '@/hooks/use-departments';
 import { useDocumentSeries } from '@/hooks/use-document-series';
-import { useDossies } from '@/hooks/use-dossies';
+import { useDossieOptions } from '@/hooks/use-dossies';
 import { useUsers } from '@/hooks/use-users';
 import { usePermissions } from '@/hooks/use-permissions';
 import { formatBytes } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
+import { EditDocumentClassificationDialog } from '@/components/documents/edit-document-classification-dialog';
 import { EditConfidentialityDialog } from './edit-confidentiality-dialog';
 
 const CONFIDENCIALIDADE_BADGE: Record<Confidencialidade, string> = {
@@ -95,15 +96,17 @@ export function DocumentDetailPageClient({ id }: { id: string }) {
   const router = useRouter();
   const { data: document, isLoading, isError } = useDocument(id);
   const { data: departamentos } = useDepartments();
-  const { data: series } = useDocumentSeries(document?.departamentoId);
-  const { data: dossies } = useDossies(document?.departamentoId);
+  const { data: series } = useDocumentSeries(document?.departamentoId ?? undefined);
+  const { data: dossies } = useDossieOptions(document?.departamentoId ?? undefined);
   const { data: users } = useUsers();
   const downloadDocument = useDownloadDocument();
   const deleteDocument = useDeleteDocument();
   const { hasPermission } = usePermissions();
   const canManageConfidentiality = hasPermission('DOCUMENTS_MANAGE_CONFIDENTIALITY');
+  const canEdit = hasPermission('DOCUMENTS_EDIT');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showEditConfidentiality, setShowEditConfidentiality] = useState(false);
+  const [showEditClassification, setShowEditClassification] = useState(false);
 
   const backLink = (
     <Link
@@ -139,8 +142,11 @@ export function DocumentDetailPageClient({ id }: { id: string }) {
     );
   }
 
-  const departamentoNome = departamentos?.find((d) => d.id === document.departamentoId)?.nome ?? '—';
+  const departamentoNome = document.departamentoId
+    ? (departamentos?.find((d) => d.id === document.departamentoId)?.nome ?? '—')
+    : 'Não classificado';
   const serieLabel = (() => {
+    if (!document.serieId) return 'Não classificada';
     const serie = series?.find((s) => s.id === document.serieId);
     return serie ? `${serie.codigo} — ${serie.nome}` : '—';
   })();
@@ -213,6 +219,14 @@ export function DocumentDetailPageClient({ id }: { id: string }) {
                 Alterar confidencialidade
               </button>
             )}
+            {canEdit && (
+              <button
+                onClick={() => setShowEditClassification(true)}
+                className="px-4 py-2 text-sm text-slate-300 hover:text-slate-100 border border-slate-700 hover:border-slate-500 rounded-lg transition-colors"
+              >
+                Alterar classificação
+              </button>
+            )}
             <button
               onClick={() => setShowDeleteConfirm(true)}
               className="px-4 py-2 text-sm text-rose-400 hover:text-rose-200 border border-rose-800 hover:border-rose-600 rounded-lg transition-colors"
@@ -259,6 +273,10 @@ export function DocumentDetailPageClient({ id }: { id: string }) {
 
       {showEditConfidentiality && (
         <EditConfidentialityDialog document={document} onClose={() => setShowEditConfidentiality(false)} />
+      )}
+
+      {showEditClassification && (
+        <EditDocumentClassificationDialog document={document} onClose={() => setShowEditClassification(false)} />
       )}
     </main>
   );

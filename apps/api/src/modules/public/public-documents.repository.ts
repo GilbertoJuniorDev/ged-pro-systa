@@ -49,7 +49,9 @@ export class PublicDocumentsRepository {
       .andWhere('document.confidencialidade = :confidencialidade', {
         confidencialidade: CONFIDENCIALIDADE.PUBLICO,
       })
-      .andWhere('document.is_active = :isActive', { isActive: true });
+      .andWhere('document.is_active = :isActive', { isActive: true })
+      // Documento não classificado (sem série) não tem temporalidade a exibir — fora do portal.
+      .andWhere('document.serie_id IS NOT NULL');
   }
 
   async listar(filter: PublicDocumentQueryFilter): Promise<PaginatedPublicDocumentEntities> {

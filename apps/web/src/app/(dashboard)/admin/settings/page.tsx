@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { auth } from '@/lib/auth';
-import { GoogleDriveCard } from './_components/google-drive-card';
 import { BackupCard } from './_components/backup-card';
 import { ActivityLogsCard } from './_components/activity-logs-card';
 import { ErrorLogsCard } from './_components/error-logs-card';
@@ -10,6 +9,8 @@ import { PerformanceMonitor } from './_components/performance-monitor';
 import { CompanyCard } from './_components/company-card';
 import { SubscriptionCard } from './_components/subscription-card';
 import { DepartmentsCard } from './_components/departments-card';
+import { SystemAppearanceCard } from './_components/system-appearance-card';
+import { PortalAppearanceCard } from './_components/portal-appearance-card';
 
 export const metadata: Metadata = {
   title: 'Configurações Admin — GED Pro',
@@ -28,8 +29,9 @@ export default async function AdminSettingsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <CompanyCard />
+        <SystemAppearanceCard />
+        <PortalAppearanceCard />
         {isSuperAdmin && <SubscriptionCard />}
-        {isSuperAdmin && <GoogleDriveCard />}
         {isSuperAdmin && <BackupCard />}
         {isSuperAdmin && <ActivityLogsCard />}
         {isSuperAdmin && <ErrorLogsCard />}

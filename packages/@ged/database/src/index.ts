@@ -20,12 +20,16 @@ export {
 } from './entities/subscription.entity';
 export { SubscriptionPayment } from './entities/subscription-payment.entity';
 export { SystemSetting } from './entities/system-setting.entity';
+export { AppearanceSetting } from './entities/appearance-setting.entity';
+export { PortalAppearance } from './entities/portal-appearance.entity';
 export {
   DocumentSeries,
   DESTINACAO_FINAL,
   type DestinacaoFinal,
 } from './entities/document-series.entity';
 export { Dossie } from './entities/dossie.entity';
+export { Arquivo, ARQUIVO_STATUS, type ArquivoStatus } from './entities/arquivo.entity';
+export { ArquivoDepartment } from './entities/arquivo-department.entity';
 export {
   Document,
   CONFIDENCIALIDADE,

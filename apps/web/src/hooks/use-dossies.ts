@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { useSession } from 'next-auth/react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../lib/api-client';
-import type { DossieDto, UpsertDossieInput } from '../types';
+import type { DossieDto, DossieQuery, PaginatedResult, UpsertDossieInput } from '../types';
 
 export type CreateDossiePayload = UpsertDossieInput;
 
@@ -12,20 +12,50 @@ export interface UpdateDossiePayload {
   nome?: string;
   descricao?: string | null;
   isActive?: boolean;
+  arquivoId?: string | null;
 }
 
-export function useDossies(departamentoId?: string) {
+function buildQueryString(query: DossieQuery): string {
+  const params = new URLSearchParams();
+  if (query.departamentoId) params.set('departamentoId', query.departamentoId);
+  if (query.arquivoId) params.set('arquivoId', query.arquivoId);
+  if (query.semArquivo) params.set('semArquivo', 'true');
+  if (query.search) params.set('search', query.search);
+  if (query.page) params.set('page', String(query.page));
+  if (query.limit) params.set('limit', String(query.limit));
+  const qs = params.toString();
+  return qs ? `?${qs}` : '';
+}
+
+export function useDossies(query: DossieQuery = {}) {
   const { data: session } = useSession();
 
   return useQuery({
-    queryKey: ['dossies', departamentoId ?? null],
+    queryKey: ['dossies', query],
     queryFn: () =>
-      apiClient.get<DossieDto[]>(
-        `/dossies${departamentoId ? `?departamentoId=${departamentoId}` : ''}`,
-        { token: session?.user?.accessToken },
-      ),
+      apiClient.get<PaginatedResult<DossieDto>>(`/dossies${buildQueryString(query)}`, {
+        token: session?.user?.accessToken,
+      }),
     enabled: !!session?.user?.accessToken,
   });
+}
+
+export function useDossie(id: string | undefined) {
+  const { data: session } = useSession();
+
+  return useQuery({
+    queryKey: ['dossies', 'detail', id],
+    queryFn: () => apiClient.get<DossieDto>(`/dossies/${id}`, { token: session?.user?.accessToken }),
+    enabled: !!session?.user?.accessToken && !!id,
+  });
+}
+
+// Lista simples de dossiês para preencher um Combobox (ex.: formulário de upload, seletor de
+// dossiê ao criar/editar arquivo). Embrulha useDossies e desembrulha `.data` — quem consome só
+// quer o array, não a paginação.
+export function useDossieOptions(departamentoId?: string) {
+  const query = useDossies({ departamentoId, limit: 100 });
+  return { ...query, data: query.data?.data };
 }
 
 export function useCreateDossie() {

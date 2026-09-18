@@ -40,3 +40,8 @@ uploads/
 
 # TypeScript
 *.tsbuildinfo
+
+# Playwright (relatórios e artefatos de falha)
+test-results/
+playwright-report/
+playwright/.cache/

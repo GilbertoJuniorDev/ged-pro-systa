@@ -12,8 +12,8 @@ export interface CreateDocumentData {
   readonly descricao?: string | null;
   readonly validade?: Date | null;
   readonly confidencialidade: Confidencialidade;
-  readonly departamentoId: string;
-  readonly serieId: string;
+  readonly departamentoId: string | null;
+  readonly serieId: string | null;
   readonly dossieId?: string | null;
   readonly fase: DocumentFase;
   readonly faseCorrenteDesde: Date;
@@ -23,6 +23,7 @@ export interface CreateDocumentData {
   readonly arquivoTamanho: number;
   readonly destaque?: boolean;
   readonly exigeCadastro?: boolean;
+  readonly criadoPor?: string | null;
 }
 
 export interface UpdateDocumentData {
@@ -30,6 +31,7 @@ export interface UpdateDocumentData {
   readonly descricao?: string | null;
   readonly validade?: Date | null;
   readonly confidencialidade?: Confidencialidade;
+  readonly departamentoId?: string;
   readonly serieId?: string;
   readonly dossieId?: string | null;
   readonly isActive?: boolean;
@@ -42,9 +44,13 @@ export interface UpdateDocumentData {
 export interface DocumentQueryFilter {
   readonly departamentoId?: string;
   readonly dossieId?: string;
+  // Quando true, restringe a listagem a documentos sem dossiê (dossieId IS NULL).
+  // Mutuamente exclusivo com dossieId — ver DocumentsService.findAll.
+  readonly semDossie?: boolean;
   readonly serieId?: string;
   readonly fase?: DocumentFase;
   readonly confidencialidade?: Confidencialidade;
+  readonly search?: string;
   readonly page?: number;
   readonly limit?: number;
   // Quando definido, a listagem é restrita ao que o usuário não-privilegiado pode ver

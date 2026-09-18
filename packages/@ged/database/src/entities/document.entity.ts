@@ -48,19 +48,19 @@ export class Document {
   })
   confidencialidade!: Confidencialidade;
 
-  @Column({ name: 'departamento_id', type: 'uuid' })
-  departamentoId!: string;
+  @Column({ name: 'departamento_id', type: 'uuid', nullable: true })
+  departamentoId!: string | null;
 
-  @ManyToOne(() => Department, { onDelete: 'RESTRICT' })
+  @ManyToOne(() => Department, { onDelete: 'RESTRICT', nullable: true })
   @JoinColumn({ name: 'departamento_id' })
-  departamento!: Department;
+  departamento!: Department | null;
 
-  @Column({ name: 'serie_id', type: 'uuid' })
-  serieId!: string;
+  @Column({ name: 'serie_id', type: 'uuid', nullable: true })
+  serieId!: string | null;
 
-  @ManyToOne(() => DocumentSeries, { onDelete: 'RESTRICT' })
+  @ManyToOne(() => DocumentSeries, { onDelete: 'RESTRICT', nullable: true })
   @JoinColumn({ name: 'serie_id' })
-  serie!: DocumentSeries;
+  serie!: DocumentSeries | null;
 
   @Column({ name: 'dossie_id', type: 'uuid', nullable: true })
   dossieId!: string | null;
@@ -103,6 +103,11 @@ export class Document {
 
   @Column({ name: 'exige_cadastro', default: false })
   exigeCadastro!: boolean;
+
+  // Autor do upload. É o que mantém um documento não classificado
+  // (departamento_id NULL) visível ao próprio autor — ver access-scope.ts.
+  @Column({ name: 'criado_por', type: 'uuid', nullable: true })
+  criadoPor!: string | null;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;

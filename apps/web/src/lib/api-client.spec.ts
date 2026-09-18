@@ -1,4 +1,4 @@
-import { apiClient, ApiError } from './api-client';
+import { apiClient, ApiError, setUnauthorizedHandler } from './api-client';
 
 const mockFetch = jest.fn();
 
@@ -86,5 +86,71 @@ describe('apiClient', () => {
         }),
       }),
     );
+  });
+
+  // --- guard de sessão expirada (setUnauthorizedHandler) ---
+
+  /** O handler é estado de módulo — precisa ser desregistrado para os testes ficarem isolados. */
+  afterEach(() => {
+    setUnauthorizedHandler(null);
+  });
+
+  it('should invoke the unauthorized handler when the API responds 401', async () => {
+    const handleUnauthorized = jest.fn();
+    setUnauthorizedHandler(handleUnauthorized);
+    mockFetch.mockResolvedValue(
+      errorResponse(401, 'Unauthorized', { message: 'Unauthorized', statusCode: 401, code: 'UNAUTHORIZED' }),
+    );
+
+    await expect(apiClient.get('/documents')).rejects.toThrow(ApiError);
+
+    expect(handleUnauthorized).toHaveBeenCalledTimes(1);
+  });
+
+  it('should not invoke the unauthorized handler when the API responds 403', async () => {
+    const handleUnauthorized = jest.fn();
+    setUnauthorizedHandler(handleUnauthorized);
+    mockFetch.mockResolvedValue(
+      errorResponse(403, 'Forbidden', { message: 'Forbidden', statusCode: 403, code: 'FORBIDDEN' }),
+    );
+
+    await expect(apiClient.get('/documents')).rejects.toThrow(ApiError);
+
+    expect(handleUnauthorized).not.toHaveBeenCalled();
+  });
+
+  it('should not invoke the unauthorized handler when the 401 comes from an /auth/ endpoint', async () => {
+    const handleUnauthorized = jest.fn();
+    setUnauthorizedHandler(handleUnauthorized);
+    mockFetch.mockResolvedValue(
+      errorResponse(401, 'Unauthorized', { message: 'Unauthorized', statusCode: 401, code: 'UNAUTHORIZED' }),
+    );
+
+    await expect(apiClient.post('/auth/refresh', {})).rejects.toThrow(ApiError);
+
+    expect(handleUnauthorized).not.toHaveBeenCalled();
+  });
+
+  it('should still throw ApiError when the unauthorized handler runs', async () => {
+    const handleUnauthorized = jest.fn();
+    setUnauthorizedHandler(handleUnauthorized);
+    mockFetch.mockResolvedValue(
+      errorResponse(401, 'Unauthorized', { message: 'Token expirado', statusCode: 401, code: 'UNAUTHORIZED' }),
+    );
+
+    await expect(apiClient.get('/documents')).rejects.toMatchObject({
+      statusCode: 401,
+      message: 'Token expirado',
+      code: 'UNAUTHORIZED',
+    });
+    expect(handleUnauthorized).toHaveBeenCalledTimes(1);
+  });
+
+  it('should not throw when a 401 arrives and no handler is registered', async () => {
+    mockFetch.mockResolvedValue(
+      errorResponse(401, 'Unauthorized', { message: 'Unauthorized', statusCode: 401, code: 'UNAUTHORIZED' }),
+    );
+
+    await expect(apiClient.get('/documents')).rejects.toBeInstanceOf(ApiError);
   });
 });

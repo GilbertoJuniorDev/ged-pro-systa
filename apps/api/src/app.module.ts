@@ -18,9 +18,11 @@ import { CompanyModule } from './modules/company/company.module';
 import { SubscriptionModule } from './modules/subscription/subscription.module';
 import { SystemModule } from './modules/system/system.module';
 import { SystemSettingsModule } from './modules/system-settings/system-settings.module';
+import { AppearanceModule } from './modules/appearance/appearance.module';
 import { StorageModule } from './modules/storage/storage.module';
 import { DocumentSeriesModule } from './modules/document-series/document-series.module';
 import { DossiesModule } from './modules/dossies/dossies.module';
+import { ArquivosModule } from './modules/arquivos/arquivos.module';
 import { DocumentsModule } from './modules/documents/documents.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { PublicModule } from './modules/public/public.module';
@@ -62,8 +64,10 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
     SubscriptionModule,
     SystemModule,
     SystemSettingsModule,
+    AppearanceModule,
     StorageModule,
     DocumentSeriesModule,
+    ArquivosModule,
     DossiesModule,
     DocumentsModule,
     DashboardModule,

@@ -1,5 +1,6 @@
 import { auth } from '@/lib/auth';
 import { NextResponse } from 'next/server';
+import { SESSION_ERROR, SESSION_EXPIRED_ROUTE } from '@/lib/session-expiry';
 
 const PUBLIC_ROUTES = ['/login', '/reset-password'];
 // Portal público de documentos: liberado por prefixo (não por match exato como
@@ -29,13 +30,32 @@ export default auth((req) => {
   const isPublicRoute = PUBLIC_ROUTES.includes(nextUrl.pathname);
   const isPortalRoute =
     nextUrl.pathname === PORTAL_ROUTE_PREFIX || nextUrl.pathname.startsWith(`${PORTAL_ROUTE_PREFIX}/`);
-  const isProtectedRoute = !isPublicRoute && !isPortalRoute;
+  // Tela interstitial de sessão expirada: precisa abrir com sessão viva, com sessão
+  // quebrada E sem sessão nenhuma — o próprio signOut da tela zera o cookie no meio
+  // da contagem regressiva. Por isso é isenta, e não entra em PUBLIC_ROUTES: o bounce
+  // `session && isPublicRoute -> /` criaria loop com o redirect logo abaixo.
+  const isSessionExpiredRoute = nextUrl.pathname === SESSION_EXPIRED_ROUTE;
+  const isProtectedRoute = !isPublicRoute && !isPortalRoute && !isSessionExpiredRoute;
+  // Cookie ainda decodifica, mas o refresh token morreu (ver lib/auth.ts).
+  const hasDeadSession = session?.error === SESSION_ERROR.REFRESH_TOKEN;
+
+  if (isSessionExpiredRoute) {
+    return NextResponse.next();
+  }
 
   if (!session && isProtectedRoute) {
     return NextResponse.redirect(new URL('/login', nextUrl));
   }
 
-  if (session && isPublicRoute) {
+  // Intercepta server-side, antes do render RSC: sem isso o dashboard quebrado
+  // renderiza e só depois o guard client-side redireciona (flash de UI morta).
+  if (hasDeadSession && isProtectedRoute) {
+    return NextResponse.redirect(new URL(SESSION_EXPIRED_ROUTE, nextUrl));
+  }
+
+  // `!hasDeadSession`: quem está com a sessão morta pode abrir /login e entrar de novo
+  // sem ser jogado para `/` — senão o bounce vira loop com a regra acima.
+  if (session && !hasDeadSession && isPublicRoute) {
     return NextResponse.redirect(new URL('/', nextUrl));
   }
 

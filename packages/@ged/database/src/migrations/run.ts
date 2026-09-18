@@ -30,6 +30,11 @@ import { CreateDocumentLeadsTable1782950400008 } from './1782950400008-CreateDoc
 import { RemoveInternoConfidencialidade1782950400009 } from './1782950400009-RemoveInternoConfidencialidade';
 import { CreateDocumentAccessGrantsTable1782950400010 } from './1782950400010-CreateDocumentAccessGrantsTable';
 import { RemoveManagerFromUsersRoleEnum1782950400011 } from './1782950400011-RemoveManagerFromUsersRoleEnum';
+import { CreateArquivosTables1782950400012 } from './1782950400012-CreateArquivosTables';
+import { AddArquivoIdToDossies1782950400013 } from './1782950400013-AddArquivoIdToDossies';
+import { MakeDocumentClassificationOptional1782950400014 } from './1782950400014-MakeDocumentClassificationOptional';
+import { CreateAppearanceSettings1782950400015 } from './1782950400015-CreateAppearanceSettings';
+import { AddUseDefaultThemeToAppearance1782950400016 } from './1782950400016-AddUseDefaultThemeToAppearance';
 const DATABASE_URL = process.env['DATABASE_URL'];
 
 if (!DATABASE_URL) {
@@ -71,6 +76,11 @@ const dataSource = new DataSource({
     RemoveInternoConfidencialidade1782950400009,
     CreateDocumentAccessGrantsTable1782950400010,
     RemoveManagerFromUsersRoleEnum1782950400011,
+    CreateArquivosTables1782950400012,
+    AddArquivoIdToDossies1782950400013,
+    MakeDocumentClassificationOptional1782950400014,
+    CreateAppearanceSettings1782950400015,
+    AddUseDefaultThemeToAppearance1782950400016,
   ],
   migrationsTableName: 'migrations',
 });

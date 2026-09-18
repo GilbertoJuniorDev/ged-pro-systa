@@ -2,7 +2,8 @@ import type { Role } from '@ged/types';
 
 export interface NavItem {
   readonly label: string;
-  readonly href: string;
+  /** Ausente = cabeçalho de grupo: a linha só expande/recolhe os filhos. */
+  readonly href?: string;
   readonly iconPaths: readonly string[];
   readonly moduloSlug?: string | null;
   readonly children?: readonly NavItem[];
@@ -20,12 +21,27 @@ export const NAV_ITEMS: readonly NavItem[] = [
   },
   {
     label: 'Documentos',
-    href: '/documents',
     moduloSlug: 'documentos',
     iconPaths: [
       'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
     ],
     children: [
+      {
+        label: 'Explorador',
+        href: '/documents',
+        moduloSlug: 'documentos',
+        iconPaths: [
+          'M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z',
+        ],
+      },
+      {
+        label: 'Arquivos',
+        href: '/documents/arquivos',
+        moduloSlug: 'documentos',
+        iconPaths: [
+          'M3 21h18M5 21V7l8-4v18M19 21V11l-6-4M9 9v.01M9 12v.01M9 15v.01',
+        ],
+      },
       {
         label: 'Upload',
         href: '/documents/upload',
@@ -48,14 +64,6 @@ export const NAV_ITEMS: readonly NavItem[] = [
         moduloSlug: 'documentos',
         iconPaths: [
           'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
-        ],
-      },
-      {
-        label: 'Dossiês',
-        href: '/documents/dossies',
-        moduloSlug: 'documentos',
-        iconPaths: [
-          'M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z',
         ],
       },
       {
@@ -120,6 +128,22 @@ export const ADMIN_NAV_ITEMS: readonly NavItem[] = [
         requiredRole: 'SUPER_ADMIN',
         iconPaths: [
           'M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z',
+        ],
+      },
+      {
+        label: 'Aparência do Sistema',
+        href: '/admin/aparencia-sistema',
+        moduloSlug: null,
+        iconPaths: [
+          'M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.5M7 17h.01',
+        ],
+      },
+      {
+        label: 'Aparência do Portal',
+        href: '/admin/aparencia-portal',
+        moduloSlug: null,
+        iconPaths: [
+          'M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-9a15 15 0 010 18m0-18a15 15 0 000 18M3.6 9h16.8M3.6 15h16.8',
         ],
       },
       {

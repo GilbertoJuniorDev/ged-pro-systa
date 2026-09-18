@@ -4,6 +4,7 @@ import { SystemService } from './system.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import type { SystemVersionDto, AdminSystemVersionDto } from './dto/system-version.dto';
+import type { SystemResourcesDto } from './dto/system-resources.dto';
 
 function makeVersionDto(): SystemVersionDto {
   return {
@@ -27,9 +28,17 @@ function makeAdminVersionDto(): AdminSystemVersionDto {
   };
 }
 
+function makeResourcesDto(): SystemResourcesDto {
+  return {
+    cpu: { usagePercent: 12.5, cores: 8 },
+    memory: { usagePercent: 35.2, totalBytes: 100, usedBytes: 35, freeBytes: 65 },
+    disk: { available: true, usagePercent: 82.4, totalBytes: 100, usedBytes: 82 },
+  };
+}
+
 describe('SystemController', () => {
   let controller: SystemController;
-  let service: jest.Mocked<Pick<SystemService, 'getVersion' | 'getAdminVersion'>>;
+  let service: jest.Mocked<Pick<SystemService, 'getVersion' | 'getAdminVersion' | 'getResources'>>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -40,6 +49,7 @@ describe('SystemController', () => {
           useValue: {
             getVersion: jest.fn(),
             getAdminVersion: jest.fn(),
+            getResources: jest.fn(),
           },
         },
       ],
@@ -75,6 +85,18 @@ describe('SystemController', () => {
 
       expect(result).toEqual(dto);
       expect(service.getAdminVersion).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('GET /system/resources', () => {
+    it('should return SystemResourcesDto from service', async () => {
+      const dto = makeResourcesDto();
+      service.getResources.mockResolvedValue(dto as unknown as SystemResourcesDto);
+
+      const result = await controller.getResources();
+
+      expect(result).toEqual(dto);
+      expect(service.getResources).toHaveBeenCalledTimes(1);
     });
   });
 });

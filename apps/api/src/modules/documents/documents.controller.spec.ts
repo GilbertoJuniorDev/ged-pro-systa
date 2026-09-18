@@ -127,6 +127,17 @@ describe('DocumentsController', () => {
       expect(documentsService.findAll).toHaveBeenCalledWith({}, makeJwtPayload());
       expect(documentsService.toResponseDto).toHaveBeenCalledWith(documents[0]);
     });
+
+    it('forwards search and semDossie query params to the service untouched', async () => {
+      documentsService.findAll.mockResolvedValue({ data: [], total: 0, page: 1, limit: 20 });
+
+      await controller.findAll({ search: 'contrato', semDossie: true }, makeJwtPayload());
+
+      expect(documentsService.findAll).toHaveBeenCalledWith(
+        { search: 'contrato', semDossie: true },
+        makeJwtPayload(),
+      );
+    });
   });
 
   describe('findOne', () => {
@@ -217,6 +228,28 @@ describe('DocumentsController', () => {
       );
       expect(result.destaque).toBe(true);
       expect(result.exigeCadastro).toBe(true);
+    });
+
+    it('uploads without nome/serieId/departamentoId (upload só repositório) and logs null classification', async () => {
+      const created = makeDocument({ departamentoId: null, serieId: null });
+      documentsService.upload.mockResolvedValue(created);
+      documentsService.toResponseDto.mockReturnValue(
+        makeResponseDto({ departamentoId: null, serieId: null }),
+      );
+      const emptyDto = {} as CreateDocumentDto;
+
+      const result = await controller.create(makeHttpRequest(), makeJwtPayload(), emptyDto, file);
+
+      expect(result.id).toBe('doc-1');
+      expect(documentsService.upload).toHaveBeenCalledWith(
+        { ...emptyDto, actingUser: makeJwtPayload() },
+        file,
+      );
+      expect(auditLogsService.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          dadosNovos: expect.objectContaining({ departamentoId: null, serieId: null }),
+        }),
+      );
     });
 
     it('throws BadRequestException when no file is provided', async () => {

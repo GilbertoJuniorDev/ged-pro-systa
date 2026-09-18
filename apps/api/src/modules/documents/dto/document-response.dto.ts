@@ -11,8 +11,8 @@ interface DocumentResponseInput {
   descricao: string | null;
   validade: Date | string | null;
   confidencialidade: Confidencialidade;
-  departamentoId: string;
-  serieId: string;
+  departamentoId: string | null;
+  serieId: string | null;
   dossieId: string | null;
   fase: DocumentFase;
   faseCorrenteDesde: Date | string;
@@ -23,7 +23,7 @@ interface DocumentResponseInput {
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
-  vencimentoCorrente: Date | string;
+  vencimentoCorrente: Date | string | null;
   vencimentoIntermediario: Date | string | null;
   elegivelTransferencia: boolean;
   destaque: boolean;
@@ -38,8 +38,8 @@ export class DocumentResponseDto {
   readonly descricao!: string | null;
   readonly validade!: string | null;
   readonly confidencialidade!: Confidencialidade;
-  readonly departamentoId!: string;
-  readonly serieId!: string;
+  readonly departamentoId!: string | null;
+  readonly serieId!: string | null;
   readonly dossieId!: string | null;
   readonly fase!: DocumentFase;
   readonly faseCorrenteDesde!: string;
@@ -50,7 +50,7 @@ export class DocumentResponseDto {
   readonly isActive!: boolean;
   readonly createdAt!: Date;
   readonly updatedAt!: Date;
-  readonly vencimentoCorrente!: string;
+  readonly vencimentoCorrente!: string | null;
   readonly vencimentoIntermediario!: string | null;
   readonly elegivelTransferencia!: boolean;
   readonly destaque!: boolean;
@@ -76,7 +76,7 @@ export class DocumentResponseDto {
     this.isActive = input.isActive;
     this.createdAt = input.createdAt;
     this.updatedAt = input.updatedAt;
-    this.vencimentoCorrente = toIsoDateRequired(input.vencimentoCorrente);
+    this.vencimentoCorrente = toIsoDate(input.vencimentoCorrente);
     this.vencimentoIntermediario = toIsoDate(input.vencimentoIntermediario);
     this.elegivelTransferencia = input.elegivelTransferencia;
     this.destaque = input.destaque;

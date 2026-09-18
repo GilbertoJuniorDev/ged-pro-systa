@@ -11,7 +11,7 @@ import { CONFIDENCIALIDADE } from '@/types';
 import { useUploadDocument } from '@/hooks/use-documents';
 import { useDepartments } from '@/hooks/use-departments';
 import { useDocumentSeries } from '@/hooks/use-document-series';
-import { useDossies } from '@/hooks/use-dossies';
+import { useDossieOptions } from '@/hooks/use-dossies';
 import { useAuth } from '@/hooks/use-auth';
 import { usePermissions, isFullAccessRole } from '@/hooks/use-permissions';
 import { Combobox } from '@/components/ui/combobox';
@@ -32,15 +32,30 @@ const ALLOWED_MIME_TYPES = [
 ];
 const MAX_FILE_SIZE = 26_214_400; // 25MB — mesmo limite do backend
 
-const schema = z.object({
-  nome: z.string().min(2, 'Mínimo 2 caracteres').max(200, 'Máximo 200 caracteres'),
-  descricao: z.string().max(1000, 'Máximo 1000 caracteres').optional().or(z.literal('')),
-  validade: z.string().optional().or(z.literal('')),
-  departamentoId: z.string().uuid('Selecione um departamento'),
-  serieId: z.string().uuid('Selecione uma série'),
-  dossieId: z.string().optional().or(z.literal('')),
-  confidentiality: confidentialitySchema,
-});
+const schema = z
+  .object({
+    nome: z
+      .string()
+      .max(200, 'Máximo 200 caracteres')
+      .refine((v) => v === '' || v.length >= 2, 'Mínimo 2 caracteres')
+      .optional()
+      .or(z.literal('')),
+    descricao: z.string().max(1000, 'Máximo 1000 caracteres').optional().or(z.literal('')),
+    validade: z.string().optional().or(z.literal('')),
+    departamentoId: z.string().optional().or(z.literal('')),
+    serieId: z.string().optional().or(z.literal('')),
+    dossieId: z.string().optional().or(z.literal('')),
+    confidentiality: confidentialitySchema,
+  })
+  .superRefine((val, ctx) => {
+    if (val.serieId && !val.departamentoId) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['departamentoId'],
+        message: 'Selecione o departamento da série',
+      });
+    }
+  });
 
 type FormData = z.infer<typeof schema>;
 
@@ -85,19 +100,24 @@ export function UploadDocumentForm() {
   }, [user?.selectedDepartmentId, setValue]);
 
   const watchedDepartamentoId = watch('departamentoId');
-  const { data: series } = useDocumentSeries(watchedDepartamentoId || undefined);
-  const { data: dossies } = useDossies(watchedDepartamentoId || undefined);
+  const watchedDepartamentoIdOrUndefined =
+    watchedDepartamentoId === '' ? undefined : watchedDepartamentoId;
+  const { data: series } = useDocumentSeries(watchedDepartamentoIdOrUndefined);
+  const { data: dossies } = useDossieOptions(watchedDepartamentoIdOrUndefined);
 
   useEffect(() => {
     setValue('serieId', '');
     setValue('dossieId', '');
   }, [watchedDepartamentoId, setValue]);
 
-  const departamentoOptions = isAdmin
-    ? (departamentos ?? []).map((d) => ({ value: d.id, label: d.nome }))
-    : (user?.departamentos ?? [])
-        .filter((d) => d.id === user?.selectedDepartmentId)
-        .map((d) => ({ value: d.id, label: d.nome }));
+  const departamentoOptions = [
+    { value: '', label: 'Nenhum (apenas repositório)' },
+    ...(isAdmin
+      ? (departamentos ?? []).map((d) => ({ value: d.id, label: d.nome }))
+      : (user?.departamentos ?? [])
+          .filter((d) => d.id === user?.selectedDepartmentId)
+          .map((d) => ({ value: d.id, label: d.nome }))),
+  ];
   const serieOptions = (series ?? []).map((s) => ({ value: s.id, label: `${s.codigo} — ${s.nome}` }));
   const dossieOptions = [
     { value: '', label: 'Nenhum (avulso)' },
@@ -132,12 +152,12 @@ export function UploadDocumentForm() {
     upload.mutate(
       {
         file,
-        nome: data.nome,
+        nome: data.nome === '' ? undefined : data.nome,
         descricao: data.descricao === '' ? undefined : data.descricao,
         validade: data.validade === '' ? undefined : data.validade,
         confidencialidade: data.confidentiality.confidencialidade,
-        departamentoId: data.departamentoId,
-        serieId: data.serieId,
+        departamentoId: data.departamentoId === '' ? undefined : data.departamentoId,
+        serieId: data.serieId === '' ? undefined : data.serieId,
         dossieId: data.dossieId === '' ? undefined : data.dossieId,
         destaque: data.confidentiality.destaque,
         exigeCadastro: data.confidentiality.exigeCadastro,
@@ -215,7 +235,7 @@ export function UploadDocumentForm() {
 
       <div>
         <label className="block text-sm text-slate-600 dark:text-slate-400 mb-1" htmlFor="nome">
-          Nome <span className="text-rose-500 dark:text-rose-400">*</span>
+          Nome
         </label>
         <input
           id="nome"
@@ -242,9 +262,7 @@ export function UploadDocumentForm() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
-          <label className="block text-sm text-slate-600 dark:text-slate-400 mb-1">
-            Departamento <span className="text-rose-500 dark:text-rose-400">*</span>
-          </label>
+          <label className="block text-sm text-slate-600 dark:text-slate-400 mb-1">Departamento</label>
           <Controller
             name="departamentoId"
             control={control}
@@ -254,7 +272,6 @@ export function UploadDocumentForm() {
                 onValueChange={field.onChange}
                 options={departamentoOptions}
                 placeholder="Selecione o departamento"
-                disabled={!isAdmin}
                 error={!!errors.departamentoId}
               />
             )}
@@ -277,9 +294,7 @@ export function UploadDocumentForm() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
-          <label className="block text-sm text-slate-600 dark:text-slate-400 mb-1">
-            Série <span className="text-rose-500 dark:text-rose-400">*</span>
-          </label>
+          <label className="block text-sm text-slate-600 dark:text-slate-400 mb-1">Série</label>
           <Controller
             name="serieId"
             control={control}
@@ -294,7 +309,13 @@ export function UploadDocumentForm() {
               />
             )}
           />
-          {errors.serieId && <p className="text-rose-500 dark:text-rose-400 text-xs mt-1">{errors.serieId.message}</p>}
+          {errors.serieId ? (
+            <p className="text-rose-500 dark:text-rose-400 text-xs mt-1">{errors.serieId.message}</p>
+          ) : (
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-500">
+              Opcional — você pode classificar o documento depois.
+            </p>
+          )}
         </div>
         <div>
           <label className="block text-sm text-slate-600 dark:text-slate-400 mb-1">Dossiê</label>

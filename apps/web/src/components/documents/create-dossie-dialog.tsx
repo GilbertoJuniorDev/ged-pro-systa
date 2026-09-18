@@ -5,6 +5,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useCreateDossie } from '@/hooks/use-dossies';
+import { useArquivos } from '@/hooks/use-arquivos';
 import { useDepartments } from '@/hooks/use-departments';
 import { useAuth } from '@/hooks/use-auth';
 import { isFullAccessRole } from '@/hooks/use-permissions';
@@ -14,6 +15,7 @@ const schema = z.object({
   nome: z.string().min(2, 'Mínimo 2 caracteres').max(150, 'Máximo 150 caracteres'),
   descricao: z.string().max(500, 'Máximo 500 caracteres').optional().or(z.literal('')),
   departamentoId: z.string().uuid('Selecione um departamento'),
+  arquivoId: z.string().uuid().optional().or(z.literal('')),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -32,6 +34,7 @@ export function CreateDossieDialog({ onClose }: Props) {
     handleSubmit,
     control,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<FormData>({ resolver: zodResolver(schema) });
 
@@ -47,12 +50,24 @@ export function CreateDossieDialog({ onClose }: Props) {
         .filter((d) => d.id === user?.selectedDepartmentId)
         .map((d) => ({ value: d.id, label: d.nome }));
 
+  const departamentoIdSelecionado = watch('departamentoId');
+  const { data: arquivosAbertos } = useArquivos({
+    departamentoId: departamentoIdSelecionado || undefined,
+    status: 'ABERTO',
+    limit: 100,
+  });
+  const arquivoOptions = [
+    { value: '', label: 'Nenhum (dossiê avulso)' },
+    ...(arquivosAbertos?.data.map((a) => ({ value: a.id, label: `${a.codigo} — ${a.nome}` })) ?? []),
+  ];
+
   function onSubmit(data: FormData) {
     create.mutate(
       {
         nome: data.nome,
         descricao: data.descricao ?? null,
         departamentoId: data.departamentoId,
+        arquivoId: data.arquivoId === '' ? null : (data.arquivoId ?? null),
       },
       { onSuccess: onClose },
     );
@@ -113,6 +128,24 @@ export function CreateDossieDialog({ onClose }: Props) {
             {errors.departamentoId && (
               <p className="text-rose-400 text-xs mt-1">{errors.departamentoId.message}</p>
             )}
+          </div>
+          <div>
+            <label className="block text-sm text-slate-400 mb-1" htmlFor="arquivoId">
+              Arquivo
+            </label>
+            <Controller
+              name="arquivoId"
+              control={control}
+              render={({ field }) => (
+                <Combobox
+                  value={field.value ?? ''}
+                  onValueChange={field.onChange}
+                  options={arquivoOptions}
+                  placeholder="Nenhum (dossiê avulso)"
+                  disabled={!departamentoIdSelecionado}
+                />
+              )}
+            />
           </div>
           <div className="flex gap-3 justify-end pt-2">
             <button

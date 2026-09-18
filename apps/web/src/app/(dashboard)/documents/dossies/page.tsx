@@ -1,10 +1,5 @@
-import type { Metadata } from 'next';
-import { DossiesPageClient } from './_components/dossies-page-client';
-
-export const metadata: Metadata = {
-  title: 'Dossiês — GED Pro',
-};
+import { redirect } from 'next/navigation';
 
 export default function DossiesPage() {
-  return <DossiesPageClient />;
+  redirect('/documents?view=dossies');
 }

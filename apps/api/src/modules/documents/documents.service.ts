@@ -115,7 +115,13 @@ export class DocumentsService {
       return true;
     }
     if (document.confidencialidade === CONFIDENCIALIDADE.RESTRITO) {
-      if (scope.userDepartamentoIds.includes(document.departamentoId)) {
+      const { departamentoId } = document;
+      if (departamentoId !== null && scope.userDepartamentoIds.includes(departamentoId)) {
+        return true;
+      }
+      // Documento não classificado (sem departamento): só o próprio autor do upload
+      // enxerga, até a classificação — espelha o ramo NULL de accessScopeSqlFragment.
+      if (departamentoId === null && document.criadoPor === scope.userId) {
         return true;
       }
       return this.documentAccessDepartmentRepo.exists({
@@ -134,6 +140,9 @@ export class DocumentsService {
   // modelo antigo, restrito a departamento). A query sempre é executada, e o repositório
   // avalia PUBLICO/CONFIDENCIAL de forma independente de userDepartamentoIds estar vazio.
   async findAll(filter: DocumentQueryFilter, user: JwtPayload): Promise<PaginatedDocuments> {
+    if (filter.dossieId !== undefined && filter.semDossie === true) {
+      throw new BadRequestException('Informe dossieId ou semDossie, não ambos');
+    }
     const accessScope = await resolveAccessScope(user, this.userDepartmentsService);
     return this.documentRepository.findAll({
       ...filter,
@@ -157,7 +166,14 @@ export class DocumentsService {
 
   async upload(dto: UploadDocumentData, file: Express.Multer.File): Promise<Document> {
     const scope = await resolveAccessScope(dto.actingUser, this.userDepartmentsService);
-    if (scope !== null && !scope.userDepartamentoIds.includes(dto.departamentoId)) {
+    // Upload "só repositório": sem departamento informado não há escopo a validar. O
+    // controle de acesso volta na classificação (PATCH), e a visibilidade até lá é
+    // dada por criado_por (ver access-scope.ts).
+    if (
+      scope !== null &&
+      dto.departamentoId !== undefined &&
+      !scope.userDepartamentoIds.includes(dto.departamentoId)
+    ) {
       throw new ForbiddenException('Você não tem acesso a este departamento');
     }
     return this.uploadDocumentUseCase.execute(dto, file);
@@ -170,24 +186,37 @@ export class DocumentsService {
   ): Promise<Document> {
     const current = await this.findOne(id);
 
+    // Documento sem classificação (departamento_id NULL): a primeira série informada
+    // define o departamento — não há o que comparar antes disso.
+    let departamentoAdotado: string | undefined;
+
     if (data.serieId && data.serieId !== current.serieId) {
       const serie = await this.documentSeriesRepo.findOne({ where: { id: data.serieId } });
       if (!serie) {
         throw new BadRequestException('Série não encontrada');
       }
-      if (serie.departamentoId !== current.departamentoId) {
+      if (current.departamentoId === null) {
+        departamentoAdotado = serie.departamentoId;
+      } else if (serie.departamentoId !== current.departamentoId) {
         throw new BadRequestException(
           'A série deve pertencer ao mesmo departamento do documento',
         );
       }
     }
 
+    const targetDepartamentoId = departamentoAdotado ?? current.departamentoId;
+
     if (data.dossieId && data.dossieId !== current.dossieId) {
+      if (targetDepartamentoId === null) {
+        throw new BadRequestException(
+          'Classifique o documento em uma série antes de vinculá-lo a um dossiê',
+        );
+      }
       const dossie = await this.dossieRepo.findOne({ where: { id: data.dossieId } });
       if (!dossie) {
         throw new BadRequestException('Dossiê não encontrado');
       }
-      if (dossie.departamentoId !== current.departamentoId) {
+      if (dossie.departamentoId !== targetDepartamentoId) {
         throw new BadRequestException(
           'O dossiê deve pertencer ao mesmo departamento do documento',
         );
@@ -226,6 +255,7 @@ export class DocumentsService {
         validade:
           data.validade !== undefined ? (data.validade ? new Date(data.validade) : null) : undefined,
         confidencialidade: managesConfidentiality ? confidencialidade : undefined,
+        departamentoId: departamentoAdotado,
         serieId: data.serieId,
         dossieId: data.dossieId,
         isActive: data.isActive,
@@ -260,6 +290,9 @@ export class DocumentsService {
 
   async transferir(id: string): Promise<Document> {
     const document = await this.findOne(id);
+    if (document.serieId === null) {
+      throw new ConflictException('Documento sem série não pode ser transferido de fase');
+    }
     if (document.fase !== DOCUMENT_FASE.CORRENTE) {
       throw new ConflictException('Documento não está na fase corrente');
     }
@@ -299,20 +332,24 @@ export class DocumentsService {
       acessoUsuarioIds: [],
     },
   ): DocumentResponseDto {
-    if (!document.serie) {
+    if (document.serieId !== null && !document.serie) {
       throw new Error(
         `Documento ${document.id} carregado sem a série associada (serieId=${document.serieId})`,
       );
     }
-    const vencimentoCorrente = addMonths(
-      document.faseCorrenteDesde,
-      document.serie.prazoCorrenteMeses,
-    );
-    const vencimentoIntermediario = document.faseIntermediarioDesde
-      ? addMonths(document.faseIntermediarioDesde, document.serie.prazoIntermediarioMeses)
-      : null;
-    const elegivelTransferencia =
-      document.fase === DOCUMENT_FASE.CORRENTE && new Date() >= vencimentoCorrente;
+
+    let vencimentoCorrente: Date | null = null;
+    let vencimentoIntermediario: Date | null = null;
+    let elegivelTransferencia = false;
+
+    if (document.serie) {
+      vencimentoCorrente = addMonths(document.faseCorrenteDesde, document.serie.prazoCorrenteMeses);
+      vencimentoIntermediario = document.faseIntermediarioDesde
+        ? addMonths(document.faseIntermediarioDesde, document.serie.prazoIntermediarioMeses)
+        : null;
+      elegivelTransferencia =
+        document.fase === DOCUMENT_FASE.CORRENTE && new Date() >= vencimentoCorrente;
+    }
 
     return new DocumentResponseDto({
       id: document.id,
