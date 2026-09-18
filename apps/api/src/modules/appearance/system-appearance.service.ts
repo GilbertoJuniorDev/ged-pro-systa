@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { AppearanceSetting } from '@ged/database';
+import { DEFAULT_SYSTEM_APPEARANCE } from '@ged/types';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
 import { LogoStorageService } from './logo-storage.service';
 import {
@@ -42,15 +43,34 @@ export class SystemAppearanceService {
         primaryColor: existing.primaryColor,
         secondaryColor: existing.secondaryColor,
         backgroundColor: existing.backgroundColor,
+        useDefaultTheme: existing.useDefaultTheme,
       },
       dadosNovos: {
         primaryColor: updated.primaryColor,
         secondaryColor: updated.secondaryColor,
         backgroundColor: updated.backgroundColor,
+        useDefaultTheme: updated.useDefaultTheme,
       },
     });
 
     return updated;
+  }
+
+  /**
+   * Valor EFETIVO da aparência do sistema: cores padrão quando `useDefaultTheme` está
+   * ligado, cores salvas caso contrário. Usado pelo endpoint público
+   * (`GET /public/appearance/system`), que decide o que é realmente renderizado no
+   * login. Diferente de `getSingleton()`, que devolve o valor CRU para o admin.
+   */
+  async getEffectiveAppearance(): Promise<AppearanceSetting> {
+    const setting = await this.repository.findSingleton();
+    if (!setting.useDefaultTheme) return setting;
+    return {
+      ...setting,
+      primaryColor: DEFAULT_SYSTEM_APPEARANCE.primaryColor,
+      secondaryColor: DEFAULT_SYSTEM_APPEARANCE.secondaryColor,
+      backgroundColor: DEFAULT_SYSTEM_APPEARANCE.backgroundColor,
+    };
   }
 
   async uploadLogo(requesterId: string, file: Express.Multer.File): Promise<AppearanceSetting> {

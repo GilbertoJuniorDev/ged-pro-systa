@@ -630,6 +630,16 @@ export interface UpdateSystemAppearanceInput {
   readonly primaryColor: string;
   readonly secondaryColor: string;
   readonly backgroundColor: string;
+  readonly useDefaultTheme: boolean;
+}
+
+// *AdminDto — exclusivos do admin autenticado (`GET /admin/appearance/*`), que precisa
+// do valor CRU salvo no banco (inclusive a flag `useDefaultTheme`) para poder restaurar
+// a última cor customizada ao desmarcar o checkbox "Usar tema padrão". A flag NÃO entra
+// em SystemAppearanceDto/PortalAppearanceDto: essas alimentam o endpoint público
+// (`GET /public/appearance/*`), que devolve o valor EFETIVO já resolvido.
+export interface SystemAppearanceAdminDto extends SystemAppearanceDto {
+  readonly useDefaultTheme: boolean;
 }
 
 export interface PortalAppearanceDto {
@@ -644,6 +654,10 @@ export interface PortalAppearanceDto {
   readonly updatedAt: string;
 }
 
+export interface PortalAppearanceAdminDto extends PortalAppearanceDto {
+  readonly useDefaultTheme: boolean;
+}
+
 export interface UpdatePortalAppearanceInput {
   readonly primaryColor: string;
   readonly secondaryColor: string;
@@ -651,6 +665,7 @@ export interface UpdatePortalAppearanceInput {
   readonly heroTitle: string;
   readonly heroSubtitle: string;
   readonly footerMessage: string;
+  readonly useDefaultTheme: boolean;
 }
 
 

@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { PortalAppearance } from '@ged/database';
+import { DEFAULT_PORTAL_APPEARANCE } from '@ged/types';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
 import { LogoStorageService } from './logo-storage.service';
 import {
@@ -45,6 +46,7 @@ export class PortalAppearanceService {
         heroTitle: existing.heroTitle,
         heroSubtitle: existing.heroSubtitle,
         footerMessage: existing.footerMessage,
+        useDefaultTheme: existing.useDefaultTheme,
       },
       dadosNovos: {
         primaryColor: updated.primaryColor,
@@ -53,10 +55,28 @@ export class PortalAppearanceService {
         heroTitle: updated.heroTitle,
         heroSubtitle: updated.heroSubtitle,
         footerMessage: updated.footerMessage,
+        useDefaultTheme: updated.useDefaultTheme,
       },
     });
 
     return updated;
+  }
+
+  /**
+   * Valor EFETIVO da aparência do portal: cores padrão quando `useDefaultTheme` está
+   * ligado, cores salvas caso contrário. Usado pelo endpoint público
+   * (`GET /public/appearance/portal`), que decide o que é realmente renderizado no
+   * portal. Diferente de `getSingleton()`, que devolve o valor CRU para o admin.
+   */
+  async getEffectiveAppearance(): Promise<PortalAppearance> {
+    const setting = await this.repository.findSingleton();
+    if (!setting.useDefaultTheme) return setting;
+    return {
+      ...setting,
+      primaryColor: DEFAULT_PORTAL_APPEARANCE.primaryColor,
+      secondaryColor: DEFAULT_PORTAL_APPEARANCE.secondaryColor,
+      backgroundColor: DEFAULT_PORTAL_APPEARANCE.backgroundColor,
+    };
   }
 
   async uploadLogo(requesterId: string, file: Express.Multer.File): Promise<PortalAppearance> {

@@ -12,6 +12,7 @@ const mockSetting = (overrides: Partial<PortalAppearance> = {}): PortalAppearanc
     primaryColor: '#4f46e5',
     secondaryColor: '#0ea5e9',
     backgroundColor: '#f8fafc',
+    useDefaultTheme: false,
     logoPath: null,
     logoMimeType: null,
     logoVersion: 0,
@@ -77,6 +78,7 @@ describe('PortalAppearanceService', () => {
         heroTitle: 'Novo título',
         heroSubtitle: 'Novo subtítulo',
         footerMessage: 'Nova mensagem',
+        useDefaultTheme: true,
       };
       const updated = mockSetting(payload);
       repo.findSingleton.mockResolvedValue(existing);
@@ -89,8 +91,11 @@ describe('PortalAppearanceService', () => {
         expect.objectContaining({
           usuarioId: 'user-1',
           acao: 'portal_appearance.updated',
-          dadosAnteriores: expect.objectContaining({ heroTitle: 'Portal de Documentos Públicos' }),
-          dadosNovos: expect.objectContaining({ heroTitle: 'Novo título' }),
+          dadosAnteriores: expect.objectContaining({
+            heroTitle: 'Portal de Documentos Públicos',
+            useDefaultTheme: false,
+          }),
+          dadosNovos: expect.objectContaining({ heroTitle: 'Novo título', useDefaultTheme: true }),
         }),
       );
       expect(result).toBe(updated);
@@ -155,6 +160,43 @@ describe('PortalAppearanceService', () => {
       logoStorage.getReadStream.mockReturnValue(stream as ReturnType<LogoStorageService['getReadStream']>);
 
       await expect(service.getLogoFile()).resolves.toEqual({ stream, mimeType: 'image/png' });
+    });
+  });
+
+  describe('getEffectiveAppearance', () => {
+    it('returns the raw entity when useDefaultTheme is false', async () => {
+      const setting = mockSetting({ useDefaultTheme: false, primaryColor: '#123456' });
+      repo.findSingleton.mockResolvedValue(setting);
+
+      const result = await service.getEffectiveAppearance();
+
+      expect(result).toBe(setting);
+    });
+
+    it('returns a copy with the default colors when useDefaultTheme is true, preserving other fields', async () => {
+      const setting = mockSetting({
+        useDefaultTheme: true,
+        primaryColor: '#123456',
+        secondaryColor: '#654321',
+        backgroundColor: '#abcdef',
+        id: 'portal-appearance-1',
+        logoPath: 'portal/logo.png',
+        logoVersion: 5,
+      });
+      repo.findSingleton.mockResolvedValue(setting);
+
+      const result = await service.getEffectiveAppearance();
+
+      expect(result).toEqual({
+        ...setting,
+        primaryColor: '#4f46e5',
+        secondaryColor: '#0ea5e9',
+        backgroundColor: '#f8fafc',
+      });
+      expect(result.id).toBe('portal-appearance-1');
+      expect(result.logoPath).toBe('portal/logo.png');
+      expect(result.logoVersion).toBe(5);
+      expect(result.updatedAt).toBe(setting.updatedAt);
     });
   });
 });

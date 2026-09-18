@@ -1,4 +1,4 @@
-import { IsString, Matches } from 'class-validator';
+import { IsBoolean, IsString, Matches } from 'class-validator';
 
 export const HEX_COLOR_PATTERN = /^#[0-9A-Fa-f]{6}$/;
 const HEX_COLOR_MESSAGE = 'Cor deve estar no formato #RRGGBB';
@@ -15,4 +15,8 @@ export abstract class AppearanceColorsDto {
   @IsString()
   @Matches(HEX_COLOR_PATTERN, { message: HEX_COLOR_MESSAGE })
   readonly backgroundColor!: string;
+
+  // Não é uma cor, mas fica aqui por ser idêntico entre system/portal (DRY) — ver AppearanceColorsDto.
+  @IsBoolean()
+  readonly useDefaultTheme!: boolean;
 }

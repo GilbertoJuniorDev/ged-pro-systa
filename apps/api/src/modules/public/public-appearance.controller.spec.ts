@@ -9,12 +9,12 @@ const makeResponse = (): jest.Mocked<Pick<Response, 'set'>> => ({ set: jest.fn()
 
 describe('PublicAppearanceController', () => {
   let controller: PublicAppearanceController;
-  let systemAppearanceService: jest.Mocked<Pick<SystemAppearanceService, 'getSingleton' | 'getLogoFile'>>;
-  let portalAppearanceService: jest.Mocked<Pick<PortalAppearanceService, 'getSingleton' | 'getLogoFile'>>;
+  let systemAppearanceService: jest.Mocked<Pick<SystemAppearanceService, 'getEffectiveAppearance' | 'getLogoFile'>>;
+  let portalAppearanceService: jest.Mocked<Pick<PortalAppearanceService, 'getEffectiveAppearance' | 'getLogoFile'>>;
 
   beforeEach(async () => {
-    systemAppearanceService = { getSingleton: jest.fn(), getLogoFile: jest.fn() };
-    portalAppearanceService = { getSingleton: jest.fn(), getLogoFile: jest.fn() };
+    systemAppearanceService = { getEffectiveAppearance: jest.fn(), getLogoFile: jest.fn() };
+    portalAppearanceService = { getEffectiveAppearance: jest.fn(), getLogoFile: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [PublicAppearanceController],
@@ -29,7 +29,7 @@ describe('PublicAppearanceController', () => {
 
   describe('system', () => {
     it('maps the entity to the public DTO shape', async () => {
-      systemAppearanceService.getSingleton.mockResolvedValue({
+      systemAppearanceService.getEffectiveAppearance.mockResolvedValue({
         primaryColor: '#4f46e5',
         secondaryColor: '#0ea5e9',
         backgroundColor: '#0f172a',
@@ -48,6 +48,29 @@ describe('PublicAppearanceController', () => {
         logoVersion: 3,
         updatedAt: '2026-01-01T00:00:00.000Z',
       });
+    });
+
+    it('returns the default colors when the effective appearance resolves useDefaultTheme=true', async () => {
+      // getEffectiveAppearance já resolve a flag — o controller só espelha o que recebe.
+      systemAppearanceService.getEffectiveAppearance.mockResolvedValue({
+        primaryColor: '#4f46e5',
+        secondaryColor: '#0ea5e9',
+        backgroundColor: '#0f172a',
+        logoPath: null,
+        logoVersion: 0,
+        updatedAt: new Date('2026-01-01'),
+      } as never);
+
+      const result = await controller.system();
+
+      expect(result).toEqual(
+        expect.objectContaining({
+          primaryColor: '#4f46e5',
+          secondaryColor: '#0ea5e9',
+          backgroundColor: '#0f172a',
+        }),
+      );
+      expect(result).not.toHaveProperty('useDefaultTheme');
     });
   });
 
@@ -78,7 +101,7 @@ describe('PublicAppearanceController', () => {
 
   describe('portal', () => {
     it('maps the entity to the public DTO shape, including hero/footer texts', async () => {
-      portalAppearanceService.getSingleton.mockResolvedValue({
+      portalAppearanceService.getEffectiveAppearance.mockResolvedValue({
         primaryColor: '#4f46e5',
         secondaryColor: '#0ea5e9',
         backgroundColor: '#f8fafc',
@@ -95,6 +118,31 @@ describe('PublicAppearanceController', () => {
       expect(result).toEqual(
         expect.objectContaining({ hasLogo: false, heroTitle: 'Título', footerMessage: 'Mensagem' }),
       );
+    });
+
+    it('returns the default colors when the effective appearance resolves useDefaultTheme=true', async () => {
+      portalAppearanceService.getEffectiveAppearance.mockResolvedValue({
+        primaryColor: '#4f46e5',
+        secondaryColor: '#0ea5e9',
+        backgroundColor: '#f8fafc',
+        logoPath: null,
+        logoVersion: 0,
+        heroTitle: 'Título',
+        heroSubtitle: 'Subtítulo',
+        footerMessage: 'Mensagem',
+        updatedAt: new Date('2026-01-01'),
+      } as never);
+
+      const result = await controller.portal();
+
+      expect(result).toEqual(
+        expect.objectContaining({
+          primaryColor: '#4f46e5',
+          secondaryColor: '#0ea5e9',
+          backgroundColor: '#f8fafc',
+        }),
+      );
+      expect(result).not.toHaveProperty('useDefaultTheme');
     });
   });
 

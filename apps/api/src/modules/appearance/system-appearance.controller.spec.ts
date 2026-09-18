@@ -12,6 +12,7 @@ const mockSetting = (overrides: Partial<AppearanceSetting> = {}): AppearanceSett
     primaryColor: '#4f46e5',
     secondaryColor: '#0ea5e9',
     backgroundColor: '#0f172a',
+    useDefaultTheme: false,
     logoPath: null,
     logoVersion: 0,
     updatedAt: new Date('2026-01-01'),
@@ -55,7 +56,12 @@ describe('SystemAppearanceController', () => {
     const result = await controller.findOne();
 
     expect(result).toEqual(
-      expect.objectContaining({ primaryColor: '#4f46e5', hasLogo: true, logoVersion: 2 }),
+      expect.objectContaining({
+        primaryColor: '#4f46e5',
+        useDefaultTheme: false,
+        hasLogo: true,
+        logoVersion: 2,
+      }),
     );
   });
 
@@ -68,13 +74,19 @@ describe('SystemAppearanceController', () => {
   });
 
   it('PUT / delegates to service.updateColors with the requester id', async () => {
-    const dto = { primaryColor: '#ff0000', secondaryColor: '#0ea5e9', backgroundColor: '#0f172a' };
+    const dto = {
+      primaryColor: '#ff0000',
+      secondaryColor: '#0ea5e9',
+      backgroundColor: '#0f172a',
+      useDefaultTheme: true,
+    };
     service.updateColors.mockResolvedValue(mockSetting(dto));
 
     const result = await controller.update(dto, user);
 
     expect(service.updateColors).toHaveBeenCalledWith('user-1', dto);
     expect(result.primaryColor).toBe('#ff0000');
+    expect(result.useDefaultTheme).toBe(true);
   });
 
   it('POST /logo throws BadRequestException when no file is uploaded', async () => {

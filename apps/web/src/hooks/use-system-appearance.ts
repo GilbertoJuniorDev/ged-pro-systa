@@ -5,17 +5,17 @@ import { useSession } from 'next-auth/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import { useAppearanceRefresh } from '@/hooks/use-appearance-refresh';
-import type { SystemAppearanceDto, UpdateSystemAppearanceInput } from '@/types';
+import type { SystemAppearanceAdminDto, SystemAppearanceDto, UpdateSystemAppearanceInput } from '@/types';
 
 const QUERY_KEY = ['admin-appearance', 'system'];
 
 export function useSystemAppearance() {
   const { data: session } = useSession();
 
-  return useQuery<SystemAppearanceDto>({
+  return useQuery<SystemAppearanceAdminDto>({
     queryKey: QUERY_KEY,
     queryFn: () =>
-      apiClient.get<SystemAppearanceDto>('/admin/appearance/system', {
+      apiClient.get<SystemAppearanceAdminDto>('/admin/appearance/system', {
         token: session?.user?.accessToken,
       }),
     enabled: !!session?.user?.accessToken,
@@ -32,7 +32,7 @@ export function useUpdateSystemAppearance() {
 
   return useMutation({
     mutationFn: (payload: UpdateSystemAppearanceInput) =>
-      apiClient.put<SystemAppearanceDto>('/admin/appearance/system', payload, {
+      apiClient.put<SystemAppearanceAdminDto>('/admin/appearance/system', payload, {
         token: session?.user?.accessToken,
       }),
     onSuccess: async () => {

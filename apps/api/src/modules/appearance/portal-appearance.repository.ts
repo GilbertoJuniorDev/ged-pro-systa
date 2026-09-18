@@ -28,6 +28,7 @@ export class PortalAppearanceRepository implements IPortalAppearanceRepository {
       heroTitle: data.heroTitle,
       heroSubtitle: data.heroSubtitle,
       footerMessage: data.footerMessage,
+      useDefaultTheme: data.useDefaultTheme,
     });
     return this.repo.findOneOrFail({ where: { id: existing.id } });
   }

@@ -25,6 +25,7 @@ export class SystemAppearanceRepository implements ISystemAppearanceRepository {
       primaryColor: data.primaryColor,
       secondaryColor: data.secondaryColor,
       backgroundColor: data.backgroundColor,
+      useDefaultTheme: data.useDefaultTheme,
     });
     return this.repo.findOneOrFail({ where: { id: existing.id } });
   }

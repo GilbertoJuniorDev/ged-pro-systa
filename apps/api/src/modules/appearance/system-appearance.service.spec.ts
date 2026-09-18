@@ -12,6 +12,7 @@ const mockSetting = (overrides: Partial<AppearanceSetting> = {}): AppearanceSett
     primaryColor: '#4f46e5',
     secondaryColor: '#0ea5e9',
     backgroundColor: '#0f172a',
+    useDefaultTheme: false,
     logoPath: null,
     logoMimeType: null,
     logoVersion: 0,
@@ -75,7 +76,7 @@ describe('SystemAppearanceService', () => {
   describe('updateColors', () => {
     it('updates colors and logs the audit trail with before/after values', async () => {
       const existing = mockSetting();
-      const updated = mockSetting({ primaryColor: '#ff0000' });
+      const updated = mockSetting({ primaryColor: '#ff0000', useDefaultTheme: true });
       repo.findSingleton.mockResolvedValue(existing);
       repo.updateColors.mockResolvedValue(updated);
 
@@ -83,19 +84,21 @@ describe('SystemAppearanceService', () => {
         primaryColor: '#ff0000',
         secondaryColor: '#0ea5e9',
         backgroundColor: '#0f172a',
+        useDefaultTheme: true,
       });
 
       expect(repo.updateColors).toHaveBeenCalledWith({
         primaryColor: '#ff0000',
         secondaryColor: '#0ea5e9',
         backgroundColor: '#0f172a',
+        useDefaultTheme: true,
       });
       expect(auditLogs.log).toHaveBeenCalledWith(
         expect.objectContaining({
           usuarioId: 'user-1',
           acao: 'system_appearance.colors_updated',
-          dadosAnteriores: expect.objectContaining({ primaryColor: '#4f46e5' }),
-          dadosNovos: expect.objectContaining({ primaryColor: '#ff0000' }),
+          dadosAnteriores: expect.objectContaining({ primaryColor: '#4f46e5', useDefaultTheme: false }),
+          dadosNovos: expect.objectContaining({ primaryColor: '#ff0000', useDefaultTheme: true }),
         }),
       );
       expect(result).toBe(updated);
@@ -190,6 +193,43 @@ describe('SystemAppearanceService', () => {
       const result = await service.getLogoFile();
 
       expect(result).toEqual({ stream, mimeType: 'image/png' });
+    });
+  });
+
+  describe('getEffectiveAppearance', () => {
+    it('returns the raw entity when useDefaultTheme is false', async () => {
+      const setting = mockSetting({ useDefaultTheme: false, primaryColor: '#123456' });
+      repo.findSingleton.mockResolvedValue(setting);
+
+      const result = await service.getEffectiveAppearance();
+
+      expect(result).toBe(setting);
+    });
+
+    it('returns a copy with the default colors when useDefaultTheme is true, preserving other fields', async () => {
+      const setting = mockSetting({
+        useDefaultTheme: true,
+        primaryColor: '#123456',
+        secondaryColor: '#654321',
+        backgroundColor: '#abcdef',
+        id: 'appearance-1',
+        logoPath: 'system/logo.png',
+        logoVersion: 5,
+      });
+      repo.findSingleton.mockResolvedValue(setting);
+
+      const result = await service.getEffectiveAppearance();
+
+      expect(result).toEqual({
+        ...setting,
+        primaryColor: '#4f46e5',
+        secondaryColor: '#0ea5e9',
+        backgroundColor: '#0f172a',
+      });
+      expect(result.id).toBe('appearance-1');
+      expect(result.logoPath).toBe('system/logo.png');
+      expect(result.logoVersion).toBe(5);
+      expect(result.updatedAt).toBe(setting.updatedAt);
     });
   });
 });

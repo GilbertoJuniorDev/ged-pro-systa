@@ -6,6 +6,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Spinner } from '@/components/ui/spinner';
+import { Checkbox } from '@/components/ui/checkbox';
 import { ColorField } from '@/components/branding/color-field';
 import { AppearancePreview } from '@/components/branding/appearance-preview';
 import { buildLogoUrl } from '@/lib/appearance';
@@ -25,6 +26,7 @@ const schema = z.object({
   primaryColor: hexSchema,
   secondaryColor: hexSchema,
   backgroundColor: hexSchema,
+  useDefaultTheme: z.boolean(),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -34,6 +36,7 @@ const DEFAULT_VALUES: FormValues = {
   primaryColor: DEFAULT_SYSTEM_APPEARANCE.primaryColor,
   secondaryColor: DEFAULT_SYSTEM_APPEARANCE.secondaryColor,
   backgroundColor: DEFAULT_SYSTEM_APPEARANCE.backgroundColor,
+  useDefaultTheme: true,
 };
 
 export function SystemAppearancePageClient() {
@@ -62,11 +65,24 @@ export function SystemAppearancePageClient() {
         primaryColor: data.primaryColor,
         secondaryColor: data.secondaryColor,
         backgroundColor: data.backgroundColor,
+        useDefaultTheme: data.useDefaultTheme,
       });
     }
   }, [data, reset]);
 
   const watched = watch();
+
+  const previewColors = watched.useDefaultTheme
+    ? {
+        primaryColor: DEFAULT_SYSTEM_APPEARANCE.primaryColor,
+        secondaryColor: DEFAULT_SYSTEM_APPEARANCE.secondaryColor,
+        backgroundColor: DEFAULT_SYSTEM_APPEARANCE.backgroundColor,
+      }
+    : {
+        primaryColor: watched.primaryColor,
+        secondaryColor: watched.secondaryColor,
+        backgroundColor: watched.backgroundColor,
+      };
 
   function onSubmit(values: FormValues) {
     update.mutate(values);
@@ -112,6 +128,22 @@ export function SystemAppearancePageClient() {
             onSubmit={handleSubmit(onSubmit)}
             className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900"
           >
+            <Controller
+              name="useDefaultTheme"
+              control={control}
+              render={({ field }) => (
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <Checkbox
+                    checked={field.value}
+                    onChange={(e) => field.onChange(e.target.checked)}
+                  />
+                  <span className="text-sm text-slate-700 dark:text-slate-300">
+                    Usar cores padrão do sistema
+                  </span>
+                </label>
+              )}
+            />
+
             <div>
               <h3 className="mb-1 text-base font-semibold text-slate-900 dark:text-slate-100">Paleta de cores</h3>
               <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
@@ -128,6 +160,7 @@ export function SystemAppearancePageClient() {
                       value={field.value}
                       onChange={field.onChange}
                       error={errors.primaryColor?.message}
+                      disabled={watched.useDefaultTheme}
                     />
                   )}
                 />
@@ -140,6 +173,7 @@ export function SystemAppearancePageClient() {
                       value={field.value}
                       onChange={field.onChange}
                       error={errors.secondaryColor?.message}
+                      disabled={watched.useDefaultTheme}
                     />
                   )}
                 />
@@ -152,6 +186,7 @@ export function SystemAppearancePageClient() {
                       value={field.value}
                       onChange={field.onChange}
                       error={errors.backgroundColor?.message}
+                      disabled={watched.useDefaultTheme}
                     />
                   )}
                 />
@@ -208,9 +243,9 @@ export function SystemAppearancePageClient() {
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
             <h3 className="mb-3 text-sm font-semibold text-slate-900 dark:text-slate-100">Pré-visualização</h3>
             <AppearancePreview
-              primaryColor={watched.primaryColor}
-              secondaryColor={watched.secondaryColor}
-              backgroundColor={watched.backgroundColor}
+              primaryColor={previewColors.primaryColor}
+              secondaryColor={previewColors.secondaryColor}
+              backgroundColor={previewColors.backgroundColor}
               mode={resolvedTheme === 'light' ? 'light' : 'dark'}
             />
           </div>

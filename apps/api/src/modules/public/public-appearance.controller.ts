@@ -32,7 +32,7 @@ export class PublicAppearanceController {
   @Get('system')
   @ApiOperation({ summary: 'Aparência do sistema (cores + logo) — leitura anônima para o login' })
   async system(): Promise<SystemAppearanceDto> {
-    const setting = await this.systemAppearanceService.getSingleton();
+    const setting = await this.systemAppearanceService.getEffectiveAppearance();
     return {
       primaryColor: setting.primaryColor,
       secondaryColor: setting.secondaryColor,
@@ -58,7 +58,7 @@ export class PublicAppearanceController {
   @Get('portal')
   @ApiOperation({ summary: 'Aparência do portal público (cores + logo + textos)' })
   async portal(): Promise<PortalAppearanceDto> {
-    const setting = await this.portalAppearanceService.getSingleton();
+    const setting = await this.portalAppearanceService.getEffectiveAppearance();
     return {
       primaryColor: setting.primaryColor,
       secondaryColor: setting.secondaryColor,

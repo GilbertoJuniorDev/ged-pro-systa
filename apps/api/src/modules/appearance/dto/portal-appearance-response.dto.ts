@@ -1,7 +1,10 @@
-export class PortalAppearanceResponseDto {
+import type { PortalAppearanceAdminDto } from '@ged/types';
+
+export class PortalAppearanceResponseDto implements PortalAppearanceAdminDto {
   readonly primaryColor!: string;
   readonly secondaryColor!: string;
   readonly backgroundColor!: string;
+  readonly useDefaultTheme!: boolean;
   readonly hasLogo!: boolean;
   readonly logoVersion!: number;
   readonly heroTitle!: string;
@@ -13,6 +16,7 @@ export class PortalAppearanceResponseDto {
     primaryColor: string;
     secondaryColor: string;
     backgroundColor: string;
+    useDefaultTheme: boolean;
     hasLogo: boolean;
     logoVersion: number;
     heroTitle: string;
@@ -23,6 +27,7 @@ export class PortalAppearanceResponseDto {
     this.primaryColor = partial.primaryColor;
     this.secondaryColor = partial.secondaryColor;
     this.backgroundColor = partial.backgroundColor;
+    this.useDefaultTheme = partial.useDefaultTheme;
     this.hasLogo = partial.hasLogo;
     this.logoVersion = partial.logoVersion;
     this.heroTitle = partial.heroTitle;

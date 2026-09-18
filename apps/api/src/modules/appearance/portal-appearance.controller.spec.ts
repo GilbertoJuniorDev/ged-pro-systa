@@ -12,6 +12,7 @@ const mockSetting = (overrides: Partial<PortalAppearance> = {}): PortalAppearanc
     primaryColor: '#4f46e5',
     secondaryColor: '#0ea5e9',
     backgroundColor: '#f8fafc',
+    useDefaultTheme: false,
     logoPath: null,
     logoVersion: 0,
     heroTitle: 'Portal de Documentos Públicos',
@@ -58,7 +59,12 @@ describe('PortalAppearanceController', () => {
     const result = await controller.findOne();
 
     expect(result).toEqual(
-      expect.objectContaining({ heroTitle: 'Portal de Documentos Públicos', hasLogo: true, logoVersion: 1 }),
+      expect.objectContaining({
+        heroTitle: 'Portal de Documentos Públicos',
+        useDefaultTheme: false,
+        hasLogo: true,
+        logoVersion: 1,
+      }),
     );
   });
 
@@ -70,6 +76,7 @@ describe('PortalAppearanceController', () => {
       heroTitle: 'Novo título',
       heroSubtitle: 'Novo subtítulo',
       footerMessage: 'Nova mensagem',
+      useDefaultTheme: true,
     };
     service.update.mockResolvedValue(mockSetting(dto));
 
@@ -77,6 +84,7 @@ describe('PortalAppearanceController', () => {
 
     expect(service.update).toHaveBeenCalledWith('user-1', dto);
     expect(result.heroTitle).toBe('Novo título');
+    expect(result.useDefaultTheme).toBe(true);
   });
 
   it('POST /logo throws BadRequestException when no file is uploaded', async () => {

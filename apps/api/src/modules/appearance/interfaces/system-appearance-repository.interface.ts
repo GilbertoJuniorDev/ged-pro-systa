@@ -6,6 +6,7 @@ export interface UpdateSystemAppearanceColorsData {
   readonly primaryColor: string;
   readonly secondaryColor: string;
   readonly backgroundColor: string;
+  readonly useDefaultTheme: boolean;
 }
 
 export interface UpdateSystemAppearanceLogoData {

@@ -94,6 +94,7 @@ export class PortalAppearanceController {
     primaryColor: string;
     secondaryColor: string;
     backgroundColor: string;
+    useDefaultTheme: boolean;
     logoPath: string | null;
     logoVersion: number;
     heroTitle: string;
@@ -105,6 +106,7 @@ export class PortalAppearanceController {
       primaryColor: setting.primaryColor,
       secondaryColor: setting.secondaryColor,
       backgroundColor: setting.backgroundColor,
+      useDefaultTheme: setting.useDefaultTheme,
       hasLogo: setting.logoPath !== null,
       logoVersion: setting.logoVersion,
       heroTitle: setting.heroTitle,

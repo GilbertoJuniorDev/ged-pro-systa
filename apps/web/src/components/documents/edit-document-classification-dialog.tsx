@@ -36,7 +36,7 @@ export function EditDocumentClassificationDialog({ document, onClose }: Props) {
   const [departamentoId, setDepartamentoId] = useState(document.departamentoId ?? '');
   const effectiveDepartamentoId = isDepartamentoLocked
     ? (document.departamentoId ?? undefined)
-    : departamentoId || undefined;
+    : departamentoId ?? undefined;
 
   const { data: series } = useDocumentSeries(effectiveDepartamentoId);
   const { data: dossies } = useDossieOptions(effectiveDepartamentoId);

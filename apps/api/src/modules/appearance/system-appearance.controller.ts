@@ -98,6 +98,7 @@ export class SystemAppearanceController {
     primaryColor: string;
     secondaryColor: string;
     backgroundColor: string;
+    useDefaultTheme: boolean;
     logoPath: string | null;
     logoVersion: number;
     updatedAt: Date;
@@ -106,6 +107,7 @@ export class SystemAppearanceController {
       primaryColor: setting.primaryColor,
       secondaryColor: setting.secondaryColor,
       backgroundColor: setting.backgroundColor,
+      useDefaultTheme: setting.useDefaultTheme,
       hasLogo: setting.logoPath !== null,
       logoVersion: setting.logoVersion,
       updatedAt: setting.updatedAt,

@@ -5,17 +5,17 @@ import { useSession } from 'next-auth/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import { useAppearanceRefresh } from '@/hooks/use-appearance-refresh';
-import type { PortalAppearanceDto, UpdatePortalAppearanceInput } from '@/types';
+import type { PortalAppearanceAdminDto, PortalAppearanceDto, UpdatePortalAppearanceInput } from '@/types';
 
 const QUERY_KEY = ['admin-appearance', 'portal'];
 
 export function usePortalAppearance() {
   const { data: session } = useSession();
 
-  return useQuery<PortalAppearanceDto>({
+  return useQuery<PortalAppearanceAdminDto>({
     queryKey: QUERY_KEY,
     queryFn: () =>
-      apiClient.get<PortalAppearanceDto>('/admin/appearance/portal', {
+      apiClient.get<PortalAppearanceAdminDto>('/admin/appearance/portal', {
         token: session?.user?.accessToken,
       }),
     enabled: !!session?.user?.accessToken,
@@ -32,7 +32,7 @@ export function useUpdatePortalAppearance() {
 
   return useMutation({
     mutationFn: (payload: UpdatePortalAppearanceInput) =>
-      apiClient.put<PortalAppearanceDto>('/admin/appearance/portal', payload, {
+      apiClient.put<PortalAppearanceAdminDto>('/admin/appearance/portal', payload, {
         token: session?.user?.accessToken,
       }),
     onSuccess: async () => {

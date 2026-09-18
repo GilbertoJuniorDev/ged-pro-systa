@@ -21,6 +21,9 @@ export class PortalAppearance {
   @Column({ name: 'background_color', type: 'varchar', length: 7, default: '#f8fafc' })
   backgroundColor!: string;
 
+  @Column({ name: 'use_default_theme', default: false })
+  useDefaultTheme!: boolean;
+
   @Column({ name: 'logo_path', type: 'varchar', nullable: true })
   logoPath!: string | null;
 

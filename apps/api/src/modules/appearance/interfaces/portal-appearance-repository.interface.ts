@@ -9,6 +9,7 @@ export interface UpdatePortalAppearanceData {
   readonly heroTitle: string;
   readonly heroSubtitle: string;
   readonly footerMessage: string;
+  readonly useDefaultTheme: boolean;
 }
 
 export interface UpdatePortalAppearanceLogoData {

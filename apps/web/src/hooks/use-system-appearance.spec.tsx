@@ -38,6 +38,7 @@ const PAYLOAD = {
   primaryColor: '#16a34a',
   secondaryColor: '#0ea5e9',
   backgroundColor: '#0f172a',
+  useDefaultTheme: false,
 };
 
 describe('useUpdateSystemAppearance', () => {

@@ -34,6 +34,7 @@ import { CreateArquivosTables1782950400012 } from './1782950400012-CreateArquivo
 import { AddArquivoIdToDossies1782950400013 } from './1782950400013-AddArquivoIdToDossies';
 import { MakeDocumentClassificationOptional1782950400014 } from './1782950400014-MakeDocumentClassificationOptional';
 import { CreateAppearanceSettings1782950400015 } from './1782950400015-CreateAppearanceSettings';
+import { AddUseDefaultThemeToAppearance1782950400016 } from './1782950400016-AddUseDefaultThemeToAppearance';
 const DATABASE_URL = process.env['DATABASE_URL'];
 
 if (!DATABASE_URL) {
@@ -79,6 +80,7 @@ const dataSource = new DataSource({
     AddArquivoIdToDossies1782950400013,
     MakeDocumentClassificationOptional1782950400014,
     CreateAppearanceSettings1782950400015,
+    AddUseDefaultThemeToAppearance1782950400016,
   ],
   migrationsTableName: 'migrations',
 });
