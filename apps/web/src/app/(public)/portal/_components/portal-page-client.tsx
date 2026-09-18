@@ -19,7 +19,12 @@ const PAGE_LIMIT = 12;
 // menos um documento público, independente da página/filtro atualmente carregado — e não
 // são mais derivadas da página de resultados corrente (o que escondia séries fora da
 // página atual e fazia a própria lista de opções encolher ao aplicar um filtro).
-export function PortalPageClient() {
+interface PortalPageClientProps {
+  readonly heroTitle: string;
+  readonly heroSubtitle: string;
+}
+
+export function PortalPageClient({ heroTitle, heroSubtitle }: PortalPageClientProps) {
   const [search, setSearch] = useState('');
   const [serieId, setSerieId] = useState('');
   const [page, setPage] = useState(1);
@@ -57,7 +62,7 @@ export function PortalPageClient() {
 
   return (
     <>
-      <PortalHero />
+      <PortalHero heroTitle={heroTitle} heroSubtitle={heroSubtitle} />
       <PortalDestaques onDownload={requestDownload} />
       <PortalRecentes onDownload={requestDownload} />
 

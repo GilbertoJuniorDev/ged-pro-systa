@@ -614,3 +614,68 @@ export interface DashboardAdminSummaryDto {
   readonly totalDepartamentos: number;
 }
 
+// ── Appearance — customização visual do sistema e do portal público ────
+// (ambas singleton, single-tenant — mesma lógica de Company/Subscription)
+
+export interface SystemAppearanceDto {
+  readonly primaryColor: string;
+  readonly secondaryColor: string;
+  readonly backgroundColor: string;
+  readonly hasLogo: boolean;
+  readonly logoVersion: number;
+  readonly updatedAt: string;
+}
+
+export interface UpdateSystemAppearanceInput {
+  readonly primaryColor: string;
+  readonly secondaryColor: string;
+  readonly backgroundColor: string;
+}
+
+export interface PortalAppearanceDto {
+  readonly primaryColor: string;
+  readonly secondaryColor: string;
+  readonly backgroundColor: string;
+  readonly hasLogo: boolean;
+  readonly logoVersion: number;
+  readonly heroTitle: string;
+  readonly heroSubtitle: string;
+  readonly footerMessage: string;
+  readonly updatedAt: string;
+}
+
+export interface UpdatePortalAppearanceInput {
+  readonly primaryColor: string;
+  readonly secondaryColor: string;
+  readonly backgroundColor: string;
+  readonly heroTitle: string;
+  readonly heroSubtitle: string;
+  readonly footerMessage: string;
+}
+
+
+// Defaults da aparência — fonte única compartilhada entre o fallback de SSR
+// (apps/web/src/lib/appearance.ts), os formulários do admin e o CSS estático de
+// globals.css. Batem 1:1 com paradas do Tailwind: #4f46e5=indigo-600,
+// #0ea5e9=sky-500, #0f172a=slate-900, #f8fafc=slate-50.
+
+export const DEFAULT_SYSTEM_APPEARANCE = {
+  primaryColor: '#4f46e5',
+  secondaryColor: '#0ea5e9',
+  backgroundColor: '#0f172a',
+  hasLogo: false,
+  logoVersion: 0,
+} as const satisfies Omit<SystemAppearanceDto, 'updatedAt'>;
+
+export const DEFAULT_PORTAL_APPEARANCE = {
+  primaryColor: '#4f46e5',
+  secondaryColor: '#0ea5e9',
+  backgroundColor: '#f8fafc',
+  hasLogo: false,
+  logoVersion: 0,
+  heroTitle: 'Portal de Documentos Públicos',
+  heroSubtitle:
+    'Consulte e baixe documentos disponibilizados publicamente. Busque por nome, filtre por série e acesse o conteúdo em poucos cliques.',
+  footerMessage:
+    'Portal público de consulta e download de documentos. Alguns arquivos exigem um cadastro rápido antes do download.',
+} as const satisfies Omit<PortalAppearanceDto, 'updatedAt'>;

@@ -32,4 +32,8 @@ RUN pnpm --filter=@ged/types build \
  && pnpm --filter=@ged/database build \
  && pnpm --filter=@ged/utils build
 
-CMD ["pnpm", "--filter=api", "dev"]
+# Roda em paralelo o watch (tsc --watch) dos pacotes compartilhados junto com o
+# `nest start --watch` da API — sem isso, editar @ged/types|database|utils com o
+# container já rodando deixa a API compilando contra um dist/ desatualizado (só
+# rebuildado uma vez, no docker build, pelos comandos RUN acima).
+CMD ["pnpm", "-r", "--parallel", "--filter=@ged/types", "--filter=@ged/database", "--filter=@ged/utils", "--filter=api", "run", "dev"]

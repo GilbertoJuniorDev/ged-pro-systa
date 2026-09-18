@@ -1,5 +1,7 @@
 import type { TipoDocumento } from '@ged/types';
 
+export * from './theme';
+
 /** Formata 11 dígitos numéricos como CPF: XXX.XXX.XXX-XX */
 export function formatCpf(value: string): string {
   const digits = value.replace(/\D/g, '').slice(0, 11);

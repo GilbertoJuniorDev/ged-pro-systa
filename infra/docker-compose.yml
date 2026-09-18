@@ -74,6 +74,12 @@ services:
       GOOGLE_DRIVE_REFRESH_TOKEN: ${GOOGLE_DRIVE_REFRESH_TOKEN}
       GOOGLE_DRIVE_FOLDER_ID: ${GOOGLE_DRIVE_FOLDER_ID}
       STORAGE_MAX_FILE_SIZE: ${STORAGE_MAX_FILE_SIZE:-26214400}
+      # Caminho ABSOLUTO de propósito: LogoStorageService resolve UPLOADS_DIR contra
+      # process.cwd(), que no container é /app/apps/api (o Nest roda a partir do pacote).
+      # Com o valor relativo "uploads" os logos iam para /app/apps/api/uploads -- FORA do
+      # volume montado abaixo -- e sumiam a cada recriação do container.
+      UPLOADS_DIR: /app/uploads
+      BRANDING_LOGO_MAX_SIZE: ${BRANDING_LOGO_MAX_SIZE:-2097152}
       MAIL_HOST: ${MAIL_HOST}
       MAIL_PORT: ${MAIL_PORT:-587}
       MAIL_SECURE: ${MAIL_SECURE:-false}

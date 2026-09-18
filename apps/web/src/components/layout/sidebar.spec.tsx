@@ -23,6 +23,10 @@ jest.mock('./theme-toggle', () => ({
   ThemeToggle: () => <button type="button" aria-label="Alternar tema" />,
 }));
 
+jest.mock('@/components/branding/logo', () => ({
+  Logo: () => <span data-testid="logo-mock">GED Pro</span>,
+}));
+
 jest.mock('next/link', () => ({
   __esModule: true,
   default: function MockLink({

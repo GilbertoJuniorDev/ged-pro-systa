@@ -35,7 +35,8 @@ react-hook-form + Zod + `zodResolver`. Mensagem de erro: `text-xs text-rose-400`
 ## Estilo
 
 - Tailwind **v4 CSS-first** (sem `tailwind.config`); **dark-first**, paleta slate (superfícies) + indigo (primária) + rose (erro).
-- Merge de classes: `cn()` de `lib/utils`. Ao criar superfície slate nova, adicionar override `.light .*` em `app/globals.css`.
+- Merge de classes: `cn()` de `lib/utils`. Ao criar superfície slate nova, adicionar override `.light .*` em `app/globals.css` — sempre referenciando `var(--color-slate-N)`, **nunca** um literal `rgb()`/hex. Para alpha: `color-mix(in oklab, var(--color-slate-N) X%, transparent)`.
+- **A paleta é dinâmica.** As rampas `indigo-*`/`sky-*`/`slate-*` são redefinidas em runtime com as cores que o admin escolhe (ver `lib/theme-style.ts`). Por isso um literal de cor em CSS congela aquele ponto e quebra a customização — foi exatamente esse o bug que deixava a "cor de fundo" sem efeito no tema claro. Em componentes, continuar usando as classes normais (`bg-slate-900`, `text-indigo-400`): elas já compilam para `var(--color-*)` e seguem a cor configurada sozinhas.
 - Reusar primitives de `components/ui/*`. **Proibido** `<select>` / `<input type="date">` / `<input type="checkbox">` nativos → usar `Combobox` / `DatePicker` / `Checkbox`.
 - `next/image` (nunca `<img>`), `next/link` (nunca `<a>`). Copy em **PT-BR**.
 

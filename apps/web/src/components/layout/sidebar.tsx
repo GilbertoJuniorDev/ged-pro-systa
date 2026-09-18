@@ -10,6 +10,7 @@ import { useNavigation } from '@/providers/navigation-provider';
 import { usePermissions } from '@/hooks/use-permissions';
 import { Spinner } from '@/components/ui/spinner';
 import { ThemeToggle } from './theme-toggle';
+import { Logo } from '@/components/branding/logo';
 
 interface SidebarProps {
   readonly user: {
@@ -264,7 +265,7 @@ export function Sidebar({
         }`}
       >
         <div className="h-16 flex items-center justify-between px-6 border-b border-slate-200 dark:border-slate-700">
-          <span className="text-xl font-bold text-indigo-600 tracking-tight dark:text-indigo-400">GED Pro</span>
+          <Logo scope="system" />
           <button
             type="button"
             className="text-slate-500 transition-colors hover:text-slate-900 md:hidden dark:hover:text-slate-300"

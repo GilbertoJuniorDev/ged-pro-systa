@@ -36,4 +36,6 @@ RUN pnpm --filter=@ged/types build \
  && pnpm --filter=@ged/database build \
  && pnpm --filter=@ged/utils build
 
-CMD ["pnpm", "--filter=web", "dev"]
+# Mesmo motivo do api.dev.Dockerfile: roda o watch dos pacotes compartilhados junto
+# com o `next dev`, para não compilar contra um dist/ desatualizado.
+CMD ["pnpm", "-r", "--parallel", "--filter=@ged/types", "--filter=@ged/database", "--filter=@ged/utils", "--filter=web", "run", "dev"]

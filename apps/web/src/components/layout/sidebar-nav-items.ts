@@ -131,6 +131,22 @@ export const ADMIN_NAV_ITEMS: readonly NavItem[] = [
         ],
       },
       {
+        label: 'Aparência do Sistema',
+        href: '/admin/aparencia-sistema',
+        moduloSlug: null,
+        iconPaths: [
+          'M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.5M7 17h.01',
+        ],
+      },
+      {
+        label: 'Aparência do Portal',
+        href: '/admin/aparencia-portal',
+        moduloSlug: null,
+        iconPaths: [
+          'M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-9a15 15 0 010 18m0-18a15 15 0 000 18M3.6 9h16.8M3.6 15h16.8',
+        ],
+      },
+      {
         label: 'Departamentos',
         href: '/admin/departamentos',
         moduloSlug: null,

@@ -31,6 +31,8 @@ const envSchema = z.object({
   GOOGLE_DRIVE_REFRESH_TOKEN: z.string().min(1),
   GOOGLE_DRIVE_FOLDER_ID: z.string().min(1),
   STORAGE_MAX_FILE_SIZE: z.coerce.number().int().positive().default(26_214_400),
+  UPLOADS_DIR: z.string().default('uploads'),
+  BRANDING_LOGO_MAX_SIZE: z.coerce.number().int().positive().default(2_097_152),
   SEED_ADMIN_EMAIL: z.string().email().optional(),
   SEED_ADMIN_PASSWORD: z.string().min(12).optional(),
   THROTTLE_TTL: z.coerce.number().int().positive().default(60_000),

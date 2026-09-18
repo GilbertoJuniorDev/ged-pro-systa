@@ -68,7 +68,8 @@
     "moduleNameMapper": {
       "^@/(.*)$": "<rootDir>/src/$1",
       "^@ged/types$": "<rootDir>/../../packages/@ged/types/src/index.ts",
-      "^@ged/database$": "<rootDir>/../../packages/@ged/database/src/index.ts"
+      "^@ged/database$": "<rootDir>/../../packages/@ged/database/src/index.ts",
+      "^@ged/utils$": "<rootDir>/../../packages/@ged/utils/src/index.ts"
     },
     "testMatch": [
       "<rootDir>/src/**/*.spec.ts",

@@ -70,6 +70,10 @@ export type {
   DashboardSummaryDto,
   DashboardDepartamentoCount,
   DashboardAdminSummaryDto,
+  SystemAppearanceDto,
+  UpdateSystemAppearanceInput,
+  PortalAppearanceDto,
+  UpdatePortalAppearanceInput,
 } from '@ged/types';
 export {
   SUBSCRIPTION_STATUS,

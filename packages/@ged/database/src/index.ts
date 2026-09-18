@@ -20,6 +20,8 @@ export {
 } from './entities/subscription.entity';
 export { SubscriptionPayment } from './entities/subscription-payment.entity';
 export { SystemSetting } from './entities/system-setting.entity';
+export { AppearanceSetting } from './entities/appearance-setting.entity';
+export { PortalAppearance } from './entities/portal-appearance.entity';
 export {
   DocumentSeries,
   DESTINACAO_FINAL,

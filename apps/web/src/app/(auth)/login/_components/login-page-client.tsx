@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Logo } from '@/components/branding/logo';
 import { LoginForm } from './login-form';
 import { RecoveryForm } from './recovery-form';
 
@@ -12,13 +13,8 @@ export function LoginPageClient() {
       {/* Painel esquerdo — formulário */}
       <div className="w-full md:w-1/2 lg:w-5/12 flex flex-col justify-center px-8 sm:px-16 py-12 relative z-10 bg-white dark:bg-slate-900 animate-fade-in">
         {/* Logo */}
-        <div className="absolute top-8 left-8 sm:left-16 flex items-center">
-          <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center mr-3 shadow-md">
-            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-          </div>
-          <span className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">GED Pro</span>
+        <div className="absolute top-8 left-8 sm:left-16">
+          <Logo scope="system" />
         </div>
 
         {/* Formulário */}
@@ -40,12 +36,12 @@ export function LoginPageClient() {
       <div className="hidden md:flex flex-1 bg-slate-900 dark:bg-slate-950 relative overflow-hidden items-center justify-center">
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-900 via-slate-900 to-slate-900 opacity-90 dark:from-indigo-950 dark:via-slate-950 dark:to-slate-950 dark:opacity-95" />
 
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-indigo-600 rounded-full mix-blend-multiply filter blur-3xl opacity-30 dark:bg-indigo-700 dark:opacity-20 animate-blob" />
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-[var(--color-primary)] rounded-full mix-blend-multiply filter blur-3xl opacity-30 dark:opacity-20 animate-blob" />
         <div className="absolute bottom-10 -left-10 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:bg-blue-700 dark:opacity-15 animate-blob delay-150" />
 
         <div className="relative z-10 max-w-lg px-12 text-center">
           <div className="mb-8 flex justify-center">
-            <svg className="w-20 h-20 text-indigo-400 dark:text-indigo-500 opacity-80 dark:opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-20 h-20 text-[var(--color-primary)] opacity-80 dark:opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
           </div>
