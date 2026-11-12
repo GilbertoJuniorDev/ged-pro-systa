@@ -4,12 +4,16 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import { Tabs, type TabItem } from '@/components/ui/tabs';
 import type { ExplorerView } from '@/hooks/use-explorer-params';
 
-const VIEWS: readonly { value: ExplorerView; label: string }[] = [
-  { value: 'arquivos', label: 'Arquivos' },
-  { value: 'dossies', label: 'Dossiês' },
-  { value: 'documentos', label: 'Documentos' },
-  { value: 'avulsos', label: 'Avulsos' },
-];
+export const EXPLORER_VIEW_LABELS: Readonly<Record<ExplorerView, string>> = {
+  arquivos: 'Arquivos',
+  dossies: 'Dossiês',
+  documentos: 'Documentos',
+  avulsos: 'Avulsos',
+};
+
+const VIEWS: readonly { value: ExplorerView; label: string }[] = (
+  Object.keys(EXPLORER_VIEW_LABELS) as ExplorerView[]
+).map((value) => ({ value, label: EXPLORER_VIEW_LABELS[value] }));
 
 export function ExplorerTabs({ active }: { active: ExplorerView }) {
   const pathname = usePathname();

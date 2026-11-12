@@ -25,7 +25,7 @@ export function ExplorerBreadcrumb({ arquivo, dossie }: Props) {
   }
 
   const items: BreadcrumbItem[] = [
-    { label: 'Documentos', href: hrefFor({ arquivo: undefined, dossie: undefined }) },
+    { label: 'Acervo', href: hrefFor({ arquivo: undefined, dossie: undefined }) },
   ];
   if (arquivo) {
     items.push({

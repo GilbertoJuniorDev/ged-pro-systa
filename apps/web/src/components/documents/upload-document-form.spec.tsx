@@ -83,7 +83,7 @@ describe('UploadDocumentForm', () => {
     const { container } = render(<UploadDocumentForm />);
     const file = attachFile(container);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Enviar Documento' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Protocolar Documento' }));
 
     await waitFor(() => expect(mockMutate).toHaveBeenCalledTimes(1));
     const [payload] = mockMutate.mock.calls[0] as [Record<string, unknown>, unknown];
@@ -106,9 +106,9 @@ describe('UploadDocumentForm', () => {
     setup();
     render(<UploadDocumentForm />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Enviar Documento' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Protocolar Documento' }));
 
-    expect(await screen.findByText('Selecione um arquivo para enviar')).toBeInTheDocument();
+    expect(await screen.findByText('Selecione um documento para protocolar')).toBeInTheDocument();
     expect(mockMutate).not.toHaveBeenCalled();
   });
 
@@ -136,7 +136,7 @@ describe('UploadDocumentForm', () => {
     fireEvent.click(serieTrigger);
     fireEvent.click(screen.getByRole('option', { name: 'FIN-01 — Contratos' }));
 
-    fireEvent.click(screen.getByRole('button', { name: 'Enviar Documento' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Protocolar Documento' }));
 
     await waitFor(() => expect(mockMutate).toHaveBeenCalledTimes(1));
     const [payload] = mockMutate.mock.calls[0] as [Record<string, unknown>, unknown];

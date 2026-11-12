@@ -12,12 +12,12 @@ export function UploadPageClient() {
             href="/documents"
             className="text-sm text-slate-600 transition-colors hover:text-slate-950 dark:text-slate-400 dark:hover:text-slate-200"
           >
-            ← Documentos
+            ← Acervo
           </Link>
         </div>
-        <h1 className="text-2xl font-bold text-slate-950 dark:text-slate-100">Upload de Documento</h1>
+        <h1 className="text-2xl font-bold text-slate-950 dark:text-slate-100">Protocolar Documento</h1>
         <p className="text-slate-600 dark:text-slate-400">
-          Envie um novo documento e classifique-o por departamento, série e dossiê.
+          Protocole um novo documento e classifique-o por departamento, série e dossiê.
         </p>
       </div>
 

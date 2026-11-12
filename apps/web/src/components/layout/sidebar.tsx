@@ -38,7 +38,7 @@ function matchesHref(pathname: string, href: string): boolean {
 
 /**
  * Entre os filhos que casam com a rota atual, vence o href mais longo — assim
- * `/documents/upload` acende só "Upload", e não também "Inventário" (`/documents`).
+ * `/documents/upload` acende só "Protocolar", e não também "Inventário" (`/documents`).
  */
 function findActiveChildHref(children: readonly NavItem[] | undefined, pathname: string) {
   return (

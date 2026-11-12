@@ -61,7 +61,7 @@ describe('Sidebar', () => {
     render(<Sidebar user={defaultUser} isOpen={false} onClose={jest.fn()} />);
 
     expect(screen.getByText('Dashboard')).toBeInTheDocument();
-    expect(screen.getByText('Documentos')).toBeInTheDocument();
+    expect(screen.getByText('Acervo')).toBeInTheDocument();
   });
 
   it('should apply active styles to the current route link', () => {
@@ -108,12 +108,12 @@ describe('Sidebar', () => {
     expect(inventarioLink).toHaveClass('bg-indigo-50');
   });
 
-  it('should render Documentos as a non-navigable group header', () => {
+  it('should render Acervo as a non-navigable group header', () => {
     mockUsePathname.mockReturnValue('/documents');
 
     render(<Sidebar user={defaultUser} isOpen={false} onClose={jest.fn()} />);
 
-    const documentos = screen.getByText('Documentos');
+    const documentos = screen.getByText('Acervo');
     expect(documentos.closest('a')).toBeNull();
 
     const header = documentos.closest('button');
@@ -126,21 +126,21 @@ describe('Sidebar', () => {
 
     render(<Sidebar user={defaultUser} isOpen={false} onClose={jest.fn()} />);
 
-    expect(screen.getByText('Upload').closest('a')).toHaveClass('bg-indigo-50');
+    expect(screen.getByText('Protocolar').closest('a')).toHaveClass('bg-indigo-50');
     expect(screen.getByText('Explorador').closest('a')).not.toHaveClass('bg-indigo-50');
   });
 
-  it('should toggle the Documentos group header without navigating', () => {
+  it('should toggle the Acervo group header without navigating', () => {
     mockUsePathname.mockReturnValue('/');
 
     render(<Sidebar user={defaultUser} isOpen={false} onClose={jest.fn()} />);
 
-    const header = screen.getByLabelText('Expandir Documentos');
+    const header = screen.getByLabelText('Expandir Acervo');
     expect(header).toHaveAttribute('aria-expanded', 'false');
 
     fireEvent.click(header);
 
-    expect(screen.getByLabelText('Recolher Documentos')).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByLabelText('Recolher Acervo')).toHaveAttribute('aria-expanded', 'true');
   });
 
   it('should render UserMenu component in the footer', () => {

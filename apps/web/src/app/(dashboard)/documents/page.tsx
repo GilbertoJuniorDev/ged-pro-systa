@@ -4,7 +4,7 @@ import { DocumentsPageClient } from './_components/documents-page-client';
 import DocumentsLoading from './loading';
 
 export const metadata: Metadata = {
-  title: 'Documentos — GED Pro',
+  title: 'Acervo — GED Pro',
 };
 
 export default function DocumentsPage() {

@@ -127,11 +127,11 @@ export function UploadDocumentForm() {
   function validateAndSetFile(candidate: File | undefined | null) {
     if (!candidate) return;
     if (candidate.size > MAX_FILE_SIZE) {
-      setFileError('Arquivo maior que 25MB. Escolha um arquivo menor.');
+      setFileError('Documento maior que 25MB. Escolha um documento menor.');
       return;
     }
     if (!ALLOWED_MIME_TYPES.includes(candidate.type)) {
-      setFileError('Tipo de arquivo não permitido. Use PDF, Word, Excel, imagens ou texto.');
+      setFileError('Tipo de documento não permitido. Use PDF, Word, Excel, imagens ou texto.');
       return;
     }
     setFileError(null);
@@ -146,7 +146,7 @@ export function UploadDocumentForm() {
 
   function onSubmit(data: FormData) {
     if (!file) {
-      setFileError('Selecione um arquivo para enviar');
+      setFileError('Selecione um documento para protocolar');
       return;
     }
     upload.mutate(
@@ -173,7 +173,7 @@ export function UploadDocumentForm() {
       {/* Dropzone */}
       <div>
         <label className="block text-sm text-slate-600 dark:text-slate-400 mb-1.5">
-          Arquivo <span className="text-rose-500 dark:text-rose-400">*</span>
+          Documento <span className="text-rose-500 dark:text-rose-400">*</span>
         </label>
         <input
           ref={fileInputRef}
@@ -195,7 +195,7 @@ export function UploadDocumentForm() {
                 setFile(null);
                 if (fileInputRef.current) fileInputRef.current.value = '';
               }}
-              aria-label="Remover arquivo"
+              aria-label="Remover documento"
               className="shrink-0 rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-200 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100"
             >
               <X className="h-4 w-4" />
@@ -223,7 +223,7 @@ export function UploadDocumentForm() {
           >
             <Upload className="h-8 w-8 text-slate-400 dark:text-slate-500" />
             <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-              Arraste um arquivo ou clique para selecionar
+              Arraste um documento ou clique para selecionar
             </p>
             <p className="text-xs text-slate-500 dark:text-slate-500">
               PDF, Word, Excel, imagens ou texto — máx. 25MB
@@ -367,7 +367,7 @@ export function UploadDocumentForm() {
           disabled={upload.isPending}
           className="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors disabled:opacity-50"
         >
-          {upload.isPending ? 'Enviando…' : 'Enviar Documento'}
+          {upload.isPending ? 'Protocolando…' : 'Protocolar Documento'}
         </button>
       </div>
     </form>
