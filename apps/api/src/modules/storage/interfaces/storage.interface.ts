@@ -7,7 +7,7 @@ export interface SaveFileInput {
 }
 
 export interface SavedFile {
-  readonly chave: string; // Google Drive file ID
+  readonly chave: string; // Chave opaca do objeto no Storage
   readonly tamanho: number; // bytes
 }
 
