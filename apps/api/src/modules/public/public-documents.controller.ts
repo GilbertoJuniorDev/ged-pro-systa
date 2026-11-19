@@ -107,9 +107,8 @@ export class PublicDocumentsController {
       'Content-Disposition': `attachment; filename="${encodeURIComponent(document.arquivoNome)}"`,
     });
     // IStorageService types this as the generic NodeJS.ReadableStream, but the concrete
-    // implementation (GoogleDriveStorageService, using googleapis with responseType:
-    // 'stream') always hands back a real Node Readable — StreamableFile requires that
-    // concrete type.
+    // implementation (S3StorageService) checks that the S3 GetObject Body is a real Node
+    // Readable before returning it — StreamableFile requires that concrete type.
     return new StreamableFile(stream as Readable);
   }
 }
