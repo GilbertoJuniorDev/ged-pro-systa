@@ -1,5 +1,9 @@
 import { Test, type TestingModule } from '@nestjs/testing';
-import { BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { getDataSourceToken, getRepositoryToken } from '@nestjs/typeorm';
 import type { Repository } from 'typeorm';
 import { Department, Document, DocumentSeries, Dossie, CONFIDENCIALIDADE, ROLE } from '@ged/database';
@@ -388,6 +392,21 @@ describe('UploadDocumentUseCase', () => {
 
       expect(storageService.delete).toHaveBeenCalledWith('drive-file-id');
       expect(manager.update).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('storage indisponível', () => {
+    it('should throw ServiceUnavailableException with a clear message when the storage fails to save', async () => {
+      departmentRepo.findOne.mockResolvedValue(makeDepartment());
+      documentSeriesRepo.findOne.mockResolvedValue(makeSerie());
+      storageService.save.mockRejectedValue(new Error('connect ECONNREFUSED 10.0.0.5:443'));
+
+      const result = useCase.execute(makeUploadData(), makeFile());
+
+      await expect(result).rejects.toBeInstanceOf(ServiceUnavailableException);
+      await expect(result).rejects.toThrow('Storage indisponível, tente novamente');
+      expect(manager.save).not.toHaveBeenCalled();
+      expect(storageService.delete).not.toHaveBeenCalled();
     });
   });
 
