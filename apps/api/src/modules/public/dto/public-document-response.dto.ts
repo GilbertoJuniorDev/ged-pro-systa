@@ -2,7 +2,7 @@ import type { PublicDocumentDto } from '@ged/types';
 
 // Input construído campo-a-campo pelo service (nunca um spread da entidade Document) —
 // só os campos explicitamente listados aqui podem chegar à resposta pública. Em
-// particular, `arquivoChave` (ID do arquivo no Google Drive) e `departamentoId` NUNCA
+// particular, `arquivoChave` (Chave do Conteúdo no Storage) e `departamentoId` NUNCA
 // aparecem nesta interface, então não há como um `...document` acidental vazá-los.
 interface PublicDocumentResponseInput {
   readonly id: string;

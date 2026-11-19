@@ -41,12 +41,6 @@ const baseEnvSchema = z.object({
     .transform((v) => v === 'true'),
   S3_ACCESS_KEY_ID: optionalString(z.string().min(1)),
   S3_SECRET_ACCESS_KEY: optionalString(z.string().min(1)),
-  // Adapter do Google Drive não é mais usado (Storage agora é S3); variáveis
-  // mantidas opcionais até a remoção do código do Drive
-  GOOGLE_DRIVE_CLIENT_ID: optionalString(z.string().min(1)),
-  GOOGLE_DRIVE_CLIENT_SECRET: optionalString(z.string().min(1)),
-  GOOGLE_DRIVE_REFRESH_TOKEN: optionalString(z.string().min(1)),
-  GOOGLE_DRIVE_FOLDER_ID: optionalString(z.string().min(1)),
   STORAGE_MAX_FILE_SIZE: z.coerce.number().int().positive().default(26_214_400),
   UPLOADS_DIR: z.string().default('uploads'),
   BRANDING_LOGO_MAX_SIZE: z.coerce.number().int().positive().default(2_097_152),

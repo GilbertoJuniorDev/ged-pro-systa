@@ -30,9 +30,8 @@ function isEnoent(error: unknown): boolean {
 
 /**
  * Storage local dedicado para logos (sistema/portal) — deliberadamente separado do
- * STORAGE_SERVICE (Google Drive) usado por documentos: logo é carregado em toda
- * página anônima (login, portal público), então precisa de leitura rápida e sem
- * OAuth. Grava sob `<UPLOADS_DIR>/branding/<scope>/`.
+ * STORAGE_SERVICE (S3) usado por documentos: logo é carregado em toda página
+ * anônima (login, portal público), então precisa de leitura rápida e local. Grava sob `<UPLOADS_DIR>/branding/<scope>/`.
  */
 @Injectable()
 export class LogoStorageService {
