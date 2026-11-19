@@ -1,10 +1,15 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { Department, Document, DOCUMENT_FASE, DocumentSeries, Dossie } from '@ged/database';
 import type { JwtPayload } from '@ged/types';
 import { STORAGE_SERVICE } from '../../storage/interfaces/storage.interface';
-import type { IStorageService } from '../../storage/interfaces/storage.interface';
+import type { IStorageService, SavedFile } from '../../storage/interfaces/storage.interface';
 import { DOCUMENT_REPOSITORY } from '../interfaces/document-repository.interface';
 import type { IDocumentRepository } from '../interfaces/document-repository.interface';
 import { ApplyDocumentConfidentialityUseCase } from './apply-document-confidentiality.use-case';
@@ -108,11 +113,7 @@ export class UploadDocumentUseCase {
       }
     }
 
-    const saved = await this.storageService.save({
-      buffer: file.buffer,
-      originalName: file.originalname,
-      mimeType: file.mimetype,
-    });
+    const saved = await this.saveToStorage(file);
 
     try {
       return await this.dataSource.transaction(async (manager) => {
@@ -156,6 +157,22 @@ export class UploadDocumentUseCase {
     } catch (error) {
       await this.storageService.delete(saved.chave);
       throw error;
+    }
+  }
+
+  // Falha do Storage (rede, credencial, bucket) não vira 500 genérico: o usuário
+  // recebe uma mensagem clara; a causa original segue no `cause` para o error log.
+  private async saveToStorage(file: Express.Multer.File): Promise<SavedFile> {
+    try {
+      return await this.storageService.save({
+        buffer: file.buffer,
+        originalName: file.originalname,
+        mimeType: file.mimetype,
+      });
+    } catch (error) {
+      throw new ServiceUnavailableException('Storage indisponível, tente novamente', {
+        cause: error,
+      });
     }
   }
 }

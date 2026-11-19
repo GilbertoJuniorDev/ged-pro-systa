@@ -35,9 +35,14 @@ const baseEnvSchema = z.object({
   S3_BUCKET: z.string().min(1),
   S3_REGION: z.string().min(1),
   S3_ENDPOINT: optionalString(z.string().url()),
+  // Estrito: um typo ('TRUE', '1') não pode virar false em silêncio
   S3_FORCE_PATH_STYLE: z
-    .string()
-    .default('false')
+    .preprocess(
+      (v) => (v === '' || v === undefined ? 'false' : v),
+      z.enum(['true', 'false'], {
+        errorMap: () => ({ message: "S3_FORCE_PATH_STYLE deve ser 'true' ou 'false'" }),
+      }),
+    )
     .transform((v) => v === 'true'),
   S3_ACCESS_KEY_ID: optionalString(z.string().min(1)),
   S3_SECRET_ACCESS_KEY: optionalString(z.string().min(1)),

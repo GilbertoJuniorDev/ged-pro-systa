@@ -30,6 +30,12 @@ NEXT_PUBLIC_API_URL=http://localhost:3333
 
 # ─── Storage ─────────────────────────────────────────────────────────────────
 STORAGE_MAX_FILE_SIZE=26214400
+S3_BUCKET=ged-conteudos              # obrigatória
+S3_REGION=us-east-1                  # obrigatória
+S3_ENDPOINT=http://localhost:9000    # só para provedores compatíveis (MinIO, R2, Wasabi); vazio na AWS
+S3_FORCE_PATH_STYLE=true             # 'true' ou 'false' (padrão false); true para MinIO/R2
+S3_ACCESS_KEY_ID=minioadmin          # opcional, mas junto com o secret; sem o par o SDK usa a cadeia padrão
+S3_SECRET_ACCESS_KEY=minioadmin
 
 # ─── E-mail (SMTP) ───────────────────────────────────────────────────────────
 MAIL_HOST=localhost        # MailHog em dev; ex: smtp.sendgrid.net em prod
@@ -68,6 +74,12 @@ o que está explicitamente mapeado lá.
 | `JWT_REFRESH_EXPIRES_IN` | API | — | `7d` |
 | `MAIL_HOST` | API | ✅ | — |
 | `STORAGE_MAX_FILE_SIZE` | API | — | `26214400` (25 MiB) |
+| `S3_BUCKET` | API | ✅ | — |
+| `S3_REGION` | API | ✅ | — |
+| `S3_ENDPOINT` | API | — | vazio (AWS) |
+| `S3_FORCE_PATH_STYLE` | API | — (`true`/`false`) | `false` |
+| `S3_ACCESS_KEY_ID` | API | — (junto com o secret) | cadeia padrão de credenciais do SDK |
+| `S3_SECRET_ACCESS_KEY` | API | — (junto com o key id) | cadeia padrão de credenciais do SDK |
 | `NEXTAUTH_SECRET` | Web | ✅ | — |
 | `NEXTAUTH_URL` | Web | ✅ | — |
 | `NEXT_PUBLIC_API_URL` | Web | ✅ | — |

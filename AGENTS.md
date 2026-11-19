@@ -12,7 +12,7 @@
 | Backend (`apps/api`) | NestJS 11, Node 22 LTS, TypeORM 0.3 (Postgres 17), Mongoose (Mongo 7 — só error-logs), Redis 7, Passport + passport-jwt, bcrypt, class-validator, Zod (validação de env), Swagger |
 | Infra | Docker Compose v2, pnpm 9, Turborepo 2 |
 
-> Ignore "Next 16.2 / CQRS / storage adapters / enum nativo" dos docs antigos — não existem no código.
+> Ignore "Next 16.2 / CQRS / storage adapters (múltiplos provedores) / enum nativo" dos docs antigos — não existem no código. O Storage é **um** adapter S3 (`S3StorageService`) atrás do token `STORAGE_SERVICE`.
 
 ## Monorepo
 

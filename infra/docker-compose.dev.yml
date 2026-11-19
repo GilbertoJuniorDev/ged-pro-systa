@@ -82,7 +82,12 @@ services:
       S3_BUCKET: ${S3_BUCKET:-ged-conteudos}
     entrypoint: >
       /bin/sh -c "
-      until mc alias set local http://minio:9000 \"$$MINIO_ROOT_USER\" \"$$MINIO_ROOT_PASSWORD\"; do echo 'aguardando MinIO...'; sleep 1; done &&
+      tentativas=0;
+      until mc alias set local http://minio:9000 \"$$MINIO_ROOT_USER\" \"$$MINIO_ROOT_PASSWORD\"; do
+        tentativas=$$((tentativas + 1));
+        if [ $$tentativas -ge 30 ]; then echo 'MinIO nao respondeu apos 30 tentativas' >&2; exit 1; fi;
+        echo 'aguardando MinIO...'; sleep 1;
+      done &&
       mc mb --ignore-existing \"local/$$S3_BUCKET\" &&
       mc version enable \"local/$$S3_BUCKET\"
       "
