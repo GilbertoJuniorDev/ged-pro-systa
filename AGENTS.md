@@ -42,7 +42,12 @@ pnpm lint  &&  pnpm type-check  &&  pnpm test
 pnpm --filter=api <script>        # dev | build | test | test:cov | test:e2e
 pnpm --filter=web <script>
 pnpm --filter=@ged/database db:migrate | db:migrate:revert
+
+# Loop TDD (red/green): rodar só o spec em foco — nunca a suíte inteira a cada ciclo
+pnpm --filter=api test -- src/modules/<feature>/<arquivo>.spec.ts
 ```
+
+> Jest roda em modo transpile-only (`isolatedModules`) e sem type-check — erros de tipo só aparecem em `pnpm type-check`. Não usar `--watch` nem rodar testes em background sem encerrar.
 
 Detalhes de scripts/pipeline: [`docs/SCRIPTS.md`](docs/SCRIPTS.md). Variáveis de ambiente: [`docs/ENVIRONMENT.md`](docs/ENVIRONMENT.md).
 

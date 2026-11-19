@@ -84,13 +84,15 @@
     ],
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
+      "^.+\\.(t|j)s$": ["ts-jest", { "tsconfig": "<rootDir>/tsconfig.spec.json" }]
     },
     "collectCoverageFrom": [
       "src/**/*.(t|j)s"
     ],
     "coverageDirectory": "coverage",
     "testEnvironment": "node",
+    "maxWorkers": "25%",
+    "workerIdleMemoryLimit": "512MB",
     "moduleNameMapper": {
       "^@ged/database$": "<rootDir>/../../packages/@ged/database/src/index.ts",
       "^@ged/types$": "<rootDir>/../../packages/@ged/types/src/index.ts",
