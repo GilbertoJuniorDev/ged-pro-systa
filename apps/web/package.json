@@ -55,12 +55,15 @@
   },
   "jest": {
     "testEnvironment": "jsdom",
+    "maxWorkers": "25%",
+    "workerIdleMemoryLimit": "512MB",
     "transform": {
       "^.+\\.(t|j)sx?$": [
         "ts-jest",
         {
           "tsconfig": {
-            "jsx": "react-jsx"
+            "jsx": "react-jsx",
+            "isolatedModules": true
           }
         }
       ]
