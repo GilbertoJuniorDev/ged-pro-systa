@@ -9,10 +9,10 @@ export const metadata: Metadata = {
 
 export default function AdminSobrePage() {
   return (
-    <main className="flex-1 overflow-y-auto bg-slate-50 p-4 sm:p-6 lg:p-8 dark:bg-slate-950">
+    <main className="flex-1 overflow-y-auto bg-background p-4 sm:p-6 lg:p-8">
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-slate-950 dark:text-slate-100">Versão do Sistema</h2>
-        <p className="text-slate-600 dark:text-slate-400">Informações técnicas detalhadas sobre a infraestrutura e serviços.</p>
+        <h2 className="text-2xl font-bold text-foreground">Versão do Sistema</h2>
+        <p className="text-muted-foreground">Informações técnicas detalhadas sobre a infraestrutura e serviços.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

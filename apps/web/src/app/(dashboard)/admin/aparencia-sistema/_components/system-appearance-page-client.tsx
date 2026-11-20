@@ -106,16 +106,16 @@ export function SystemAppearancePageClient() {
   const logoSrc = previewUrl ?? currentLogoUrl;
 
   return (
-    <main className="flex-1 overflow-y-auto bg-slate-50 p-4 sm:p-6 lg:p-8 dark:bg-slate-950">
+    <main className="flex-1 overflow-y-auto bg-background p-4 sm:p-6 lg:p-8">
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-slate-950 dark:text-slate-100">Aparência do Sistema</h2>
-        <p className="text-slate-600 dark:text-slate-400">
+        <h2 className="text-2xl font-bold text-foreground">Aparência do Sistema</h2>
+        <p className="text-muted-foreground">
           Personalize a paleta de cores e o logo usados na área administrativa e na tela de login.
         </p>
       </div>
 
       {isError ? (
-        <p className="py-4 text-sm text-rose-500 dark:text-rose-400">
+        <p className="py-4 text-sm text-danger">
           Não foi possível carregar a aparência salva. Recarregue a página para tentar de novo.
         </p>
       ) : isLoading ? (
@@ -126,7 +126,7 @@ export function SystemAppearancePageClient() {
         <div className="grid max-w-5xl grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
           <form
             onSubmit={handleSubmit(onSubmit)}
-            className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900"
+            className="space-y-6 rounded-2xl border border-border bg-surface p-6 shadow-sm"
           >
             <Controller
               name="useDefaultTheme"
@@ -137,7 +137,7 @@ export function SystemAppearancePageClient() {
                     checked={field.value}
                     onChange={(e) => field.onChange(e.target.checked)}
                   />
-                  <span className="text-sm text-slate-700 dark:text-slate-300">
+                  <span className="text-sm text-muted-foreground">
                     Usar cores padrão do sistema
                   </span>
                 </label>
@@ -145,8 +145,8 @@ export function SystemAppearancePageClient() {
             />
 
             <div>
-              <h3 className="mb-1 text-base font-semibold text-slate-900 dark:text-slate-100">Paleta de cores</h3>
-              <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
+              <h3 className="mb-1 text-base font-semibold text-foreground">Paleta de cores</h3>
+              <p className="mb-4 text-sm text-muted-foreground">
                 Escolha 1 cor por campo — as variações para o modo claro e escuro são calculadas
                 automaticamente.
               </p>
@@ -197,24 +197,24 @@ export function SystemAppearancePageClient() {
               <button
                 type="submit"
                 disabled={update.isPending}
-                className="rounded-xl bg-indigo-600 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-500 disabled:opacity-60"
+                className="rounded-xl bg-primary px-5 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-hover disabled:opacity-60"
               >
                 {update.isPending ? 'Salvando...' : 'Salvar cores'}
               </button>
             </div>
 
-            <div className="border-t border-slate-200 pt-6 dark:border-slate-700">
-              <h3 className="mb-1 text-base font-semibold text-slate-900 dark:text-slate-100">Logo</h3>
-              <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
+            <div className="border-t border-border pt-6">
+              <h3 className="mb-1 text-base font-semibold text-foreground">Logo</h3>
+              <p className="mb-4 text-sm text-muted-foreground">
                 PNG, JPEG ou WEBP, até 2MB. Usado na barra lateral e na tela de login.
               </p>
               <div className="flex items-center gap-4">
-                <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-950">
+                <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-border bg-background">
                   {logoSrc ? (
                     // eslint-disable-next-line @next/next/no-img-element -- preview usa blob: (URL.createObjectURL), que next/image não carrega
                     <img src={logoSrc} alt="Logo atual" className="h-12 w-12 object-contain" />
                   ) : (
-                    <span className="text-xs text-slate-400">Sem logo</span>
+                    <span className="text-xs text-muted-foreground">Sem logo</span>
                   )}
                 </div>
                 <div className="flex flex-col gap-2">
@@ -223,14 +223,14 @@ export function SystemAppearancePageClient() {
                     type="file"
                     accept="image/png,image/jpeg,image/webp"
                     onChange={handleLogoSelected}
-                    className="text-sm text-slate-600 dark:text-slate-400"
+                    className="text-sm text-muted-foreground"
                   />
                   {data?.hasLogo && (
                     <button
                       type="button"
                       onClick={() => deleteLogo.mutate(undefined, { onSuccess: () => clearPreview() })}
                       disabled={deleteLogo.isPending}
-                      className="text-left text-xs font-medium text-rose-500 hover:text-rose-400 disabled:opacity-60"
+                      className="text-left text-xs font-medium text-danger disabled:opacity-60"
                     >
                       Remover logo
                     </button>
@@ -240,8 +240,8 @@ export function SystemAppearancePageClient() {
             </div>
           </form>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-            <h3 className="mb-3 text-sm font-semibold text-slate-900 dark:text-slate-100">Pré-visualização</h3>
+          <div className="rounded-2xl border border-border bg-surface p-4 shadow-sm">
+            <h3 className="mb-3 text-sm font-semibold text-foreground">Pré-visualização</h3>
             <AppearancePreview
               primaryColor={previewColors.primaryColor}
               secondaryColor={previewColors.secondaryColor}

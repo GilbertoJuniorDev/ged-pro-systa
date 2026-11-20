@@ -51,28 +51,28 @@ function TelefoneForm({ userId, editing, onDone }: TelefoneFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex gap-2 items-end bg-slate-800/40 rounded-xl p-3 mt-2">
+    <form onSubmit={handleSubmit(onSubmit)} className="flex gap-2 items-end bg-foreground/5 rounded-xl p-3 mt-2">
       <div>
-        <label className="block text-xs text-slate-400 mb-1">Tipo</label>
-        <select {...register('tipo')} className="rounded-lg bg-slate-800 border border-slate-600 px-2 py-1.5 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        <label className="block text-xs text-muted-foreground mb-1">Tipo</label>
+        <select {...register('tipo')} className="rounded-lg bg-background border border-border px-2 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
           <option value="CELULAR">Celular</option>
           <option value="RESIDENCIAL">Residencial</option>
           <option value="COMERCIAL">Comercial</option>
         </select>
       </div>
       <div className="flex-1">
-        <label className="block text-xs text-slate-400 mb-1">Número</label>
+        <label className="block text-xs text-muted-foreground mb-1">Número</label>
         <input
           {...register('numero')}
           placeholder="(11) 99999-9999"
-          className="w-full rounded-lg bg-slate-800 border border-slate-600 px-2 py-1.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="w-full rounded-lg bg-background border border-border px-2 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
         />
-        {errors.numero && <p className="text-rose-400 text-xs mt-0.5">{errors.numero.message}</p>}
+        {errors.numero && <p className="text-danger text-xs mt-0.5">{errors.numero.message}</p>}
       </div>
-      <button type="submit" disabled={isPending} className="px-3 py-1.5 text-xs bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors disabled:opacity-50">
+      <button type="submit" disabled={isPending} className="px-3 py-1.5 text-xs bg-primary hover:bg-primary-hover text-primary-foreground rounded-lg transition-colors disabled:opacity-50">
         {isPending ? '…' : editing ? 'Atualizar' : 'Adicionar'}
       </button>
-      <button type="button" onClick={onDone} disabled={isPending} className="px-2 py-1.5 text-xs text-slate-400 hover:text-slate-200 transition-colors disabled:opacity-50">
+      <button type="button" onClick={onDone} disabled={isPending} className="px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50">
         ✕
       </button>
     </form>
@@ -92,9 +92,9 @@ export function TelefoneList({ userId }: Props) {
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <h4 className="text-sm font-medium text-slate-300">Telefones</h4>
+        <h4 className="text-sm font-medium text-foreground">Telefones</h4>
         {!showForm && !editTarget && (
-          <button onClick={() => setShowForm(true)} className="text-xs text-indigo-400 hover:text-indigo-200 transition-colors">
+          <button onClick={() => setShowForm(true)} className="text-xs text-primary hover:text-primary-hover transition-colors">
             + Adicionar
           </button>
         )}
@@ -107,11 +107,11 @@ export function TelefoneList({ userId }: Props) {
       {isLoading ? (
         <div className="space-y-2">
           {Array.from({ length: 2 }).map((_, i) => (
-            <div key={i} className="h-10 rounded-lg bg-slate-800 animate-pulse" />
+            <div key={i} className="h-10 rounded-lg bg-border animate-pulse" />
           ))}
         </div>
       ) : telefones?.length === 0 && !showForm ? (
-        <p className="text-slate-500 text-sm">Nenhum telefone cadastrado.</p>
+        <p className="text-muted-foreground text-sm">Nenhum telefone cadastrado.</p>
       ) : (
         <ul className="space-y-2">
           {telefones?.map((t) => (
@@ -119,16 +119,16 @@ export function TelefoneList({ userId }: Props) {
               {editTarget?.id === t.id ? (
                 <TelefoneForm userId={userId} editing={t} onDone={() => setEditTarget(null)} />
               ) : (
-                <div className="flex items-center justify-between bg-slate-800/40 rounded-xl px-3 py-2">
+                <div className="flex items-center justify-between bg-foreground/5 rounded-xl px-3 py-2">
                   <div className="flex items-center gap-3">
-                    <span className="inline-block text-xs bg-slate-700 text-slate-300 rounded px-1.5 py-0.5">
+                    <span className="inline-block text-xs bg-foreground/10 text-foreground rounded px-1.5 py-0.5">
                       {TIPO_LABELS[t.tipo]}
                     </span>
-                    <span className="text-sm text-slate-200">{t.numero}</span>
+                    <span className="text-sm text-foreground">{t.numero}</span>
                   </div>
                   <div className="flex gap-2">
-                    <button onClick={() => setEditTarget(t)} className="text-xs text-indigo-400 hover:text-indigo-200 transition-colors">Editar</button>
-                    <button onClick={() => deleteTelefone.mutate(t.id)} disabled={deleteTelefone.isPending} className="text-xs text-rose-400 hover:text-rose-200 transition-colors disabled:opacity-50">Remover</button>
+                    <button onClick={() => setEditTarget(t)} className="text-xs text-primary hover:text-primary-hover transition-colors">Editar</button>
+                    <button onClick={() => deleteTelefone.mutate(t.id)} disabled={deleteTelefone.isPending} className="text-xs text-danger transition-colors disabled:opacity-50">Remover</button>
                   </div>
                 </div>
               )}
