@@ -32,6 +32,9 @@
   --color-warning: var(--ged-warning);
   --color-danger: var(--ged-danger);
   --color-info: var(--ged-info);
+
+  /* Fonte sans única — `--font-ged-sans` vem do next/font em app/fonts.ts. */
+  --font-sans: var(--font-ged-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
 /* ─── Aparência do sistema — aliases semânticos ────────────────────

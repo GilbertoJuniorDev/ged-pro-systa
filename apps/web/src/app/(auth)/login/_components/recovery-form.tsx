@@ -34,7 +34,7 @@ export function RecoveryForm({ onBack }: RecoveryFormProps) {
       <button
         type="button"
         onClick={onBack}
-        className="text-sm font-medium text-slate-500 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors flex items-center mb-6"
+        className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors flex items-center mb-6"
       >
         <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -42,8 +42,8 @@ export function RecoveryForm({ onBack }: RecoveryFormProps) {
         Voltar para o login
       </button>
 
-      <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Recuperar Senha</h2>
-      <p className="text-slate-500 dark:text-slate-400 mb-8">
+      <h2 className="text-3xl font-bold text-foreground mb-2">Recuperar Senha</h2>
+      <p className="text-muted-foreground mb-8">
         Digite seu e-mail abaixo. Enviaremos as instruções para você redefinir sua senha.
       </p>
 
@@ -51,7 +51,7 @@ export function RecoveryForm({ onBack }: RecoveryFormProps) {
           <div>
             <label
               htmlFor="recoveryEmail"
-              className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
+              className="block text-sm font-medium text-foreground mb-1"
             >
               E-mail cadastrado
             </label>
@@ -63,14 +63,14 @@ export function RecoveryForm({ onBack }: RecoveryFormProps) {
               placeholder="voce@empresa.com.br"
               required
               disabled={isPending}
-              className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-indigo-600 focus:border-transparent outline-none transition-all text-slate-700 dark:text-slate-100 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-700 placeholder-slate-400 dark:placeholder-slate-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
             />
           </div>
 
           <button
             type="submit"
             disabled={isPending}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 dark:hover:bg-indigo-500 text-white font-semibold py-3 px-4 rounded-lg transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 flex justify-center items-center disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full bg-primary hover:bg-primary-hover text-primary-foreground font-semibold py-3 px-4 rounded-lg transition-colors shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface flex justify-center items-center disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {isPending ? (
               <>

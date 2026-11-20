@@ -70,12 +70,12 @@ function AccordionItem({ item, pathname, pendingHref, onLinkClick }: AccordionIt
         onClick={() => onLinkClick(leafHref)}
         className={`flex items-center px-3 py-2.5 rounded-lg font-medium transition-all duration-200 ease-in-out ${
           isActive
-            ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400'
-            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'
+            ? 'bg-primary-soft text-primary'
+            : 'text-muted-foreground hover:bg-foreground/5 hover:text-foreground'
         }`}
       >
         {isPending ? (
-          <Spinner size="sm" className="mr-3 text-indigo-400" />
+          <Spinner size="sm" className="mr-3 text-primary" />
         ) : (
           <svg className="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             {item.iconPaths.map((d, i) => (
@@ -92,7 +92,7 @@ function AccordionItem({ item, pathname, pendingHref, onLinkClick }: AccordionIt
   const isPending = parentHref != null && pendingHref === parentHref;
 
   const parentIcon = isPending ? (
-    <Spinner size="sm" className="mr-3 text-indigo-400" />
+    <Spinner size="sm" className="mr-3 text-primary" />
   ) : (
     <svg className="w-5 h-5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
       {item.iconPaths.map((d, i) => (
@@ -114,12 +114,12 @@ function AccordionItem({ item, pathname, pendingHref, onLinkClick }: AccordionIt
   );
 
   const idleClasses =
-    'text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100';
+    'text-muted-foreground hover:bg-foreground/5 hover:text-foreground';
 
   return (
     <div>
       {parentHref == null ? (
-        // Cabeçalho de grupo: não navega, só expande. O preenchimento indigo é
+        // Cabeçalho de grupo: não navega, só expande. O preenchimento primary-soft é
         // reservado para a página atual, então aqui o ativo é só no texto.
         <button
           type="button"
@@ -128,7 +128,7 @@ function AccordionItem({ item, pathname, pendingHref, onLinkClick }: AccordionIt
           aria-label={isOpen ? `Recolher ${item.label}` : `Expandir ${item.label}`}
           className={`flex w-full items-center rounded-lg px-3 py-2.5 font-medium transition-all duration-200 ease-in-out ${
             isParentActive
-              ? 'font-semibold text-indigo-700 hover:bg-slate-100 dark:text-indigo-400 dark:hover:bg-slate-800'
+              ? 'font-semibold text-primary hover:bg-foreground/5'
               : idleClasses
           }`}
         >
@@ -140,7 +140,7 @@ function AccordionItem({ item, pathname, pendingHref, onLinkClick }: AccordionIt
         <div
           className={`flex items-center rounded-lg font-medium transition-all duration-200 ease-in-out ${
             isParentActive
-              ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400'
+              ? 'bg-primary-soft text-primary'
               : idleClasses
           }`}
         >
@@ -157,7 +157,7 @@ function AccordionItem({ item, pathname, pendingHref, onLinkClick }: AccordionIt
             onClick={() => setIsOpen((prev) => !prev)}
             aria-expanded={isOpen}
             aria-label={isOpen ? `Recolher ${item.label}` : `Expandir ${item.label}`}
-            className="shrink-0 rounded-md p-2.5 pr-3 text-slate-400 transition-colors hover:text-indigo-600 dark:text-slate-500 dark:hover:text-indigo-400"
+            className="shrink-0 rounded-md p-2.5 pr-3 text-muted-foreground transition-colors hover:text-primary"
           >
             {chevron}
           </button>
@@ -183,12 +183,12 @@ function AccordionItem({ item, pathname, pendingHref, onLinkClick }: AccordionIt
                   onClick={() => onLinkClick(childHref)}
                   className={`flex items-center pl-9 pr-3 py-2 text-sm rounded-lg font-medium transition-all duration-200 ease-in-out ${
                     isChildActive
-                      ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400'
-                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'
+                      ? 'bg-primary-soft text-primary'
+                      : 'text-muted-foreground hover:bg-foreground/5 hover:text-foreground'
                   }`}
                 >
                   {isChildPending ? (
-                    <Spinner size="sm" className="mr-2.5 text-indigo-400" />
+                    <Spinner size="sm" className="mr-2.5 text-primary" />
                   ) : (
                     <svg className="w-4 h-4 mr-2.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                       {child.iconPaths.map((d, i) => (
@@ -260,15 +260,15 @@ export function Sidebar({
   return (
     <>
       <aside
-        className={`w-64 border-r border-slate-200 bg-white flex flex-col transition-transform duration-300 absolute z-30 h-full md:relative md:translate-x-0 dark:border-slate-700 dark:bg-slate-900 ${
+        className={`w-64 border-r border-border bg-surface flex flex-col transition-transform duration-300 absolute z-30 h-full md:relative md:translate-x-0${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="h-16 flex items-center justify-between px-6 border-b border-slate-200 dark:border-slate-700">
+        <div className="h-16 flex items-center justify-between px-6 border-b border-border">
           <Logo scope="system" />
           <button
             type="button"
-            className="text-slate-500 transition-colors hover:text-slate-900 md:hidden dark:hover:text-slate-300"
+            className="text-muted-foreground transition-colors hover:text-foreground md:hidden"
             onClick={onClose}
             aria-label="Fechar menu"
           >
@@ -293,10 +293,10 @@ export function Sidebar({
           {canSeeAdminNav && (
             <>
               <div className="mt-4 flex items-center gap-2 px-3 pb-2">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-600">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                   Sistema
                 </span>
-                <span className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
+                <span className="h-px flex-1 bg-border" />
               </div>
               {visibleAdminNavItems.map((item) => (
                 <AccordionItem
@@ -311,12 +311,12 @@ export function Sidebar({
           )}
         </nav>
 
-        <div className="space-y-3 border-t border-slate-200 p-3 dark:border-slate-700/50">
+        <div className="space-y-3 border-t border-border p-3">
           <div className="flex justify-end px-1">
             <ThemeToggle />
           </div>
           {(currentDepartmentName != null || viewMode === 'admin') && (
-            <div className="flex items-center gap-1.5 px-2 text-[11px] text-slate-500 dark:text-slate-500">
+            <div className="flex items-center gap-1.5 px-2 text-[11px] text-muted-foreground">
               <svg
                 className="h-3 w-3 shrink-0 opacity-70"
                 fill="none"
@@ -352,7 +352,7 @@ export function Sidebar({
       {isOpen && (
         <div
           id="sidebarOverlay"
-          className="fixed inset-0 z-20 animate-fade-in bg-slate-900/30 backdrop-blur-sm md:hidden dark:bg-slate-950/60"
+          className="fixed inset-0 z-20 animate-fade-in bg-background/60 backdrop-blur-sm md:hidden"
           onClick={onClose}
           aria-hidden="true"
         />

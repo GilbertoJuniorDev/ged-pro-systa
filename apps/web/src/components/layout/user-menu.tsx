@@ -54,19 +54,19 @@ export function UserMenu({ user, departamentos }: UserMenuProps) {
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
+        className="group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-foreground/5"
         aria-expanded={isOpen}
         aria-haspopup="menu"
       >
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-indigo-200 bg-indigo-50 text-sm font-bold text-indigo-700 dark:border-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-primary/30 bg-primary-soft text-sm font-bold text-primary">
           {getInitials(user.name)}
         </span>
         <div className="flex-1 text-left min-w-0">
-          <p className="truncate text-sm font-medium text-slate-900 dark:text-slate-200">{user.name}</p>
-          <p className="text-xs text-slate-500 truncate">{user.email}</p>
+          <p className="truncate text-sm font-medium text-foreground">{user.name}</p>
+          <p className="text-xs text-muted-foreground truncate">{user.email}</p>
         </div>
         <svg
-          className={`w-4 h-4 text-slate-500 transition-transform shrink-0 ${isOpen ? 'rotate-180' : ''}`}
+          className={`w-4 h-4 text-muted-foreground transition-transform shrink-0 ${isOpen ? 'rotate-180' : ''}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -79,18 +79,18 @@ export function UserMenu({ user, departamentos }: UserMenuProps) {
       {isOpen && (
         <div
           role="menu"
-          className="absolute bottom-full left-0 right-0 mb-2 origin-bottom animate-scale-in rounded-xl border border-slate-200 bg-white p-1 shadow-lg dark:border-slate-700 dark:bg-slate-800"
+          className="absolute bottom-full left-0 right-0 mb-2 origin-bottom animate-scale-in rounded-xl border border-border bg-surface-elevated p-1 shadow-lg"
         >
-          <div className="border-b border-slate-200 px-3 py-2 dark:border-slate-700">
-            <p className="text-sm font-medium text-slate-900 dark:text-slate-200">{user.name}</p>
-            <p className="text-xs text-slate-500">{user.email}</p>
+          <div className="border-b border-border px-3 py-2">
+            <p className="text-sm font-medium text-foreground">{user.name}</p>
+            <p className="text-xs text-muted-foreground">{user.email}</p>
           </div>
           {canSwitchDepartment && (
             <button
               role="menuitem"
               type="button"
               onClick={handleSwitchDepartment}
-              className="mt-1 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700"
+              className="mt-1 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-foreground transition-colors hover:bg-foreground/5"
             >
               <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path
@@ -107,7 +107,7 @@ export function UserMenu({ user, departamentos }: UserMenuProps) {
             role="menuitem"
             type="button"
             onClick={() => signOut({ callbackUrl: '/login' })}
-            className="mt-1 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-slate-700"
+            className="mt-1 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-danger transition-colors hover:bg-danger/10"
           >
             <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path
