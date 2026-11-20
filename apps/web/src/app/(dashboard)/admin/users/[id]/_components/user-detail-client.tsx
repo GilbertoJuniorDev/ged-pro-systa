@@ -38,8 +38,8 @@ function TabButton({ id, label, active, onClick }: TabButtonProps) {
       onClick={() => onClick(id)}
       className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
         active
-          ? 'bg-indigo-600 text-white'
-          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+          ? 'bg-primary text-primary-foreground'
+          : 'text-muted-foreground hover:text-foreground hover:bg-foreground/5'
       }`}
     >
       {label}
@@ -80,25 +80,25 @@ function DadosTab({ user }: { user: UserDto }) {
     <div className="space-y-6">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-w-md">
         <div>
-          <label className="block text-sm text-slate-400 mb-1">Nome</label>
+          <label className="block text-sm text-muted-foreground mb-1">Nome</label>
           <input
             {...register('name')}
-            className="w-full rounded-lg bg-slate-800 border border-slate-600 px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full rounded-lg bg-background border border-border px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           />
-          {errors.name && <p className="text-rose-400 text-xs mt-1">{errors.name.message}</p>}
+          {errors.name && <p className="text-danger text-xs mt-1">{errors.name.message}</p>}
         </div>
         <div>
-          <label className="block text-sm text-slate-400 mb-1">E-mail</label>
+          <label className="block text-sm text-muted-foreground mb-1">E-mail</label>
           <input
             value={user.email}
             disabled
-            className="w-full rounded-lg bg-slate-800/50 border border-slate-700 px-3 py-2 text-sm text-slate-500 cursor-not-allowed"
+            className="w-full rounded-lg bg-foreground/5 border border-border px-3 py-2 text-sm text-muted-foreground cursor-not-allowed"
           />
         </div>
         {canEditRole && (
           <div>
-            <label className="block text-sm text-slate-400 mb-1">Função</label>
-            <div className="w-full rounded-lg bg-slate-800/50 border border-slate-700 px-3 py-2 text-sm text-slate-400">
+            <label className="block text-sm text-muted-foreground mb-1">Função</label>
+            <div className="w-full rounded-lg bg-foreground/5 border border-border px-3 py-2 text-sm text-muted-foreground">
               {ROLE_LABELS.VIEWER}
             </div>
           </div>
@@ -106,23 +106,23 @@ function DadosTab({ user }: { user: UserDto }) {
         <button
           type="submit"
           disabled={updateUser.isPending || isSelf}
-          className="px-5 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors disabled:opacity-50"
+          className="px-5 py-2 text-sm bg-primary hover:bg-primary-hover text-primary-foreground rounded-lg transition-colors disabled:opacity-50"
         >
           {updateUser.isPending ? 'Salvando…' : 'Salvar alterações'}
         </button>
       </form>
 
-      <div className="border-t border-slate-800 pt-6">
-        <h4 className="text-sm font-medium text-slate-300 mb-3">Status da conta</h4>
+      <div className="border-t border-border pt-6">
+        <h4 className="text-sm font-medium text-foreground mb-3">Status da conta</h4>
         <div className="flex items-center gap-4">
           <span
             className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${
               user.isActive
-                ? 'bg-emerald-500/15 text-emerald-300 ring-1 ring-emerald-500/30'
-                : 'bg-slate-700 text-slate-400 ring-1 ring-slate-600'
+                ? 'text-success ring-1 ring-success/40'
+                : 'bg-foreground/10 text-muted-foreground ring-1 ring-border'
             }`}
           >
-            <span className={`h-1.5 w-1.5 rounded-full ${user.isActive ? 'bg-emerald-400' : 'bg-slate-500'}`} />
+            <span className={`h-1.5 w-1.5 rounded-full ${user.isActive ? 'bg-success' : 'bg-foreground/10'}`} />
             {user.isActive ? 'Ativo' : 'Inativo'}
           </span>
           <button
@@ -130,8 +130,8 @@ function DadosTab({ user }: { user: UserDto }) {
             disabled={isSelf || toggleActive.isPending}
             className={`text-sm px-4 py-1.5 rounded-lg border transition-colors disabled:opacity-40 ${
               user.isActive
-                ? 'border-amber-700 text-amber-400 hover:bg-amber-500/10'
-                : 'border-emerald-700 text-emerald-400 hover:bg-emerald-500/10'
+                ? 'border-warning/30 text-warning hover:bg-warning/20'
+                : 'border-success/30 text-success hover:bg-success/20'
             }`}
           >
             {user.isActive ? 'Desativar' : 'Ativar'}
@@ -146,29 +146,29 @@ function PessoaFisicaTab({ userId }: { userId: string }) {
   const { data: pessoaFisica, isLoading } = usePhysicalPerson(userId);
 
   if (isLoading) {
-    return <div className="h-40 rounded-xl bg-slate-800 animate-pulse" />;
+    return <div className="h-40 rounded-xl bg-border animate-pulse" />;
   }
 
   return (
     <div className="space-y-8">
       <div>
-        <h4 className="text-sm font-medium text-slate-300 mb-4">Dados Pessoais</h4>
+        <h4 className="text-sm font-medium text-foreground mb-4">Dados Pessoais</h4>
         <PessoaFisicaForm userId={userId} existingData={pessoaFisica} />
       </div>
 
       {pessoaFisica && (
         <>
-          <div className="border-t border-slate-800 pt-6">
+          <div className="border-t border-border pt-6">
             <EnderecoList userId={userId} />
           </div>
-          <div className="border-t border-slate-800 pt-6">
+          <div className="border-t border-border pt-6">
             <TelefoneList userId={userId} />
           </div>
         </>
       )}
 
       {!pessoaFisica && (
-        <p className="text-slate-500 text-sm">
+        <p className="text-muted-foreground text-sm">
           Preencha os dados pessoais acima para habilitar o cadastro de endereços e telefones.
         </p>
       )}
@@ -193,7 +193,7 @@ export function UserDetailClient({ user }: Props) {
       </div>
 
       {/* Conteúdo */}
-      <div className="bg-slate-900 rounded-2xl border border-slate-700 p-6">
+      <div className="bg-surface rounded-2xl border border-border p-6">
         {activeTab === 'pessoa-fisica' && <PessoaFisicaTab userId={user.id} />}
         {activeTab === 'permissoes' && (
           <UsuarioPermissoesContent userId={user.id} />

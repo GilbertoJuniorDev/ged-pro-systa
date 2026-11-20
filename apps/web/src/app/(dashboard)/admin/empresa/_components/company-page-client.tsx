@@ -103,10 +103,10 @@ export function CompanyPageClient() {
   };
 
   return (
-    <main className="flex-1 overflow-y-auto bg-slate-50 p-4 sm:p-6 lg:p-8 dark:bg-slate-950">
+    <main className="flex-1 overflow-y-auto bg-background p-4 sm:p-6 lg:p-8">
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-slate-950 dark:text-slate-100">Dados da Empresa</h2>
-        <p className="text-slate-600 dark:text-slate-400">
+        <h2 className="text-2xl font-bold text-foreground">Dados da Empresa</h2>
+        <p className="text-muted-foreground">
           Configure os dados da pessoa jurídica proprietária desta instância do GED Pro.
         </p>
       </div>
@@ -117,12 +117,12 @@ export function CompanyPageClient() {
         <div className="space-y-6 max-w-5xl">
           <form
             onSubmit={handleSubmit}
-            className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900"
+            className="rounded-2xl border border-border bg-surface p-6 shadow-sm"
           >
-            <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 mb-4">Dados cadastrais</h3>
+            <h3 className="text-base font-semibold text-foreground mb-4">Dados cadastrais</h3>
 
             {!data && (
-              <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/40 dark:bg-amber-900/20 dark:text-amber-300">
+              <div className="mb-6 rounded-lg border border-warning/30 px-4 py-3 text-sm text-warning">
                 Nenhum registro encontrado. Preencha os dados abaixo para concluir o cadastro inicial.
               </div>
             )}
@@ -144,11 +144,11 @@ export function CompanyPageClient() {
                 <input value={form.inscricaoEstadual} onChange={(e) => update('inscricaoEstadual', e.target.value)} className={inputCls} />
               </Field>
               <div className="flex flex-col gap-1">
-                <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Data de Abertura</span>
+                <span className="text-xs font-medium text-muted-foreground">Data de Abertura</span>
                 <DatePicker value={form.dataAbertura || undefined} onChange={(v) => update('dataAbertura', v)} />
               </div>
               <div className="flex flex-col gap-1">
-                <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Porte</span>
+                <span className="text-xs font-medium text-muted-foreground">Porte</span>
                 <Combobox value={form.porte || undefined} onValueChange={(v) => update('porte', v)} options={PORTE_OPTIONS} placeholder="Selecionar porte" />
               </div>
               <Field label="Natureza Jurídica (código)">
@@ -158,14 +158,14 @@ export function CompanyPageClient() {
                 <input value={form.naturezaJuridicaDescricao} onChange={(e) => update('naturezaJuridicaDescricao', e.target.value)} placeholder="Sociedade Empresária Limitada" className={inputCls} />
               </Field>
               <div className="flex flex-col gap-1">
-                <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Situação Cadastral</span>
+                <span className="text-xs font-medium text-muted-foreground">Situação Cadastral</span>
                 <Combobox value={form.situacaoCadastral || undefined} onValueChange={(v) => update('situacaoCadastral', v)} options={SITUACAO_OPTIONS} placeholder="Selecionar situação" />
               </div>
               <div className="flex flex-col gap-1">
-                <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Data da Situação</span>
+                <span className="text-xs font-medium text-muted-foreground">Data da Situação</span>
                 <DatePicker value={form.situacaoCadastralData || undefined} onChange={(v) => update('situacaoCadastralData', v)} />
               </div>
-              <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 mt-7">
+              <label className="flex items-center gap-2 text-sm text-muted-foreground mt-7">
                 <Checkbox checked={form.matriz} onChange={(e) => update('matriz', (e.target as HTMLInputElement).checked)} />
                 É matriz
               </label>
@@ -175,7 +175,7 @@ export function CompanyPageClient() {
               <button
                 type="submit"
                 disabled={upsert.isPending}
-                className="rounded-xl bg-indigo-600 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-500 disabled:opacity-60"
+                className="rounded-xl bg-primary px-5 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-hover disabled:opacity-60"
               >
                 {upsert.isPending ? 'Salvando...' : data ? 'Salvar alterações' : 'Cadastrar empresa'}
               </button>
@@ -184,16 +184,16 @@ export function CompanyPageClient() {
 
           {data && (
             <>
-              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+              <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
                 <CompanyAddressList />
               </div>
-              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+              <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
                 <CompanyPhoneList />
               </div>
-              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+              <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
                 <CompanyEmailList />
               </div>
-              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+              <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
                 <CompanyCnaeList />
               </div>
             </>
@@ -205,7 +205,7 @@ export function CompanyPageClient() {
 }
 
 const inputCls =
-  'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100';
+  'w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-ring/30';
 
 function Field({
   label,
@@ -218,7 +218,7 @@ function Field({
 }) {
   return (
     <label className={`flex flex-col gap-1 ${className ?? ''}`}>
-      <span className="text-xs font-medium text-slate-700 dark:text-slate-300">{label}</span>
+      <span className="text-xs font-medium text-muted-foreground">{label}</span>
       {children}
     </label>
   );

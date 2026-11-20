@@ -42,9 +42,9 @@ export function ErrorLogsCard() {
   }
 
   return (
-    <div className="flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:border-slate-300 hover:shadow-lg dark:border-slate-700 dark:bg-slate-900 dark:hover:border-slate-600">
+    <div className="flex flex-col rounded-2xl border border-border bg-surface p-6 shadow-sm transition-all hover:border-muted-foreground hover:shadow-lg">
       <div className="mb-4 flex items-center">
-        <div className="mr-4 flex h-12 w-12 items-center justify-center rounded-xl bg-rose-100 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400">
+        <div className="mr-4 flex h-12 w-12 items-center justify-center rounded-xl bg-danger/10 text-danger">
           <svg
             className="h-6 w-6"
             fill="none"
@@ -60,7 +60,7 @@ export function ErrorLogsCard() {
             />
           </svg>
         </div>
-        <h3 className="font-bold text-slate-950 dark:text-slate-100">
+        <h3 className="font-bold text-foreground">
           Logs de Erro
         </h3>
       </div>
@@ -68,13 +68,13 @@ export function ErrorLogsCard() {
       <div className="mb-4 min-h-[56px] space-y-2">
         {isLoading && (
           <>
-            <div className="h-7 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
-            <div className="h-7 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
+            <div className="h-7 animate-pulse rounded bg-foreground/10" />
+            <div className="h-7 animate-pulse rounded bg-foreground/10" />
           </>
         )}
 
         {!isLoading && logs.length === 0 && (
-          <div className="rounded bg-slate-100 p-2 font-mono text-[11px] text-slate-500 dark:bg-slate-800">
+          <div className="rounded bg-foreground/5 p-2 font-mono text-[11px] text-muted-foreground">
             Nenhum erro registrado.
           </div>
         )}
@@ -82,7 +82,7 @@ export function ErrorLogsCard() {
         {logs.map((log) => (
           <div
             key={log.id}
-            className="truncate rounded bg-slate-100 p-2 font-mono text-[11px] text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+            className="truncate rounded bg-foreground/5 p-2 font-mono text-[11px] text-muted-foreground"
             title={log.message}
           >
             [{formatTime(log.createdAt)}] {log.level.toUpperCase()} ·{' '}
@@ -94,7 +94,7 @@ export function ErrorLogsCard() {
       <form onSubmit={handleSaveEmail} className="mb-4 space-y-2">
         <label
           htmlFor="error-alert-email"
-          className="block text-xs font-medium text-slate-600 dark:text-slate-400"
+          className="block text-xs font-medium text-muted-foreground"
         >
           E-mail para alertas críticos
         </label>
@@ -106,17 +106,17 @@ export function ErrorLogsCard() {
             onChange={(e) => setEmailInput(e.target.value)}
             disabled={isSettingLoading || updateSetting.isPending}
             placeholder="admin@empresa.com"
-            className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-rose-400 focus:outline-none focus:ring-1 focus:ring-rose-400 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+            className="min-w-0 flex-1 rounded-lg border border-border bg-background px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-danger focus:outline-none focus:ring-1 focus:ring-danger disabled:opacity-50"
           />
           <button
             type="submit"
             disabled={isSettingLoading || updateSetting.isPending}
-            className="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-rose-700 disabled:opacity-50"
+            className="rounded-lg bg-danger px-3 py-1.5 text-xs font-semibold text-background transition-colors hover:bg-danger/90 disabled:opacity-50"
           >
             {updateSetting.isPending ? 'Salvando…' : 'Salvar'}
           </button>
         </div>
-        <p className="text-[11px] text-slate-400 dark:text-slate-500">
+        <p className="text-[11px] text-muted-foreground">
           Deixe em branco para desabilitar os alertas por e-mail.
         </p>
       </form>
@@ -124,7 +124,7 @@ export function ErrorLogsCard() {
       <div className="mt-auto">
         <NavLinkButton
           href="/admin/logs"
-          className="block w-full rounded-lg px-4 py-2 text-center text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+          className="block w-full rounded-lg px-4 py-2 text-center text-sm font-medium text-muted-foreground transition-colors hover:bg-foreground/5"
         >
           Ver Logs de Erro
         </NavLinkButton>

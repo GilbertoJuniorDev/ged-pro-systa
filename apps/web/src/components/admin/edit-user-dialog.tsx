@@ -95,23 +95,23 @@ export function EditUserDialog({ user, onClose }: EditUserDialogProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm overscroll-contain"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm overscroll-contain"
       role="dialog"
       aria-modal="true"
       aria-labelledby="edit-user-dialog-title"
     >
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl shadow-xl w-full max-w-md mx-4 p-6 max-h-[90vh] overflow-y-auto">
+      <div className="bg-surface-elevated border border-border rounded-2xl shadow-xl w-full max-w-md mx-4 p-6 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 id="edit-user-dialog-title" className="text-lg font-semibold text-slate-100">
+            <h2 id="edit-user-dialog-title" className="text-lg font-semibold text-foreground">
               Editar Usuário
             </h2>
-            <p className="text-sm text-slate-400 mt-0.5">{user.email}</p>
+            <p className="text-sm text-muted-foreground mt-0.5">{user.email}</p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-200 transition-colors rounded-lg p-1 hover:bg-slate-800"
+            className="text-muted-foreground hover:text-foreground transition-colors rounded-lg p-1 hover:bg-foreground/5"
             aria-label="Fechar"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -122,23 +122,23 @@ export function EditUserDialog({ user, onClose }: EditUserDialogProps) {
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
           <div>
-            <label htmlFor="edit-name" className="block text-sm font-medium text-slate-300 mb-1.5">
+            <label htmlFor="edit-name" className="block text-sm font-medium text-foreground mb-1.5">
               Nome completo
             </label>
             <input
               id="edit-name"
               type="text"
               autoComplete="name"
-              className="w-full bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-500 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus:border-transparent transition-colors"
+              className="w-full bg-background border border-border text-foreground placeholder:text-muted-foreground rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus:border-transparent transition-colors"
               {...register('name')}
             />
             {errors.name && (
-              <p className="mt-1.5 text-xs text-rose-400">{errors.name.message}</p>
+              <p className="mt-1.5 text-xs text-danger">{errors.name.message}</p>
             )}
           </div>
 
           <div>
-            <label htmlFor="edit-role" className="block text-sm font-medium text-slate-300 mb-1.5">
+            <label htmlFor="edit-role" className="block text-sm font-medium text-foreground mb-1.5">
               Função
             </label>
             {canEditRole ? (
@@ -157,26 +157,26 @@ export function EditUserDialog({ user, onClose }: EditUserDialogProps) {
                 )}
               />
             ) : (
-              <div className="w-full bg-slate-800/50 border border-slate-700 text-slate-400 rounded-lg px-3.5 py-2.5 text-sm">
+              <div className="w-full bg-foreground/5 border border-border text-muted-foreground rounded-lg px-3.5 py-2.5 text-sm">
                 {ROLE_LABELS[user.role] ?? user.role}
               </div>
             )}
             {errors.role && (
-              <p className="mt-1.5 text-xs text-rose-400">{errors.role.message}</p>
+              <p className="mt-1.5 text-xs text-danger">{errors.role.message}</p>
             )}
           </div>
 
           <div>
-            <p className="block text-sm font-medium text-slate-300 mb-1.5">
-              Departamentos <span className="text-slate-500 font-normal">(opcional)</span>
+            <p className="block text-sm font-medium text-foreground mb-1.5">
+              Departamentos <span className="text-muted-foreground font-normal">(opcional)</span>
             </p>
             <Controller
               control={control}
               name="departamentoIds"
               render={({ field }) => (
-                <div className="rounded-lg border border-slate-700 bg-slate-800/50 overflow-hidden">
+                <div className="rounded-lg border border-border bg-foreground/5 overflow-hidden">
                   {departamentos.length === 0 ? (
-                    <p className="text-xs text-slate-500 italic text-center py-4">
+                    <p className="text-xs text-muted-foreground italic text-center py-4">
                       Nenhum departamento cadastrado.
                     </p>
                   ) : (
@@ -200,7 +200,7 @@ export function EditUserDialog({ user, onClose }: EditUserDialogProps) {
                                 }
                               }}
                             />
-                            <span className="text-sm text-slate-300 group-hover:text-slate-100 transition-colors leading-tight">
+                            <span className="text-sm text-foreground group-hover:text-foreground transition-colors leading-tight">
                               {departamento.nome}
                             </span>
                           </label>
@@ -217,14 +217,14 @@ export function EditUserDialog({ user, onClose }: EditUserDialogProps) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium rounded-lg py-2.5 text-sm transition-colors"
+              className="flex-1 bg-background hover:bg-foreground/5 text-foreground font-medium rounded-lg py-2.5 text-sm transition-colors"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={isPending}
-              className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed text-white font-medium rounded-lg py-2.5 text-sm transition-colors"
+              className="flex-1 bg-primary hover:bg-primary-hover disabled:opacity-60 disabled:cursor-not-allowed text-primary-foreground font-medium rounded-lg py-2.5 text-sm transition-colors"
             >
               {isPending ? 'Salvando…' : 'Salvar'}
             </button>

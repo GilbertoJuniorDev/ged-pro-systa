@@ -9,31 +9,31 @@ interface Props {
 }
 
 const ACTION_BADGE: Record<string, string> = {
-  LOGIN: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
-  LOGOUT: 'bg-slate-500/10 text-slate-400 border-slate-500/30',
-  CRIAR_USUARIO: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
-  ATUALIZAR_USUARIO: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
-  DELETAR_USUARIO: 'bg-rose-500/10 text-rose-400 border-rose-500/30',
-  CREATE_PERMISSION: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
-  UPDATE_PERMISSION: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
-  DELETE_PERMISSION: 'bg-rose-500/10 text-rose-400 border-rose-500/30',
-  ASSIGN_PERMISSION: 'bg-violet-500/10 text-violet-400 border-violet-500/30',
-  REVOKE_PERMISSION: 'bg-rose-500/10 text-rose-400 border-rose-500/30',
+  LOGIN: 'text-success border-success/30',
+  LOGOUT: 'bg-foreground/10 text-muted-foreground border-border',
+  CRIAR_USUARIO: 'bg-info/10 text-info border-info/30',
+  ATUALIZAR_USUARIO: 'text-warning border-warning/30',
+  DELETAR_USUARIO: 'bg-danger/10 text-danger border-danger/30',
+  CREATE_PERMISSION: 'bg-info/10 text-info border-info/30',
+  UPDATE_PERMISSION: 'text-warning border-warning/30',
+  DELETE_PERMISSION: 'bg-danger/10 text-danger border-danger/30',
+  ASSIGN_PERMISSION: 'bg-primary-soft text-primary border-primary/40',
+  REVOKE_PERMISSION: 'bg-danger/10 text-danger border-danger/30',
 };
 
 function actionBadgeClass(acao: string): string {
   if (ACTION_BADGE[acao]) return ACTION_BADGE[acao];
   const lower = acao.toLowerCase();
   if (lower.includes('creat') || lower.includes('criar') || lower.includes('add')) {
-    return 'bg-blue-500/10 text-blue-400 border-blue-500/30';
+    return 'bg-info/10 text-info border-info/30';
   }
   if (lower.includes('updat') || lower.includes('atualiz') || lower.includes('chang') || lower.includes('record')) {
-    return 'bg-amber-500/10 text-amber-400 border-amber-500/30';
+    return 'text-warning border-warning/30';
   }
   if (lower.includes('delet') || lower.includes('remov') || lower.includes('revok') || lower.includes('cancel')) {
-    return 'bg-rose-500/10 text-rose-400 border-rose-500/30';
+    return 'bg-danger/10 text-danger border-danger/30';
   }
-  return 'bg-slate-500/10 text-slate-400 border-slate-500/30';
+  return 'bg-foreground/10 text-muted-foreground border-border';
 }
 
 function formatValue(val: unknown): string {
@@ -100,7 +100,7 @@ export function AuditLogDetailSheet({ log, onClose }: Props) {
       <div
         aria-hidden="true"
         onClick={onClose}
-        className={`fixed inset-0 z-40 bg-black/60 transition-opacity duration-300 ${
+        className={`fixed inset-0 z-40 bg-background/80 transition-opacity duration-300 ${
           isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
       />
@@ -110,12 +110,12 @@ export function AuditLogDetailSheet({ log, onClose }: Props) {
         role="dialog"
         aria-modal="true"
         aria-label="Detalhes do log"
-        className={`fixed inset-y-0 right-0 z-50 flex w-full max-w-[480px] flex-col bg-slate-950 border-l border-slate-800 shadow-2xl transition-transform duration-300 ease-in-out ${
+        className={`fixed inset-y-0 right-0 z-50 flex w-full max-w-[480px] flex-col bg-surface-elevated border-l border-border shadow-2xl transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
         {/* Header */}
-        <div className="flex items-start justify-between gap-4 border-b border-slate-800 px-6 py-5">
+        <div className="flex items-start justify-between gap-4 border-b border-border px-6 py-5">
           <div className="flex flex-col gap-1.5">
             {log && (
               <span
@@ -124,7 +124,7 @@ export function AuditLogDetailSheet({ log, onClose }: Props) {
                 {log.acao}
               </span>
             )}
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-muted-foreground">
               {log
                 ? new Date(log.createdAt).toLocaleString('pt-BR', {
                     day: '2-digit',
@@ -140,7 +140,7 @@ export function AuditLogDetailSheet({ log, onClose }: Props) {
           <button
             onClick={onClose}
             aria-label="Fechar detalhes"
-            className="shrink-0 rounded-md p-1 text-slate-500 transition-colors hover:bg-slate-800 hover:text-slate-300"
+            className="shrink-0 rounded-md p-1 text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -163,7 +163,7 @@ export function AuditLogDetailSheet({ log, onClose }: Props) {
             <>
               {/* Metadados */}
               <section>
-                <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Metadados
                 </h3>
                 <dl className="space-y-2.5">
@@ -179,16 +179,16 @@ export function AuditLogDetailSheet({ log, onClose }: Props) {
               {/* Diff */}
               {hasDiff ? (
                 <section>
-                  <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Dados alterados
                     {changedCount > 0 && (
-                      <span className="rounded bg-amber-500/10 px-1.5 py-0.5 text-[10px] normal-case text-amber-400">
+                      <span className="rounded ring-1 ring-inset ring-warning/40 px-1.5 py-0.5 text-[10px] normal-case text-warning">
                         {changedCount} campo{changedCount !== 1 ? 's' : ''}
                       </span>
                     )}
                   </h3>
                   {diff.length === 0 ? (
-                    <p className="text-sm text-slate-500">Nenhum campo registrado.</p>
+                    <p className="text-sm text-muted-foreground">Nenhum campo registrado.</p>
                   ) : (
                     <div className="space-y-1.5">
                       {diff.map((item) => (
@@ -198,7 +198,7 @@ export function AuditLogDetailSheet({ log, onClose }: Props) {
                   )}
                 </section>
               ) : (
-                <p className="text-sm italic text-slate-500">
+                <p className="text-sm italic text-muted-foreground">
                   Nenhum dado de alteração registrado para esta ação.
                 </p>
               )}
@@ -221,9 +221,9 @@ function MetaRow({
 }) {
   return (
     <div className="flex gap-3">
-      <dt className="w-36 shrink-0 text-xs text-slate-500">{label}</dt>
-      <dd className={`break-all text-xs ${mono ? 'font-mono text-slate-300' : 'text-slate-400'}`}>
-        {value ?? <span className="text-slate-600">—</span>}
+      <dt className="w-36 shrink-0 text-xs text-muted-foreground">{label}</dt>
+      <dd className={`break-all text-xs ${mono ? 'font-mono text-foreground' : 'text-muted-foreground'}`}>
+        {value ?? <span className="text-muted-foreground">—</span>}
       </dd>
     </div>
   );
@@ -232,19 +232,19 @@ function MetaRow({
 function DiffRow({ item }: { readonly item: DiffItem }) {
   if (item.kind === 'unchanged') {
     return (
-      <div className="flex gap-3 rounded-lg bg-slate-900/50 px-3 py-1.5">
-        <span className="w-32 shrink-0 font-mono text-xs text-slate-500">{item.field}</span>
-        <span className="text-xs text-slate-500">{formatValue(item.after)}</span>
+      <div className="flex gap-3 rounded-lg bg-foreground/5 px-3 py-1.5">
+        <span className="w-32 shrink-0 font-mono text-xs text-muted-foreground">{item.field}</span>
+        <span className="text-xs text-muted-foreground">{formatValue(item.after)}</span>
       </div>
     );
   }
 
   if (item.kind === 'added') {
     return (
-      <div className="flex gap-3 rounded-lg border border-emerald-900/30 bg-emerald-950/40 px-3 py-1.5">
-        <span className="w-32 shrink-0 font-mono text-xs text-emerald-400">{item.field}</span>
-        <span className="text-xs text-emerald-300">{formatValue(item.after)}</span>
-        <span className="ml-auto shrink-0 rounded bg-emerald-500/10 px-1.5 py-0.5 text-[10px] text-emerald-400">
+      <div className="flex gap-3 rounded-lg border border-success/30 px-3 py-1.5">
+        <span className="w-32 shrink-0 font-mono text-xs text-success">{item.field}</span>
+        <span className="text-xs text-success">{formatValue(item.after)}</span>
+        <span className="ml-auto shrink-0 rounded ring-1 ring-inset ring-success/40 px-1.5 py-0.5 text-[10px] text-success">
           adicionado
         </span>
       </div>
@@ -253,10 +253,10 @@ function DiffRow({ item }: { readonly item: DiffItem }) {
 
   if (item.kind === 'removed') {
     return (
-      <div className="flex gap-3 rounded-lg border border-rose-900/30 bg-rose-950/40 px-3 py-1.5">
-        <span className="w-32 shrink-0 font-mono text-xs text-rose-400">{item.field}</span>
-        <span className="text-xs text-rose-400 line-through">{formatValue(item.before)}</span>
-        <span className="ml-auto shrink-0 rounded bg-rose-500/10 px-1.5 py-0.5 text-[10px] text-rose-400">
+      <div className="flex gap-3 rounded-lg border border-danger/30 bg-danger/10 px-3 py-1.5">
+        <span className="w-32 shrink-0 font-mono text-xs text-danger">{item.field}</span>
+        <span className="text-xs text-danger line-through">{formatValue(item.before)}</span>
+        <span className="ml-auto shrink-0 rounded bg-danger/10 px-1.5 py-0.5 text-[10px] text-danger">
           removido
         </span>
       </div>
@@ -265,20 +265,20 @@ function DiffRow({ item }: { readonly item: DiffItem }) {
 
   // kind === 'changed'
   return (
-    <div className="space-y-1 rounded-lg border border-amber-900/20 bg-amber-950/30 px-3 py-2">
+    <div className="space-y-1 rounded-lg border border-warning/30 px-3 py-2">
       <div className="flex items-center gap-2">
-        <span className="font-mono text-xs text-amber-400">{item.field}</span>
-        <span className="ml-auto shrink-0 rounded bg-amber-500/10 px-1.5 py-0.5 text-[10px] text-amber-400">
+        <span className="font-mono text-xs text-warning">{item.field}</span>
+        <span className="ml-auto shrink-0 rounded ring-1 ring-inset ring-warning/40 px-1.5 py-0.5 text-[10px] text-warning">
           alterado
         </span>
       </div>
       <div className="flex items-start gap-2 text-xs">
-        <span className="mt-0.5 w-10 shrink-0 text-[10px] text-rose-500">antes</span>
-        <span className="break-all text-rose-400 line-through">{formatValue(item.before)}</span>
+        <span className="mt-0.5 w-10 shrink-0 text-[10px] text-danger">antes</span>
+        <span className="break-all text-danger line-through">{formatValue(item.before)}</span>
       </div>
       <div className="flex items-start gap-2 text-xs">
-        <span className="mt-0.5 w-10 shrink-0 text-[10px] text-emerald-500">depois</span>
-        <span className="break-all text-emerald-300">{formatValue(item.after)}</span>
+        <span className="mt-0.5 w-10 shrink-0 text-[10px] text-success">depois</span>
+        <span className="break-all text-success">{formatValue(item.after)}</span>
       </div>
     </div>
   );

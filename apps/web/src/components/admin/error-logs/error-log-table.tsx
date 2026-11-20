@@ -16,9 +16,9 @@ interface Props {
 }
 
 const LEVEL_COLORS: Record<ErrorLogLevel, string> = {
-  warn: 'bg-amber-500/20 text-amber-300 border-amber-600/40',
-  error: 'bg-rose-500/20 text-rose-300 border-rose-600/40',
-  fatal: 'bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-600/40',
+  warn: 'bg-surface text-warning border-warning/30',
+  error: 'bg-danger/10 text-danger border-danger/30',
+  fatal: 'bg-primary-soft text-primary border-primary/40',
 };
 
 const SOURCE_LABELS: Record<ErrorLogSource, string> = {
@@ -103,7 +103,7 @@ export function ErrorLogTable({ initialFilters }: Props) {
     <div className="space-y-4">
       <form
         onSubmit={handleFilter}
-        className="flex flex-wrap gap-3 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900"
+        className="flex flex-wrap gap-3 rounded-xl border border-border bg-surface p-4"
       >
         <Combobox
           value={form.source}
@@ -124,7 +124,7 @@ export function ErrorLogTable({ initialFilters }: Props) {
           placeholder="Buscar mensagem"
           value={form.search}
           onChange={(e) => setForm((f) => ({ ...f, search: e.target.value }))}
-          className="w-64 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+          className="w-64 rounded-lg border border-border bg-surface px-3 py-2 text-sm"
         />
         <DatePicker
           value={form.dateFrom}
@@ -140,40 +140,40 @@ export function ErrorLogTable({ initialFilters }: Props) {
         />
         <button
           type="submit"
-          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm text-white transition-colors hover:bg-indigo-500"
+          className="rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground transition-colors hover:bg-primary-hover"
         >
           Filtrar
         </button>
         <button
           type="button"
           onClick={handleClear}
-          className="px-4 py-2 text-sm text-slate-500 transition-colors hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+          className="px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           Limpar
         </button>
       </form>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
+      <div className="overflow-x-auto rounded-xl border border-border">
         <table className="w-full min-w-[900px] text-sm">
           <thead>
-            <tr className="border-b border-slate-200 bg-slate-100/60 dark:border-slate-700 dark:bg-slate-900/60">
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">Data</th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">Origem</th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">Nível</th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">Status</th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">Mensagem</th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">Usuário</th>
-              <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">Ações</th>
+            <tr className="border-b border-border bg-foreground/5">
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Data</th>
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Origem</th>
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Nível</th>
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Status</th>
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Mensagem</th>
+              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Usuário</th>
+              <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">Ações</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+          <tbody className="divide-y divide-border">
             {isLoading ? (
               Array.from({ length: 8 }).map((_, i) => (
                 <tr key={i}>
                   {Array.from({ length: 7 }).map((__, j) => (
                     <td key={j} className="px-4 py-3">
                       <div
-                        className="h-4 animate-pulse rounded bg-slate-200 dark:bg-slate-800"
+                        className="h-4 animate-pulse rounded bg-foreground/10"
                         style={{ width: `${50 + ((j * 11) % 40)}%` }}
                       />
                     </td>
@@ -182,13 +182,13 @@ export function ErrorLogTable({ initialFilters }: Props) {
               ))
             ) : isError ? (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-rose-500">
+                <td colSpan={7} className="px-4 py-8 text-center text-danger">
                   Erro ao carregar logs.
                 </td>
               </tr>
             ) : data?.data.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-slate-500">
+                <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
                   Nenhum log encontrado.
                 </td>
               </tr>
@@ -196,12 +196,12 @@ export function ErrorLogTable({ initialFilters }: Props) {
               data?.data.map((log) => (
                 <tr
                   key={log.id}
-                  className="transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/40"
+                  className="transition-colors hover:bg-foreground/5"
                 >
-                  <td className="whitespace-nowrap px-4 py-3 text-slate-500 dark:text-slate-400">
+                  <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
                     {new Date(log.createdAt).toLocaleString('pt-BR')}
                   </td>
-                  <td className="px-4 py-3 text-slate-700 dark:text-slate-300">
+                  <td className="px-4 py-3 text-muted-foreground">
                     {SOURCE_LABELS[log.source]}
                   </td>
                   <td className="px-4 py-3">
@@ -211,20 +211,20 @@ export function ErrorLogTable({ initialFilters }: Props) {
                       {log.level}
                     </span>
                   </td>
-                  <td className="px-4 py-3 font-mono text-xs text-slate-600 dark:text-slate-400">
+                  <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
                     {log.statusCode ?? '—'}
                   </td>
-                  <td className="max-w-md truncate px-4 py-3 text-slate-700 dark:text-slate-300">
+                  <td className="max-w-md truncate px-4 py-3 text-muted-foreground">
                     {log.message}
                   </td>
-                  <td className="px-4 py-3 text-xs text-slate-500 dark:text-slate-400">
+                  <td className="px-4 py-3 text-xs text-muted-foreground">
                     {log.userEmail ?? log.userId ?? '—'}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <button
                       type="button"
                       onClick={() => setSelected(log)}
-                      className="text-xs text-indigo-600 hover:underline dark:text-indigo-400"
+                      className="text-xs text-primary hover:underline"
                     >
                       Detalhes
                     </button>
@@ -237,7 +237,7 @@ export function ErrorLogTable({ initialFilters }: Props) {
       </div>
 
       {data && data.total > 0 && (
-        <div className="flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
           <span>
             {data.total} registro{data.total !== 1 ? 's' : ''} · Página{' '}
             {currentPage} de {totalPages}
@@ -247,7 +247,7 @@ export function ErrorLogTable({ initialFilters }: Props) {
               type="button"
               onClick={() => goToPage(currentPage - 1)}
               disabled={currentPage <= 1}
-              className="rounded-lg border border-slate-300 px-3 py-1.5 transition-colors hover:border-slate-400 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-700 dark:hover:border-slate-500"
+              className="rounded-lg border border-border px-3 py-1.5 transition-colors hover:border-muted-foreground disabled:cursor-not-allowed disabled:opacity-40"
             >
               Anterior
             </button>
@@ -255,7 +255,7 @@ export function ErrorLogTable({ initialFilters }: Props) {
               type="button"
               onClick={() => goToPage(currentPage + 1)}
               disabled={currentPage >= totalPages}
-              className="rounded-lg border border-slate-300 px-3 py-1.5 transition-colors hover:border-slate-400 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-700 dark:hover:border-slate-500"
+              className="rounded-lg border border-border px-3 py-1.5 transition-colors hover:border-muted-foreground disabled:cursor-not-allowed disabled:opacity-40"
             >
               Próxima
             </button>
@@ -278,26 +278,26 @@ interface DetailProps {
 function ErrorLogDetail({ log, onClose }: DetailProps): React.JSX.Element {
   return (
     <div
-      className="fixed inset-0 z-50 flex items-stretch justify-end bg-black/50"
+      className="fixed inset-0 z-50 flex items-stretch justify-end bg-background/80"
       onClick={onClose}
     >
       <div
-        className="flex h-full w-full max-w-2xl flex-col overflow-y-auto bg-white p-6 shadow-xl dark:bg-slate-900"
+        className="flex h-full w-full max-w-2xl flex-col overflow-y-auto bg-surface-elevated p-6 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-start justify-between gap-4">
           <div>
-            <h3 className="text-lg font-semibold text-slate-950 dark:text-slate-100">
+            <h3 className="text-lg font-semibold text-foreground">
               {SOURCE_LABELS[log.source]} · {log.level.toUpperCase()}
             </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-muted-foreground">
               {new Date(log.createdAt).toLocaleString('pt-BR')}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-200"
+            className="text-muted-foreground hover:text-foreground"
             aria-label="Fechar"
           >
             ✕
@@ -319,14 +319,14 @@ function ErrorLogDetail({ log, onClose }: DetailProps): React.JSX.Element {
         {log.userAgent && <Field label="User Agent">{log.userAgent}</Field>}
         {log.stack && (
           <Field label="Stack trace">
-            <pre className="max-h-96 overflow-auto rounded bg-slate-100 p-3 text-xs text-slate-800 dark:bg-slate-950 dark:text-slate-300">
+            <pre className="max-h-96 overflow-auto rounded bg-foreground/5 p-3 text-xs text-foreground">
               {log.stack}
             </pre>
           </Field>
         )}
         {log.context && Object.keys(log.context).length > 0 && (
           <Field label="Contexto">
-            <pre className="max-h-64 overflow-auto rounded bg-slate-100 p-3 text-xs text-slate-800 dark:bg-slate-950 dark:text-slate-300">
+            <pre className="max-h-64 overflow-auto rounded bg-foreground/5 p-3 text-xs text-foreground">
               {JSON.stringify(log.context, null, 2)}
             </pre>
           </Field>
@@ -344,10 +344,10 @@ interface FieldProps {
 function Field({ label, children }: FieldProps): React.JSX.Element {
   return (
     <div className="mb-3">
-      <div className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+      <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
         {label}
       </div>
-      <div className="mt-1 break-words text-sm text-slate-800 dark:text-slate-200">
+      <div className="mt-1 break-words text-sm text-foreground">
         {children}
       </div>
     </div>

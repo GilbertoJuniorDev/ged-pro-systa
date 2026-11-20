@@ -114,17 +114,17 @@ export function PortalAppearancePageClient() {
   const logoSrc = previewUrl ?? currentLogoUrl;
 
   return (
-    <main className="flex-1 overflow-y-auto bg-slate-50 p-4 sm:p-6 lg:p-8 dark:bg-slate-950">
+    <main className="flex-1 overflow-y-auto bg-background p-4 sm:p-6 lg:p-8">
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-slate-950 dark:text-slate-100">Aparência do Portal</h2>
-        <p className="text-slate-600 dark:text-slate-400">
+        <h2 className="text-2xl font-bold text-foreground">Aparência do Portal</h2>
+        <p className="text-muted-foreground">
           Personalize cores, logo e textos do portal público de documentos — totalmente
           independente do tema do sistema.
         </p>
       </div>
 
       {isError ? (
-        <p className="py-4 text-sm text-rose-500 dark:text-rose-400">
+        <p className="py-4 text-sm text-danger">
           Não foi possível carregar a aparência salva. Recarregue a página para tentar de novo.
         </p>
       ) : isLoading ? (
@@ -135,7 +135,7 @@ export function PortalAppearancePageClient() {
         <div className="grid max-w-5xl grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
           <form
             onSubmit={handleSubmit(onSubmit)}
-            className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900"
+            className="space-y-6 rounded-2xl border border-border bg-surface p-6 shadow-sm"
           >
             <Controller
               name="useDefaultTheme"
@@ -146,7 +146,7 @@ export function PortalAppearancePageClient() {
                     checked={field.value}
                     onChange={(e) => field.onChange(e.target.checked)}
                   />
-                  <span className="text-sm text-slate-700 dark:text-slate-300">
+                  <span className="text-sm text-muted-foreground">
                     Usar cores padrão do portal
                   </span>
                 </label>
@@ -154,8 +154,8 @@ export function PortalAppearancePageClient() {
             />
 
             <div>
-              <h3 className="mb-1 text-base font-semibold text-slate-900 dark:text-slate-100">Paleta de cores</h3>
-              <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
+              <h3 className="mb-1 text-base font-semibold text-foreground">Paleta de cores</h3>
+              <p className="mb-4 text-sm text-muted-foreground">
                 Escolha 1 cor por campo — as variações são calculadas automaticamente.
               </p>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -201,43 +201,43 @@ export function PortalAppearancePageClient() {
               </div>
             </div>
 
-            <div className="border-t border-slate-200 pt-6 dark:border-slate-700">
-              <h3 className="mb-1 text-base font-semibold text-slate-900 dark:text-slate-100">Textos</h3>
-              <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
+            <div className="border-t border-border pt-6">
+              <h3 className="mb-1 text-base font-semibold text-foreground">Textos</h3>
+              <p className="mb-4 text-sm text-muted-foreground">
                 Título e subtítulo do hero, e a mensagem exibida no rodapé do portal.
               </p>
               <div className="space-y-4">
                 <label className="flex flex-col gap-1">
-                  <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Título do hero</span>
+                  <span className="text-xs font-medium text-muted-foreground">Título do hero</span>
                   <input
                     {...register('heroTitle')}
                     maxLength={200}
-                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                    className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-ring/30"
                   />
-                  {errors.heroTitle && <span className="text-xs text-rose-400">{errors.heroTitle.message}</span>}
+                  {errors.heroTitle && <span className="text-xs text-danger">{errors.heroTitle.message}</span>}
                 </label>
                 <label className="flex flex-col gap-1">
-                  <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Subtítulo do hero</span>
+                  <span className="text-xs font-medium text-muted-foreground">Subtítulo do hero</span>
                   <textarea
                     {...register('heroSubtitle')}
                     maxLength={400}
                     rows={2}
-                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                    className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-ring/30"
                   />
                   {errors.heroSubtitle && (
-                    <span className="text-xs text-rose-400">{errors.heroSubtitle.message}</span>
+                    <span className="text-xs text-danger">{errors.heroSubtitle.message}</span>
                   )}
                 </label>
                 <label className="flex flex-col gap-1">
-                  <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Mensagem do rodapé</span>
+                  <span className="text-xs font-medium text-muted-foreground">Mensagem do rodapé</span>
                   <textarea
                     {...register('footerMessage')}
                     maxLength={400}
                     rows={2}
-                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                    className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-ring/30"
                   />
                   {errors.footerMessage && (
-                    <span className="text-xs text-rose-400">{errors.footerMessage.message}</span>
+                    <span className="text-xs text-danger">{errors.footerMessage.message}</span>
                   )}
                 </label>
               </div>
@@ -247,24 +247,24 @@ export function PortalAppearancePageClient() {
               <button
                 type="submit"
                 disabled={update.isPending}
-                className="rounded-xl bg-indigo-600 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-500 disabled:opacity-60"
+                className="rounded-xl bg-primary px-5 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-hover disabled:opacity-60"
               >
                 {update.isPending ? 'Salvando...' : 'Salvar alterações'}
               </button>
             </div>
 
-            <div className="border-t border-slate-200 pt-6 dark:border-slate-700">
-              <h3 className="mb-1 text-base font-semibold text-slate-900 dark:text-slate-100">Logo</h3>
-              <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
+            <div className="border-t border-border pt-6">
+              <h3 className="mb-1 text-base font-semibold text-foreground">Logo</h3>
+              <p className="mb-4 text-sm text-muted-foreground">
                 PNG, JPEG ou WEBP, até 2MB. Usado no cabeçalho do portal público.
               </p>
               <div className="flex items-center gap-4">
-                <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-950">
+                <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-border bg-background">
                   {logoSrc ? (
                     // eslint-disable-next-line @next/next/no-img-element -- preview usa blob: (URL.createObjectURL), que next/image não carrega
                     <img src={logoSrc} alt="Logo atual" className="h-12 w-12 object-contain" />
                   ) : (
-                    <span className="text-xs text-slate-400">Sem logo</span>
+                    <span className="text-xs text-muted-foreground">Sem logo</span>
                   )}
                 </div>
                 <div className="flex flex-col gap-2">
@@ -273,14 +273,14 @@ export function PortalAppearancePageClient() {
                     type="file"
                     accept="image/png,image/jpeg,image/webp"
                     onChange={handleLogoSelected}
-                    className="text-sm text-slate-600 dark:text-slate-400"
+                    className="text-sm text-muted-foreground"
                   />
                   {data?.hasLogo && (
                     <button
                       type="button"
                       onClick={() => deleteLogo.mutate(undefined, { onSuccess: () => clearPreview() })}
                       disabled={deleteLogo.isPending}
-                      className="text-left text-xs font-medium text-rose-500 hover:text-rose-400 disabled:opacity-60"
+                      className="text-left text-xs font-medium text-danger disabled:opacity-60"
                     >
                       Remover logo
                     </button>
@@ -290,8 +290,8 @@ export function PortalAppearancePageClient() {
             </div>
           </form>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-            <h3 className="mb-3 text-sm font-semibold text-slate-900 dark:text-slate-100">Pré-visualização</h3>
+          <div className="rounded-2xl border border-border bg-surface p-4 shadow-sm">
+            <h3 className="mb-3 text-sm font-semibold text-foreground">Pré-visualização</h3>
             <AppearancePreview
               primaryColor={previewColors.primaryColor}
               secondaryColor={previewColors.secondaryColor}

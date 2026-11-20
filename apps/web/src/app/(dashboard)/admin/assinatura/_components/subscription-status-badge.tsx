@@ -6,23 +6,23 @@ const META: Record<
 > = {
   ACTIVE: {
     label: 'Ativa',
-    cls: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+    cls: 'ring-1 ring-inset ring-success/40 text-success',
   },
   TRIAL: {
     label: 'Em Teste',
-    cls: 'bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400',
+    cls: 'bg-info/10 text-info',
   },
   SUSPENDED: {
     label: 'Suspensa',
-    cls: 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+    cls: 'ring-1 ring-inset ring-warning/40 text-warning',
   },
   OVERDUE: {
     label: 'Vencida',
-    cls: 'bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+    cls: 'ring-1 ring-inset ring-warning/40 text-warning',
   },
   CANCELLED: {
     label: 'Cancelada',
-    cls: 'bg-rose-50 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400',
+    cls: 'bg-danger/10 text-danger',
   },
 };
 

@@ -73,26 +73,26 @@ export function PessoaFisicaForm({ userId, existingData }: Props) {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm text-slate-400 mb-1">Nome <span className="text-rose-400">*</span></label>
+          <label className="block text-sm text-muted-foreground mb-1">Nome <span className="text-danger">*</span></label>
           <input
             {...register('nome')}
-            className="w-full rounded-lg bg-slate-800 border border-slate-600 px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full rounded-lg bg-background border border-border px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           />
-          {errors.nome && <p className="text-rose-400 text-xs mt-1">{errors.nome.message}</p>}
+          {errors.nome && <p className="text-danger text-xs mt-1">{errors.nome.message}</p>}
         </div>
         <div>
-          <label className="block text-sm text-slate-400 mb-1">Sobrenome <span className="text-rose-400">*</span></label>
+          <label className="block text-sm text-muted-foreground mb-1">Sobrenome <span className="text-danger">*</span></label>
           <input
             {...register('sobrenome')}
-            className="w-full rounded-lg bg-slate-800 border border-slate-600 px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full rounded-lg bg-background border border-border px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           />
-          {errors.sobrenome && <p className="text-rose-400 text-xs mt-1">{errors.sobrenome.message}</p>}
+          {errors.sobrenome && <p className="text-danger text-xs mt-1">{errors.sobrenome.message}</p>}
         </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm text-slate-400 mb-1">CPF <span className="text-rose-400">*</span></label>
+          <label className="block text-sm text-muted-foreground mb-1">CPF <span className="text-danger">*</span></label>
           <Controller
             name="cpf"
             control={control}
@@ -102,14 +102,14 @@ export function PessoaFisicaForm({ userId, existingData }: Props) {
                 placeholder="000.000.000-00"
                 maxLength={14}
                 onChange={(e) => field.onChange(formatCpf(e.target.value))}
-                className="w-full rounded-lg bg-slate-800 border border-slate-600 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full rounded-lg bg-background border border-border px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               />
             )}
           />
-          {errors.cpf && <p className="text-rose-400 text-xs mt-1">{errors.cpf.message}</p>}
+          {errors.cpf && <p className="text-danger text-xs mt-1">{errors.cpf.message}</p>}
         </div>
         <div>
-          <label className="block text-sm text-slate-400 mb-1">Data de Nascimento <span className="text-rose-400">*</span></label>
+          <label className="block text-sm text-muted-foreground mb-1">Data de Nascimento <span className="text-danger">*</span></label>
           <Controller
             name="dataNascimento"
             control={control}
@@ -122,12 +122,12 @@ export function PessoaFisicaForm({ userId, existingData }: Props) {
               />
             )}
           />
-          {errors.dataNascimento && <p className="text-rose-400 text-xs mt-1">{errors.dataNascimento.message}</p>}
+          {errors.dataNascimento && <p className="text-danger text-xs mt-1">{errors.dataNascimento.message}</p>}
         </div>
       </div>
 
       <div className="w-full sm:w-1/2">
-        <label className="block text-sm text-slate-400 mb-1">Sexo <span className="text-rose-400">*</span></label>
+        <label className="block text-sm text-muted-foreground mb-1">Sexo <span className="text-danger">*</span></label>
         <Controller
           name="sexo"
           control={control}
@@ -145,14 +145,14 @@ export function PessoaFisicaForm({ userId, existingData }: Props) {
             />
           )}
         />
-        {errors.sexo && <p className="text-rose-400 text-xs mt-1">{errors.sexo.message}</p>}
+        {errors.sexo && <p className="text-danger text-xs mt-1">{errors.sexo.message}</p>}
       </div>
 
       <div className="flex justify-end pt-2">
         <button
           type="submit"
           disabled={isPending}
-          className="px-5 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors disabled:opacity-50"
+          className="px-5 py-2 text-sm bg-primary hover:bg-primary-hover text-primary-foreground rounded-lg transition-colors disabled:opacity-50"
         >
           {isPending ? 'Salvando…' : existingData ? 'Atualizar' : 'Criar perfil'}
         </button>

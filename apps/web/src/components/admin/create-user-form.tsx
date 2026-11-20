@@ -133,47 +133,47 @@ export function CreateUserForm() {
 
         {/* Coluna esquerda — Dados Pessoais */}
         <div className="space-y-5">
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Dados Pessoais</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Dados Pessoais</p>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="pf-nome" className="block text-sm font-medium text-slate-300 mb-1.5">
+              <label htmlFor="pf-nome" className="block text-sm font-medium text-foreground mb-1.5">
                 Nome
               </label>
               <input
                 id="pf-nome"
                 type="text"
                 autoComplete="given-name"
-                className="w-full bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-500 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus:border-transparent transition-colors"
+                className="w-full bg-background border border-border text-foreground placeholder:text-muted-foreground rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus:border-transparent transition-colors"
                 placeholder="Ex: Ana"
                 {...register('pessoaFisica.nome')}
               />
               {errors.pessoaFisica?.nome && (
-                <p className="mt-1.5 text-xs text-rose-400">{errors.pessoaFisica.nome.message}</p>
+                <p className="mt-1.5 text-xs text-danger">{errors.pessoaFisica.nome.message}</p>
               )}
             </div>
 
             <div>
-              <label htmlFor="pf-sobrenome" className="block text-sm font-medium text-slate-300 mb-1.5">
+              <label htmlFor="pf-sobrenome" className="block text-sm font-medium text-foreground mb-1.5">
                 Sobrenome
               </label>
               <input
                 id="pf-sobrenome"
                 type="text"
                 autoComplete="family-name"
-                className="w-full bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-500 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus:border-transparent transition-colors"
+                className="w-full bg-background border border-border text-foreground placeholder:text-muted-foreground rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus:border-transparent transition-colors"
                 placeholder="Ex: Souza"
                 {...register('pessoaFisica.sobrenome')}
               />
               {errors.pessoaFisica?.sobrenome && (
-                <p className="mt-1.5 text-xs text-rose-400">{errors.pessoaFisica.sobrenome.message}</p>
+                <p className="mt-1.5 text-xs text-danger">{errors.pessoaFisica.sobrenome.message}</p>
               )}
             </div>
           </div>
 
           <div>
-            <label htmlFor="pf-cpf" className="block text-sm font-medium text-slate-300 mb-1.5">
-              CPF <span className="text-slate-500 font-normal">(somente números)</span>
+            <label htmlFor="pf-cpf" className="block text-sm font-medium text-foreground mb-1.5">
+              CPF <span className="text-muted-foreground font-normal">(somente números)</span>
             </label>
             <input
               id="pf-cpf"
@@ -182,18 +182,18 @@ export function CreateUserForm() {
               maxLength={11}
               autoComplete="off"
               spellCheck={false}
-              className="w-full bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-500 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus:border-transparent transition-colors"
+              className="w-full bg-background border border-border text-foreground placeholder:text-muted-foreground rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus:border-transparent transition-colors"
               placeholder="00000000000"
               {...register('pessoaFisica.cpf')}
             />
             {errors.pessoaFisica?.cpf && (
-              <p className="mt-1.5 text-xs text-rose-400">{errors.pessoaFisica.cpf.message}</p>
+              <p className="mt-1.5 text-xs text-danger">{errors.pessoaFisica.cpf.message}</p>
             )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="pf-dataNascimento" className="block text-sm font-medium text-slate-300 mb-1.5">
+              <label htmlFor="pf-dataNascimento" className="block text-sm font-medium text-foreground mb-1.5">
                 Data de nascimento
               </label>
               <Controller
@@ -210,12 +210,12 @@ export function CreateUserForm() {
                 )}
               />
               {errors.pessoaFisica?.dataNascimento && (
-                <p className="mt-1.5 text-xs text-rose-400">{errors.pessoaFisica.dataNascimento.message}</p>
+                <p className="mt-1.5 text-xs text-danger">{errors.pessoaFisica.dataNascimento.message}</p>
               )}
             </div>
 
             <div>
-              <label htmlFor="pf-sexo" className="block text-sm font-medium text-slate-300 mb-1.5">
+              <label htmlFor="pf-sexo" className="block text-sm font-medium text-foreground mb-1.5">
                 Sexo
               </label>
               <Controller
@@ -237,7 +237,7 @@ export function CreateUserForm() {
                 )}
               />
               {errors.pessoaFisica?.sexo && (
-                <p className="mt-1.5 text-xs text-rose-400">{errors.pessoaFisica.sexo.message}</p>
+                <p className="mt-1.5 text-xs text-danger">{errors.pessoaFisica.sexo.message}</p>
               )}
             </div>
           </div>
@@ -245,27 +245,27 @@ export function CreateUserForm() {
 
         {/* Coluna direita — Dados de Acesso */}
         <div className="space-y-5 mt-6 lg:mt-0">
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Dados de Acesso</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Dados de Acesso</p>
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-1.5">
+            <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1.5">
               E-mail
             </label>
             <input
               id="email"
               type="email"
               autoComplete="email"
-              className="w-full bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-500 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus:border-transparent transition-colors"
+              className="w-full bg-background border border-border text-foreground placeholder:text-muted-foreground rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus:border-transparent transition-colors"
               placeholder="usuario@empresa.com"
               {...register('email')}
             />
             {errors.email && (
-              <p className="mt-1.5 text-xs text-rose-400">{errors.email.message}</p>
+              <p className="mt-1.5 text-xs text-danger">{errors.email.message}</p>
             )}
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-slate-300 mb-1">
+            <label htmlFor="password" className="block text-sm font-medium text-foreground mb-1">
               Senha
             </label>
             <PasswordStrengthBar password={watch('password') ?? ''} />
@@ -273,35 +273,35 @@ export function CreateUserForm() {
               id="password"
               type="password"
               autoComplete="new-password"
-              className="w-full bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-500 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus:border-transparent transition-colors"
+              className="w-full bg-background border border-border text-foreground placeholder:text-muted-foreground rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus:border-transparent transition-colors"
               placeholder="Mínimo 8 caracteres"
               {...register('password')}
             />
             <PasswordStrengthCriteria password={watch('password') ?? ''} />
             {errors.password && (
-              <p className="mt-1.5 text-xs text-rose-400">{errors.password.message}</p>
+              <p className="mt-1.5 text-xs text-danger">{errors.password.message}</p>
             )}
           </div>
 
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-300 mb-1.5">
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground mb-1.5">
               Confirmar senha
             </label>
             <input
               id="confirmPassword"
               type="password"
               autoComplete="new-password"
-              className="w-full bg-slate-800 border border-slate-700 text-slate-100 placeholder-slate-500 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus:border-transparent transition-colors"
+              className="w-full bg-background border border-border text-foreground placeholder:text-muted-foreground rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus:border-transparent transition-colors"
               placeholder="Repita a senha"
               {...register('confirmPassword')}
             />
             {errors.confirmPassword && (
-              <p className="mt-1.5 text-xs text-rose-400">{errors.confirmPassword.message}</p>
+              <p className="mt-1.5 text-xs text-danger">{errors.confirmPassword.message}</p>
             )}
           </div>
 
           <div>
-            <label htmlFor="role" className="block text-sm font-medium text-slate-300 mb-1.5">
+            <label htmlFor="role" className="block text-sm font-medium text-foreground mb-1.5">
               Função
             </label>
             <Controller
@@ -319,7 +319,7 @@ export function CreateUserForm() {
               )}
             />
             {errors.role && (
-              <p className="mt-1.5 text-xs text-rose-400">{errors.role.message}</p>
+              <p className="mt-1.5 text-xs text-danger">{errors.role.message}</p>
             )}
           </div>
         </div>
@@ -327,9 +327,9 @@ export function CreateUserForm() {
 
       {/* Permissões de Acesso */}
       <div className="pt-1">
-        <hr className="border-slate-700 mb-4" />
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-4">
-          Permissões de Acesso <span className="text-slate-600 font-normal normal-case">(opcional)</span>
+        <hr className="border-border mb-4" />
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">
+          Permissões de Acesso <span className="text-muted-foreground font-normal normal-case">(opcional)</span>
         </p>
       </div>
 
@@ -348,13 +348,13 @@ export function CreateUserForm() {
               return (
                 <div
                   key={modulo.id}
-                  className="rounded-lg border border-slate-700 bg-slate-800/50 overflow-hidden"
+                  className="rounded-lg border border-border bg-foreground/5 overflow-hidden"
                 >
-                  <div className="flex items-center gap-3 px-4 py-3 bg-slate-800 border-b border-slate-700">
+                  <div className="flex items-center gap-3 px-4 py-3 bg-background border-b border-border">
                     {modulo.icone && (
                       <span className="text-base leading-none">{modulo.icone}</span>
                     )}
-                    <span className="text-sm font-medium text-slate-200 flex-1">{modulo.nome}</span>
+                    <span className="text-sm font-medium text-foreground flex-1">{modulo.nome}</span>
                     {moduloIds.length > 0 && (
                       <label className="flex items-center gap-2 cursor-pointer select-none">
                         <Checkbox
@@ -362,14 +362,14 @@ export function CreateUserForm() {
                           indeterminate={someChecked && !allChecked}
                           onChange={(e) => toggleAll(moduloIds, e.target.checked)}
                         />
-                        <span className="text-xs text-slate-400">Todos</span>
+                        <span className="text-xs text-muted-foreground">Todos</span>
                       </label>
                     )}
                   </div>
 
                   <div className="px-4 py-3">
                     {permissoes.length === 0 ? (
-                      <p className="text-xs text-slate-500 italic">Nenhuma permissão cadastrada neste módulo.</p>
+                      <p className="text-xs text-muted-foreground italic">Nenhuma permissão cadastrada neste módulo.</p>
                     ) : (
                       <div className="grid grid-cols-1 gap-2">
                         {permissoes.map((permissao) => {
@@ -392,11 +392,11 @@ export function CreateUserForm() {
                                 }}
                               />
                               <div className="min-w-0">
-                                <span className="text-sm text-slate-300 group-hover:text-slate-100 transition-colors leading-tight block">
+                                <span className="text-sm text-foreground group-hover:text-foreground transition-colors leading-tight block">
                                   {permissao.nome}
                                 </span>
                                 {permissao.descricao && (
-                                  <span className="text-xs text-slate-500 leading-tight block mt-0.5">
+                                  <span className="text-xs text-muted-foreground leading-tight block mt-0.5">
                                     {permissao.descricao}
                                   </span>
                                 )}
@@ -413,9 +413,9 @@ export function CreateUserForm() {
 
             {/* Permissões sem módulo */}
             {(permissoesPorModulo.get(null) ?? []).length > 0 && (
-              <div className="rounded-lg border border-slate-700 bg-slate-800/50 overflow-hidden">
-                <div className="flex items-center gap-3 px-4 py-3 bg-slate-800 border-b border-slate-700">
-                  <span className="text-sm font-medium text-slate-400 flex-1 italic">Sem módulo</span>
+              <div className="rounded-lg border border-border bg-foreground/5 overflow-hidden">
+                <div className="flex items-center gap-3 px-4 py-3 bg-background border-b border-border">
+                  <span className="text-sm font-medium text-muted-foreground flex-1 italic">Sem módulo</span>
                   {(() => {
                     const semModuloIds = (permissoesPorModulo.get(null) ?? []).map((p) => p.id);
                     const allCheckedSm = semModuloIds.every((id) => (field.value ?? []).includes(id));
@@ -427,7 +427,7 @@ export function CreateUserForm() {
                           indeterminate={someCheckedSm && !allCheckedSm}
                           onChange={(e) => toggleAll(semModuloIds, e.target.checked)}
                         />
-                        <span className="text-xs text-slate-400">Todos</span>
+                        <span className="text-xs text-muted-foreground">Todos</span>
                       </label>
                     );
                   })()}
@@ -453,11 +453,11 @@ export function CreateUserForm() {
                           }}
                         />
                         <div className="min-w-0">
-                          <span className="text-sm text-slate-300 group-hover:text-slate-100 transition-colors leading-tight block">
+                          <span className="text-sm text-foreground group-hover:text-foreground transition-colors leading-tight block">
                             {permissao.nome}
                           </span>
                           {permissao.descricao && (
-                            <span className="text-xs text-slate-500 leading-tight block mt-0.5">
+                            <span className="text-xs text-muted-foreground leading-tight block mt-0.5">
                               {permissao.descricao}
                             </span>
                           )}
@@ -470,7 +470,7 @@ export function CreateUserForm() {
             )}
 
             {modulos.length === 0 && (permissoesRaw ?? []).length === 0 && (
-              <p className="text-xs text-slate-500 italic text-center py-2 col-span-full">
+              <p className="text-xs text-muted-foreground italic text-center py-2 col-span-full">
                 Nenhum módulo ou permissão cadastrado.
               </p>
             )}
@@ -480,9 +480,9 @@ export function CreateUserForm() {
 
       {/* Departamentos */}
       <div className="pt-1">
-        <hr className="border-slate-700 mb-4" />
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-4">
-          Departamentos <span className="text-slate-600 font-normal normal-case">(opcional)</span>
+        <hr className="border-border mb-4" />
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">
+          Departamentos <span className="text-muted-foreground font-normal normal-case">(opcional)</span>
         </p>
       </div>
 
@@ -490,9 +490,9 @@ export function CreateUserForm() {
         control={control}
         name="departamentoIds"
         render={({ field }) => (
-          <div className="rounded-lg border border-slate-700 bg-slate-800/50 overflow-hidden">
+          <div className="rounded-lg border border-border bg-foreground/5 overflow-hidden">
             {departamentos.length === 0 ? (
-              <p className="text-xs text-slate-500 italic text-center py-4">
+              <p className="text-xs text-muted-foreground italic text-center py-4">
                 Nenhum departamento cadastrado.
               </p>
             ) : (
@@ -516,7 +516,7 @@ export function CreateUserForm() {
                           }
                         }}
                       />
-                      <span className="text-sm text-slate-300 group-hover:text-slate-100 transition-colors leading-tight">
+                      <span className="text-sm text-foreground group-hover:text-foreground transition-colors leading-tight">
                         {departamento.nome}
                       </span>
                     </label>
@@ -531,7 +531,7 @@ export function CreateUserForm() {
       <button
         type="submit"
         disabled={isPending}
-        className="w-full py-2.5 px-4 text-sm font-semibold rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+        className="w-full py-2.5 px-4 text-sm font-semibold rounded-lg bg-primary hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
       >
         {isPending ? 'Criando…' : 'Criar Usuário'}
       </button>
