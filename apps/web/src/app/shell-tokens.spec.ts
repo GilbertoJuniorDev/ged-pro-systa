@@ -14,6 +14,7 @@ const SCOPE = [
   'app/(auth)',
   'app/(department-select)',
   'components/layout',
+  'components/branding/logo.tsx',
 ];
 
 function collectTsx(path: string): string[] {
