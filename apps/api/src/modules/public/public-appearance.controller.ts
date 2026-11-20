@@ -89,9 +89,13 @@ function streamLogo(file: LogoFile | null, res: Response): StreamableFile {
   }
   // A URL é sempre montada com `?v=<logoVersion>` (cache-busting) pelo frontend —
   // uma vez publicada, aquela versão nunca muda, então pode ser cacheada indefinidamente.
+  // O web (outra origem) carrega o Logo direto da API via <img>; o `same-origin` global
+  // do helmet faria o navegador bloquear a imagem. Só o binário do Logo — público e sem
+  // dado sensível — é liberado; o resto da API mantém `same-origin`.
   res.set({
     'Content-Type': file.mimeType,
     'Cache-Control': 'public, max-age=31536000, immutable',
+    'Cross-Origin-Resource-Policy': 'cross-origin',
   });
   return new StreamableFile(file.stream as Readable);
 }

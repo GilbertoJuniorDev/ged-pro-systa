@@ -1,6 +1,9 @@
 import { Test, type TestingModule } from '@nestjs/testing';
-import { NotFoundException, StreamableFile } from '@nestjs/common';
+import { NotFoundException, StreamableFile, type INestApplication } from '@nestjs/common';
 import type { Response } from 'express';
+import helmet from 'helmet';
+import { Readable } from 'node:stream';
+import * as request from 'supertest';
 import { PublicAppearanceController } from './public-appearance.controller';
 import { SystemAppearanceService } from '../appearance/system-appearance.service';
 import { PortalAppearanceService } from '../appearance/portal-appearance.service';
@@ -85,6 +88,7 @@ describe('PublicAppearanceController', () => {
       expect(res.set).toHaveBeenCalledWith({
         'Content-Type': 'image/png',
         'Cache-Control': 'public, max-age=31536000, immutable',
+        'Cross-Origin-Resource-Policy': 'cross-origin',
       });
       expect(result).toBeInstanceOf(StreamableFile);
     });
@@ -154,6 +158,71 @@ describe('PublicAppearanceController', () => {
       await expect(controller.portalLogo(res as unknown as Response)).rejects.toBeInstanceOf(
         NotFoundException,
       );
+    });
+  });
+
+  // O web (outra origem) carrega o binário do Logo direto da API via <img>. Com o
+  // `Cross-Origin-Resource-Policy: same-origin` padrão do helmet o navegador bloqueia a
+  // imagem e o componente cai na marca padrão — só as rotas de binário do Logo liberam.
+  describe('Cross-Origin-Resource-Policy (HTTP, com helmet como em main.ts)', () => {
+    let app: INestApplication;
+
+    beforeEach(async () => {
+      const module: TestingModule = await Test.createTestingModule({
+        controllers: [PublicAppearanceController],
+        providers: [
+          { provide: SystemAppearanceService, useValue: systemAppearanceService },
+          { provide: PortalAppearanceService, useValue: portalAppearanceService },
+        ],
+      }).compile();
+      app = module.createNestApplication();
+      app.use(helmet());
+      await app.init();
+    });
+
+    afterEach(async () => {
+      await app.close();
+    });
+
+    const logoFile = () => ({ stream: Readable.from([Buffer.from('png')]), mimeType: 'image/png' });
+
+    it('libera cross-origin no binário do Logo do sistema', async () => {
+      systemAppearanceService.getLogoFile.mockResolvedValue(logoFile());
+
+      const res = await request(app.getHttpServer()).get('/public/appearance/system/logo').expect(200);
+
+      expect(res.headers['cross-origin-resource-policy']).toBe('cross-origin');
+    });
+
+    it('libera cross-origin no binário do Logo do portal', async () => {
+      portalAppearanceService.getLogoFile.mockResolvedValue(logoFile());
+
+      const res = await request(app.getHttpServer()).get('/public/appearance/portal/logo').expect(200);
+
+      expect(res.headers['cross-origin-resource-policy']).toBe('cross-origin');
+    });
+
+    it('mantém same-origin nas demais rotas', async () => {
+      systemAppearanceService.getEffectiveAppearance.mockResolvedValue({
+        primaryColor: '#4f46e5',
+        secondaryColor: '#0ea5e9',
+        backgroundColor: '#0f172a',
+        logoPath: null,
+        logoVersion: 0,
+        updatedAt: new Date('2026-01-01'),
+      } as never);
+
+      const res = await request(app.getHttpServer()).get('/public/appearance/system').expect(200);
+
+      expect(res.headers['cross-origin-resource-policy']).toBe('same-origin');
+    });
+
+    it('mantém same-origin no 404 de Logo não configurado', async () => {
+      systemAppearanceService.getLogoFile.mockResolvedValue(null);
+
+      const res = await request(app.getHttpServer()).get('/public/appearance/system/logo').expect(404);
+
+      expect(res.headers['cross-origin-resource-policy']).toBe('same-origin');
     });
   });
 });

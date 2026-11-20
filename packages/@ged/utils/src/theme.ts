@@ -389,3 +389,171 @@ export function deriveThemeScales(input: ThemeScalesInput): ThemeScales {
     }),
   };
 }
+
+// ─── Tokens semânticos (ADR 0002) ───────────────────────────────────────────
+// A interface é colorida por tokens semânticos calculados a partir da Paleta (cores do
+// admin) combinada com o Tema (escolha claro/escuro de cada usuário). Regras:
+// - a cor de fundo da Paleta define só o MATIZ dos neutros; a luminosidade é fixa por Tema;
+// - a primária é ajustada por Tema quando não atinge 4.5:1 contra os fundos, e a derivação
+//   informa o ajuste (`primaryAdjusted`) para o formulário de Aparência poder avisar;
+// - status (`success`/`warning`/`danger`/`info`) são fixos, independentes da Paleta.
+
+export const THEME_MODES = ['light', 'dark'] as const;
+export type ThemeMode = (typeof THEME_MODES)[number];
+
+/** As cores escolhidas pelo admin (ver GLOSSARY: Paleta). */
+export type Palette = ThemeScalesInput;
+
+export const SEMANTIC_TOKEN_NAMES = [
+  'background',
+  'surface',
+  'surface-elevated',
+  'foreground',
+  'muted-foreground',
+  'border',
+  'ring',
+  'primary',
+  'primary-hover',
+  'primary-soft',
+  'primary-foreground',
+  'secondary',
+  'success',
+  'warning',
+  'danger',
+  'info',
+] as const;
+export type SemanticTokenName = (typeof SEMANTIC_TOKEN_NAMES)[number];
+export type SemanticTokens = Readonly<Record<SemanticTokenName, string>>;
+
+export interface DerivedTheme {
+  readonly tokens: SemanticTokens;
+  /** true quando a primária da Paleta não atingia 4.5:1 neste Tema e foi ajustada. */
+  readonly primaryAdjusted: boolean;
+}
+
+type NeutralRole = 'background' | 'surface' | 'surface-elevated' | 'foreground' | 'muted-foreground' | 'border';
+type StatusRole = 'success' | 'warning' | 'danger' | 'info';
+
+/**
+ * Paradas da rampa neutra (luminância casada com a do slate, ver `deriveThemeScales`) para
+ * cada papel. `null` = branco puro — no claro, cartões e popovers são brancos.
+ */
+const NEUTRAL_SHADES: Readonly<Record<ThemeMode, Readonly<Record<NeutralRole, ColorShade | null>>>> = {
+  dark: {
+    background: 950,
+    surface: 900,
+    'surface-elevated': 800,
+    foreground: 50,
+    'muted-foreground': 400,
+    border: 700,
+  },
+  light: {
+    background: 50,
+    surface: null,
+    'surface-elevated': null,
+    foreground: 900,
+    'muted-foreground': 600,
+    border: 200,
+  },
+};
+
+/** Status fixos (Tailwind green/amber/red/sky): -400 no escuro, -700 no claro. */
+const STATUS_COLORS: Readonly<Record<ThemeMode, Readonly<Record<StatusRole, string>>>> = {
+  dark: { success: '#4ade80', warning: '#fbbf24', danger: '#f87171', info: '#38bdf8' },
+  light: { success: '#15803d', warning: '#b45309', danger: '#b91c1c', info: '#0369a1' },
+};
+
+const WHITE = '#ffffff';
+const LIGHTNESS_SEARCH_STEPS = 32;
+const HOVER_LIGHTNESS_STEP = 8;
+const SOFT_LIGHTNESS: Readonly<Record<ThemeMode, number>> = { light: 96, dark: 14 };
+const SOFT_SATURATION_RATIO: Readonly<Record<ThemeMode, number>> = { light: 1, dark: 0.6 };
+
+function meetsContrast(hex: string, canvases: readonly string[]): boolean {
+  return canvases.every((canvas) => contrastRatio(hex, canvas) >= WCAG_AA_CONTRAST);
+}
+
+/**
+ * Devolve `hex` intacta se já atinge 4.5:1 contra todos os `canvases`; senão, move só a
+ * luminosidade (HSL) — para cima no escuro, para baixo no claro — até o primeiro valor que
+ * atinge. Luminância cresce monotonicamente com L (h/s fixos), então a busca binária vale;
+ * as pontas (branco/preto) sempre atingem 4.5:1 contra os fundos fixos dos Temas.
+ */
+function ensureContrast(
+  hex: string,
+  canvases: readonly string[],
+  mode: ThemeMode,
+): { readonly color: string; readonly adjusted: boolean } {
+  if (meetsContrast(hex, canvases)) return { color: hex, adjusted: false };
+
+  const { h, s, l } = hexToHsl(hex);
+  // `passing` é sempre um L que atinge o contraste; `failing`, um que não atinge.
+  let failing = l;
+  let passing = mode === 'dark' ? 100 : 0;
+
+  for (let i = 0; i < LIGHTNESS_SEARCH_STEPS; i += 1) {
+    const mid = (failing + passing) / 2;
+    if (meetsContrast(hslToHex(h, s, mid), canvases)) passing = mid;
+    else failing = mid;
+  }
+
+  return { color: hslToHex(h, s, passing), adjusted: true };
+}
+
+function hoverOf(hex: string, mode: ThemeMode): string {
+  const { h, s, l } = hexToHsl(hex);
+  const towardContrast = mode === 'dark' ? l + HOVER_LIGHTNESS_STEP : l - HOVER_LIGHTNESS_STEP;
+  // Sem espaço na direção do contraste (primária já branca/preta): vai no sentido oposto.
+  const lightness =
+    towardContrast > 100 || towardContrast < 0
+      ? mode === 'dark'
+        ? l - HOVER_LIGHTNESS_STEP
+        : l + HOVER_LIGHTNESS_STEP
+      : towardContrast;
+  return hslToHex(h, s, lightness);
+}
+
+function softOf(hex: string, mode: ThemeMode): string {
+  const { h, s } = hexToHsl(hex);
+  return hslToHex(h, s * SOFT_SATURATION_RATIO[mode], SOFT_LIGHTNESS[mode]);
+}
+
+/**
+ * Deriva os tokens semânticos de uma Paleta para um Tema. Lança erro se alguma cor da
+ * Paleta não for `#RRGGBB` — quem emite CSS deve cair na Paleta padrão nesse caso.
+ */
+export function deriveSemanticTokens(palette: Palette, mode: ThemeMode): DerivedTheme {
+  const neutral = deriveThemeScales(palette).neutral;
+  const shades = NEUTRAL_SHADES[mode];
+  const neutralOf = (role: NeutralRole): string => {
+    const shade = shades[role];
+    return shade === null ? WHITE : neutral[shade];
+  };
+
+  const background = neutralOf('background');
+  const surface = neutralOf('surface');
+  const surfaceElevated = neutralOf('surface-elevated');
+  const canvases = [background, surface, surfaceElevated];
+
+  const primary = ensureContrast(palette.primaryColor, canvases, mode);
+  const secondary = ensureContrast(palette.secondaryColor, canvases, mode);
+
+  return {
+    primaryAdjusted: primary.adjusted,
+    tokens: {
+      background,
+      surface,
+      'surface-elevated': surfaceElevated,
+      foreground: neutralOf('foreground'),
+      'muted-foreground': neutralOf('muted-foreground'),
+      border: neutralOf('border'),
+      ring: primary.color,
+      primary: primary.color,
+      'primary-hover': hoverOf(primary.color, mode),
+      'primary-soft': softOf(primary.color, mode),
+      'primary-foreground': readableForeground(primary.color),
+      secondary: secondary.color,
+      ...STATUS_COLORS[mode],
+    },
+  };
+}

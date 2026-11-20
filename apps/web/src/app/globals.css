@@ -2,6 +2,38 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ─── Tokens semânticos (ADR 0002) — utilities do Tailwind ──────────
+   `bg-background`, `bg-surface`, `bg-surface-elevated`, `text-foreground`,
+   `text-muted-foreground`, `border-border`, `ring-ring`, `bg-primary`,
+   `hover:bg-primary-hover`, `bg-primary-soft`, `text-primary-foreground`,
+   `text-secondary`, `text-success`/`-warning`/`-danger`/`-info` (e qualquer outra
+   utility de cor: `border-primary`, `bg-danger/10`…).
+
+   Os valores (`--ged-*`) vêm do <style> injetado por RootLayout (ver
+   lib/theme-style.ts), derivados de Paleta × Tema e resolvidos pelo ancestral
+   `.light`/`.dark` mais próximo. `inline` faz a utility emitir `var(--ged-*)`
+   direto — por isso os aliases antigos `--color-primary`/`--color-surface`… de
+   `:root`/`.light` abaixo (usados como `bg-[var(--color-primary)]`) continuam
+   intactos até a fatia de contract. */
+@theme inline {
+  --color-background: var(--ged-background);
+  --color-surface: var(--ged-surface);
+  --color-surface-elevated: var(--ged-surface-elevated);
+  --color-foreground: var(--ged-foreground);
+  --color-muted-foreground: var(--ged-muted-foreground);
+  --color-border: var(--ged-border);
+  --color-ring: var(--ged-ring);
+  --color-primary: var(--ged-primary);
+  --color-primary-hover: var(--ged-primary-hover);
+  --color-primary-soft: var(--ged-primary-soft);
+  --color-primary-foreground: var(--ged-primary-foreground);
+  --color-secondary: var(--ged-secondary);
+  --color-success: var(--ged-success);
+  --color-warning: var(--ged-warning);
+  --color-danger: var(--ged-danger);
+  --color-info: var(--ged-info);
+}
+
 /* ─── Aparência do sistema — aliases semânticos ────────────────────
    NENHUM hex de paleta aqui de propósito: estes nomes são apenas apelidos para
    paradas das rampas do Tailwind. Quem define as rampas em runtime é o <style>

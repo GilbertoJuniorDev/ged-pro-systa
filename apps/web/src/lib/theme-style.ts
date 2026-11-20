@@ -1,8 +1,12 @@
 import {
   COLOR_SHADES,
+  deriveSemanticTokens,
   deriveThemeScales,
   readableForeground,
+  SEMANTIC_TOKEN_NAMES,
   type ColorScale,
+  type Palette,
+  type ThemeMode,
   type ThemeScales,
 } from '@ged/utils';
 import { DEFAULT_PORTAL_APPEARANCE, DEFAULT_SYSTEM_APPEARANCE } from '@ged/types';
@@ -82,7 +86,35 @@ function renderSystemCss(appearance: SystemAppearanceDto): string {
   return (
     `:root:root{${declareAllRamps(scales)}` +
     `--color-primary-foreground:${readableForeground(scales.primary[600])};}` +
-    `:root:root.light{--color-primary-foreground:${readableForeground(scales.primary[700])};}`
+    `:root:root.light{--color-primary-foreground:${readableForeground(scales.primary[700])};}` +
+    renderSemanticTokensCss(appearance)
+  );
+}
+
+/** Prefixo das custom properties dos tokens semânticos — `--ged-primary`, `--ged-surface`… */
+export const SEMANTIC_TOKEN_PREFIX = '--ged-';
+
+function declareSemanticTokens(palette: Palette, mode: ThemeMode): string {
+  const { tokens } = deriveSemanticTokens(palette, mode);
+  return SEMANTIC_TOKEN_NAMES.map((name) => `${SEMANTIC_TOKEN_PREFIX}${name}:${tokens[name]};`).join('');
+}
+
+/**
+ * Tokens semânticos (ADR 0002) por Tema, com **Tema por trecho da tela**.
+ *
+ * Os valores são hex literais (sem `var()`) declarados no próprio elemento marcado com
+ * `.dark`/`.light`, então cada elemento herda os tokens do ancestral marcado mais próximo —
+ * não só do `<html>`. É o que deixa um trecho `.light` (ex.: a Combobox do portal) claro
+ * dentro de um `<html class="dark">`, e vice-versa.
+ *
+ * Especificidade: `:root:root` (0-2-0) é o padrão escuro (antes do next-themes pôr a
+ * classe); `:root:root.light` (0-3-0) vence-o no `<html>`; `.dark.dark`/`.light.light`
+ * (0-2-0) marcam trechos. Sem `@layer`, pelos mesmos motivos das rampas acima.
+ */
+function renderSemanticTokensCss(palette: Palette): string {
+  return (
+    `:root:root,.dark.dark{${declareSemanticTokens(palette, 'dark')}}` +
+    `:root:root.light,.light.light{${declareSemanticTokens(palette, 'light')}}`
   );
 }
 

@@ -39,13 +39,21 @@ export function Logo({ scope, variant = 'mark+wordmark', className }: LogoProps)
   useEffect(() => setFailed(false), [logoVersion, scope]);
 
   const hasLogo = (data?.hasLogo ?? false) && !failed;
+  const logoUrl = buildLogoUrl(scope, logoVersion);
+
+  // O fallback para a marca padrão é visualmente indistinguível de "sem logo" — sem
+  // este aviso uma falha (ex.: CORP bloqueando a imagem) volta a ser invisível.
+  const handleLogoError = () => {
+    console.warn(`[Logo] Falha ao carregar o logo (${scope}) em ${logoUrl}; usando a marca padrão.`);
+    setFailed(true);
+  };
 
   return (
     <span className={`inline-flex items-center gap-3 ${className ?? ''}`}>
       {hasLogo ? (
         <span className="relative block h-8 w-8 shrink-0">
           <Image
-            src={buildLogoUrl(scope, logoVersion)}
+            src={logoUrl}
             alt={WORDMARK[scope]}
             fill
             sizes="32px"
@@ -57,7 +65,7 @@ export function Logo({ scope, variant = 'mark+wordmark', className }: LogoProps)
             // (a API responde em http://api:3333). Sem isto o logo simplesmente não
             // carrega em Docker. Servir direto também não custa nada: é um PNG de 32px.
             unoptimized
-            onError={() => setFailed(true)}
+            onError={handleLogoError}
           />
         </span>
       ) : (
