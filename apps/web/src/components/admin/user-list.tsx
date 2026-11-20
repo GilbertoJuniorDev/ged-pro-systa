@@ -187,7 +187,7 @@ export function UserList() {
                       <span
                         className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${
                           user.isActive
-                            ? 'text-success ring-1 ring-success/40'
+                            ? 'bg-surface text-success ring-1 ring-success/40'
                             : 'bg-foreground/10 text-muted-foreground ring-1 ring-border'
                         }`}
                       >
@@ -328,7 +328,7 @@ export function UserList() {
                         <span
                           className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${
                             user.isActive
-                              ? 'text-success ring-1 ring-success/40'
+                              ? 'bg-surface text-success ring-1 ring-success/40'
                               : 'bg-foreground/10 text-muted-foreground ring-1 ring-border'
                           }`}
                         >

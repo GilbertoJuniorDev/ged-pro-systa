@@ -16,7 +16,7 @@ interface Props {
 }
 
 const LEVEL_COLORS: Record<ErrorLogLevel, string> = {
-  warn: 'text-warning border-warning/30',
+  warn: 'bg-surface text-warning border-warning/30',
   error: 'bg-danger/10 text-danger border-danger/30',
   fatal: 'bg-primary-soft text-primary border-primary/40',
 };
