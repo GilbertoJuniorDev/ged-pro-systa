@@ -22,7 +22,7 @@ export function DashboardSkeleton() {
         {STAT_CARD_KEYS.map((i) => (
           <div
             key={i}
-            className="animate-slide-up rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900"
+            className="animate-slide-up rounded-2xl border border-border bg-surface p-6 shadow-sm"
             style={{ animationDelay: `${i * 75}ms` }}
           >
             <Skeleton className="mb-4 h-12 w-12 rounded-xl" />
@@ -36,7 +36,7 @@ export function DashboardSkeleton() {
         {CHART_CARD_KEYS.map((i) => (
           <div
             key={i}
-            className="animate-slide-up rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900"
+            className="animate-slide-up rounded-2xl border border-border bg-surface p-6 shadow-sm"
             style={{ animationDelay: `${(i + STAT_CARD_KEYS.length) * 75}ms` }}
           >
             <Skeleton className="mb-4 h-4 w-40" />

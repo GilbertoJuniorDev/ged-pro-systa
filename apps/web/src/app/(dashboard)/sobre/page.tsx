@@ -9,10 +9,10 @@ export const metadata: Metadata = {
 
 export default function SobrePage() {
   return (
-    <main className="flex-1 overflow-y-auto bg-slate-50 p-4 sm:p-6 lg:p-8 dark:bg-slate-950">
+    <main className="flex-1 overflow-y-auto bg-background p-4 sm:p-6 lg:p-8">
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-slate-950 dark:text-slate-100">Sobre o Sistema</h2>
-        <p className="text-slate-600 dark:text-slate-400">Versão, suporte e histórico de atualizações do GED Pro.</p>
+        <h2 className="text-2xl font-bold text-foreground">Sobre o Sistema</h2>
+        <p className="text-muted-foreground">Versão, suporte e histórico de atualizações do GED Pro.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

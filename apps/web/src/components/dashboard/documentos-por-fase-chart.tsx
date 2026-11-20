@@ -27,11 +27,11 @@ export function DocumentosPorFaseChart({ data }: DocumentosPorFaseChartProps) {
   ];
 
   return (
-    <div className="flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:shadow-lg dark:border-slate-700 dark:bg-slate-900">
-      <h3 className="mb-4 font-bold text-slate-950 dark:text-slate-100">Documentos por Fase</h3>
+    <div className="flex flex-col rounded-2xl border border-border bg-surface p-6 shadow-sm transition-all hover:shadow-lg">
+      <h3 className="mb-4 font-bold text-foreground">Documentos por Fase</h3>
 
       {total === 0 ? (
-        <div className="flex flex-1 flex-col items-center justify-center gap-2 py-8 text-slate-500 dark:text-slate-500">
+        <div className="flex flex-1 flex-col items-center justify-center gap-2 py-8 text-muted-foreground">
           <FileStack className="h-8 w-8" strokeWidth={1.5} aria-hidden="true" />
           <p className="text-sm">Nenhum documento cadastrado.</p>
         </div>
@@ -46,7 +46,7 @@ export function DocumentosPorFaseChart({ data }: DocumentosPorFaseChartProps) {
                 innerRadius="55%"
                 outerRadius="85%"
                 paddingAngle={2}
-                stroke={chrome.tooltipBg}
+                stroke={chrome.surface}
                 strokeWidth={2}
                 isAnimationActive={false}
               >
