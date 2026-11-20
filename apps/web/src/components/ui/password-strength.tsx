@@ -98,7 +98,7 @@ export function PasswordStrengthCriteria({ password }: PasswordStrengthProps) {
             className={cn(
               'flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full transition-colors',
               results[i]
-                ? 'bg-success/10 text-success'
+                ? 'ring-1 ring-inset ring-success/40 text-success'
                 : 'bg-foreground/5 text-muted-foreground',
             )}
           >
