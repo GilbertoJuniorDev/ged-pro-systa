@@ -72,28 +72,28 @@ interface DeleteConfirmProps {
 function DeleteConfirm({ documentSeries, onConfirm, onCancel, isPending }: DeleteConfirmProps) {
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
     >
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6">
-        <p className="text-slate-100 font-semibold mb-1">Remover série?</p>
-        <p className="text-slate-400 text-sm mb-6">
-          A série <span className="text-slate-200 font-medium">&quot;{documentSeries.codigo} — {documentSeries.nome}&quot;</span> será
+      <div className="bg-surface-elevated border border-border rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6">
+        <p className="text-foreground font-semibold mb-1">Remover série?</p>
+        <p className="text-muted-foreground text-sm mb-6">
+          A série <span className="text-foreground font-medium">&quot;{documentSeries.codigo} — {documentSeries.nome}&quot;</span> será
           removida. A remoção falhará se houver documentos ou séries filhas vinculados a ela.
         </p>
         <div className="flex gap-3 justify-end">
           <button
             onClick={onCancel}
             disabled={isPending}
-            className="px-4 py-2 text-sm text-slate-300 hover:text-slate-100 transition-colors disabled:opacity-50"
+            className="px-4 py-2 text-sm text-foreground hover:text-foreground transition-colors disabled:opacity-50"
           >
             Cancelar
           </button>
           <button
             onClick={onConfirm}
             disabled={isPending}
-            className="px-4 py-2 text-sm bg-rose-600 hover:bg-rose-500 text-white rounded-lg transition-colors disabled:opacity-50"
+            className="px-4 py-2 text-sm bg-danger hover:bg-danger/90 text-background rounded-lg transition-colors disabled:opacity-50"
           >
             {isPending ? 'Removendo…' : 'Remover'}
           </button>
@@ -105,10 +105,10 @@ function DeleteConfirm({ documentSeries, onConfirm, onCancel, isPending }: Delet
 
 function SkeletonRow() {
   return (
-    <tr className="border-b border-slate-800">
+    <tr className="border-b border-border">
       {Array.from({ length: 5 }).map((_, i) => (
         <td key={i} className="px-4 py-3">
-          <div className="h-4 rounded bg-slate-800 animate-pulse" style={{ width: i === 1 ? '60%' : '70%' }} />
+          <div className="h-4 rounded bg-border animate-pulse" style={{ width: i === 1 ? '60%' : '70%' }} />
         </td>
       ))}
     </tr>
@@ -123,8 +123,8 @@ interface StatTileProps {
 
 function StatTile({ label, value, accent }: StatTileProps) {
   return (
-    <div className="rounded-xl border border-slate-700 bg-slate-900/60 px-4 py-3">
-      <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">{label}</p>
+    <div className="rounded-xl border border-border bg-surface px-4 py-3">
+      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
       <p className={`mt-1 text-2xl font-bold ${accent}`}>{value}</p>
     </div>
   );
@@ -177,7 +177,7 @@ export function DocumentSeriesList() {
   }, [documentSeries]);
 
   if (isError) {
-    return <p className="text-rose-400 text-sm py-4">Erro ao carregar séries de classificação.</p>;
+    return <p className="text-danger text-sm py-4">Erro ao carregar séries de classificação.</p>;
   }
 
   const total = documentSeries?.length ?? 0;
@@ -187,7 +187,7 @@ export function DocumentSeriesList() {
   return (
     <>
       <div className="mb-4 max-w-xs">
-        <label className="block text-sm text-slate-400 mb-1" htmlFor="departamento-filtro">
+        <label className="block text-sm text-muted-foreground mb-1" htmlFor="departamento-filtro">
           Departamento
         </label>
         <Combobox
@@ -201,34 +201,34 @@ export function DocumentSeriesList() {
 
       {!isLoading && total > 0 && (
         <div className="mb-6 grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-xl">
-          <StatTile label="Total" value={total} accent="text-slate-100" />
-          <StatTile label="Ativas" value={ativas} accent="text-emerald-400" />
-          <StatTile label="Inativas" value={inativas} accent="text-slate-500" />
+          <StatTile label="Total" value={total} accent="text-foreground" />
+          <StatTile label="Ativas" value={ativas} accent="text-success" />
+          <StatTile label="Inativas" value={inativas} accent="text-muted-foreground" />
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-xl border border-slate-700">
+      <div className="overflow-x-auto rounded-xl border border-border">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-700 bg-slate-900/60">
-              <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Código</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Nome</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Departamento</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Status</th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-slate-400 uppercase tracking-wider">Ações</th>
+            <tr className="border-b border-border bg-surface">
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Código</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Nome</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Departamento</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
+              <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Ações</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800">
+          <tbody className="divide-y divide-border">
             {isLoading
               ? Array.from({ length: 3 }).map((_, i) => <SkeletonRow key={i} />)
               : total === 0
                 ? (
                   <tr>
                     <td colSpan={5} className="px-4 py-10 text-center">
-                      <div className="flex flex-col items-center gap-2 text-slate-500">
+                      <div className="flex flex-col items-center gap-2 text-muted-foreground">
                         <FolderTree className="w-8 h-8" strokeWidth={1.5} />
                         <p>Nenhuma série cadastrada.</p>
-                        <p className="text-xs text-slate-600">
+                        <p className="text-xs text-muted-foreground">
                           Crie a primeira série de classificação para organizar os documentos.
                         </p>
                       </div>
@@ -236,26 +236,26 @@ export function DocumentSeriesList() {
                   </tr>
                 )
                 : flatRows.map(({ series, depth }) => (
-                  <tr key={series.id} className="hover:bg-slate-800/40 transition-colors">
-                    <td className="px-4 py-3 text-slate-300 font-mono text-xs">{series.codigo}</td>
-                    <td className="px-4 py-3 text-slate-200 font-medium">
+                  <tr key={series.id} className="hover:bg-foreground/5 transition-colors">
+                    <td className="px-4 py-3 text-foreground font-mono text-xs">{series.codigo}</td>
+                    <td className="px-4 py-3 text-foreground font-medium">
                       <span
                         className="inline-flex items-center gap-1.5"
                         style={{ paddingLeft: depth * 20 }}
                       >
-                        {depth > 0 && <span className="text-slate-600">└─</span>}
+                        {depth > 0 && <span className="text-muted-foreground">└─</span>}
                         {series.nome}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-slate-400">
+                    <td className="px-4 py-3 text-muted-foreground">
                       {departamentoNomeById.get(series.departamentoId) ?? '—'}
                     </td>
                     <td className="px-4 py-3">
                       <span
                         className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                           series.isActive
-                            ? 'bg-emerald-900/40 text-emerald-400'
-                            : 'bg-slate-800 text-slate-500'
+                            ? 'bg-success/10 text-success'
+                            : 'bg-foreground/10 text-muted-foreground'
                         }`}
                       >
                         {series.isActive ? 'Ativo' : 'Inativo'}
@@ -265,13 +265,13 @@ export function DocumentSeriesList() {
                       <div className="flex justify-end gap-2">
                         <button
                           onClick={() => setEditTarget(series)}
-                          className="px-3 py-1 text-xs text-indigo-300 hover:text-indigo-100 border border-indigo-700 hover:border-indigo-500 rounded-lg transition-colors"
+                          className="px-3 py-1 text-xs text-primary hover:text-primary-hover border border-primary/40 hover:border-primary rounded-lg transition-colors"
                         >
                           Editar
                         </button>
                         <button
                           onClick={() => setDeleteTarget(series)}
-                          className="px-3 py-1 text-xs text-rose-400 hover:text-rose-200 border border-rose-800 hover:border-rose-600 rounded-lg transition-colors"
+                          className="px-3 py-1 text-xs text-danger border border-danger/40 hover:border-danger rounded-lg transition-colors"
                         >
                           Remover
                         </button>

@@ -84,20 +84,20 @@ export function DossiesDataTable({
           ) : (
             dossies.map((d) => (
               <DataTableRow key={d.id} onClick={() => onRowClick(d)}>
-                <DataTableTd className="font-medium text-slate-900 dark:text-slate-200">{d.nome}</DataTableTd>
-                <DataTableTd className="text-slate-600 dark:text-slate-400">{d.descricao ?? '—'}</DataTableTd>
+                <DataTableTd className="font-medium text-foreground">{d.nome}</DataTableTd>
+                <DataTableTd className="text-muted-foreground">{d.descricao ?? '—'}</DataTableTd>
                 <DataTableTd>
                   <span
                     className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
                       d.isActive
-                        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                        : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+                        ? 'bg-success/10 text-success'
+                        : 'bg-foreground/5 text-muted-foreground'
                     }`}
                   >
                     {d.isActive ? 'Ativo' : 'Inativo'}
                   </span>
                 </DataTableTd>
-                <DataTableTd align="right" className="tabular-nums text-slate-600 dark:text-slate-400">
+                <DataTableTd align="right" className="tabular-nums text-muted-foreground">
                   {d.documentsCount}
                 </DataTableTd>
                 {canManage && (
@@ -105,13 +105,13 @@ export function DossiesDataTable({
                     <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
                       <button
                         onClick={() => onEdit(d)}
-                        className={`${ACTION_BTN} border-indigo-300 text-indigo-600 hover:border-indigo-500 hover:text-indigo-800 dark:border-indigo-700 dark:text-indigo-300 dark:hover:border-indigo-500 dark:hover:text-indigo-100`}
+                        className={`${ACTION_BTN} border-primary/40 text-primary hover:border-primary hover:text-primary-hover`}
                       >
                         Editar
                       </button>
                       <button
                         onClick={() => onDelete(d)}
-                        className={`${ACTION_BTN} border-rose-300 text-rose-600 hover:border-rose-500 hover:text-rose-800 dark:border-rose-800 dark:text-rose-400 dark:hover:border-rose-600 dark:hover:text-rose-200`}
+                        className={`${ACTION_BTN} border-danger/40 text-danger hover:border-danger`}
                       >
                         Remover
                       </button>

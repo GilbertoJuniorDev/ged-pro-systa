@@ -40,7 +40,7 @@ export function DocumentsPanel() {
   });
 
   if (isError) {
-    return <p className="py-4 text-sm text-rose-500 dark:text-rose-400">Erro ao carregar documentos.</p>;
+    return <p className="py-4 text-sm text-danger">Erro ao carregar documentos.</p>;
   }
 
   const documentos = data?.data ?? [];

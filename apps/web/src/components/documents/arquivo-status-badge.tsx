@@ -3,11 +3,11 @@ import type { ArquivoStatus } from '@/types';
 const META: Record<ArquivoStatus, { label: string; cls: string }> = {
   ABERTO: {
     label: 'Aberto',
-    cls: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+    cls: 'bg-success/10 text-success',
   },
   FECHADO: {
     label: 'Fechado',
-    cls: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
+    cls: 'bg-foreground/5 text-muted-foreground',
   },
 };
 

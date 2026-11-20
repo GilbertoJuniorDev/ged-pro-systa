@@ -26,25 +26,25 @@ interface TransferConfirmProps {
 function TransferConfirm({ document, serieLabel, onConfirm, onCancel, isPending }: TransferConfirmProps) {
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
     >
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6">
-        <p className="text-slate-100 font-semibold mb-1">Transferir documento?</p>
-        <p className="text-slate-400 text-sm mb-4">
-          O documento <span className="text-slate-200 font-medium">&quot;{document.nome}&quot;</span> será
+      <div className="bg-surface-elevated border border-border rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6">
+        <p className="text-foreground font-semibold mb-1">Transferir documento?</p>
+        <p className="text-muted-foreground text-sm mb-4">
+          O documento <span className="text-foreground font-medium">&quot;{document.nome}&quot;</span> será
           movido da fase Corrente para Intermediário. Esta ação registra a data de transferência e
           não pode ser desfeita por aqui.
         </p>
-        <dl className="mb-6 space-y-1.5 text-sm rounded-lg bg-slate-800/60 px-3 py-2.5">
+        <dl className="mb-6 space-y-1.5 text-sm rounded-lg bg-foreground/10 px-3 py-2.5">
           <div className="flex justify-between gap-4">
-            <dt className="text-slate-500">Série</dt>
-            <dd className="text-slate-300 text-right">{serieLabel}</dd>
+            <dt className="text-muted-foreground">Série</dt>
+            <dd className="text-foreground text-right">{serieLabel}</dd>
           </div>
           <div className="flex justify-between gap-4">
-            <dt className="text-slate-500">Vencimento</dt>
-            <dd className="text-slate-300 text-right">
+            <dt className="text-muted-foreground">Vencimento</dt>
+            <dd className="text-foreground text-right">
               {document.vencimentoCorrente
                 ? new Date(document.vencimentoCorrente).toLocaleDateString('pt-BR')
                 : '—'}
@@ -55,14 +55,14 @@ function TransferConfirm({ document, serieLabel, onConfirm, onCancel, isPending 
           <button
             onClick={onCancel}
             disabled={isPending}
-            className="px-4 py-2 text-sm text-slate-300 hover:text-slate-100 transition-colors disabled:opacity-50"
+            className="px-4 py-2 text-sm text-foreground hover:text-foreground transition-colors disabled:opacity-50"
           >
             Cancelar
           </button>
           <button
             onClick={onConfirm}
             disabled={isPending}
-            className="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors disabled:opacity-50"
+            className="px-4 py-2 text-sm bg-primary hover:bg-primary-hover text-primary-foreground rounded-lg transition-colors disabled:opacity-50"
           >
             {isPending ? 'Transferindo…' : 'Transferir'}
           </button>
@@ -74,11 +74,11 @@ function TransferConfirm({ document, serieLabel, onConfirm, onCancel, isPending 
 
 function SkeletonRow() {
   return (
-    <tr className="border-b border-slate-800">
+    <tr className="border-b border-border">
       {Array.from({ length: TABLE_COLUMN_COUNT }).map((_, i) => (
         <td key={i} className="px-4 py-3">
           <div
-            className="h-4 rounded bg-slate-800 animate-pulse"
+            className="h-4 rounded bg-border animate-pulse"
             style={{ width: i === TABLE_COLUMN_COUNT - 1 ? '40%' : '70%' }}
           />
         </td>
@@ -95,8 +95,8 @@ interface StatTileProps {
 
 function StatTile({ label, value, accent }: StatTileProps) {
   return (
-    <div className="rounded-xl border border-slate-700 bg-slate-900/60 px-4 py-3">
-      <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">{label}</p>
+    <div className="rounded-xl border border-border bg-surface px-4 py-3">
+      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
       <p className={`mt-1 text-2xl font-bold ${accent}`}>{value}</p>
     </div>
   );
@@ -163,7 +163,7 @@ export function TransferenciaList() {
   }
 
   if (isError) {
-    return <p className="text-rose-400 text-sm py-4">Erro ao carregar documentos.</p>;
+    return <p className="text-danger text-sm py-4">Erro ao carregar documentos.</p>;
   }
 
   // Documento não classificado (sem série) não tem temporalidade a calcular — fora da lista.
@@ -186,14 +186,14 @@ export function TransferenciaList() {
     <>
       {!isLoading && emCorrenteCount > 0 && (
         <div className="mb-6 grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-xl">
-          <StatTile label="Em Corrente" value={emCorrenteCount} accent="text-slate-100" />
-          <StatTile label="Elegíveis para Transferência" value={elegiveisCount} accent="text-emerald-400" />
+          <StatTile label="Em Corrente" value={emCorrenteCount} accent="text-foreground" />
+          <StatTile label="Elegíveis para Transferência" value={elegiveisCount} accent="text-success" />
         </div>
       )}
 
       <div className="mb-4 flex flex-wrap items-end gap-4">
         <div className="w-56">
-          <label className="block text-sm text-slate-400 mb-1">Departamento</label>
+          <label className="block text-sm text-muted-foreground mb-1">Departamento</label>
           <Combobox
             value={departamentoId}
             onValueChange={(value) => {
@@ -207,7 +207,7 @@ export function TransferenciaList() {
           />
         </div>
         <div className="w-64">
-          <label className="block text-sm text-slate-400 mb-1">Série</label>
+          <label className="block text-sm text-muted-foreground mb-1">Série</label>
           <Combobox
             value={serieId}
             onValueChange={(value) => {
@@ -225,30 +225,30 @@ export function TransferenciaList() {
               setOnlyEligible(e.target.checked);
             }}
           />
-          <span className="text-sm text-slate-300">Mostrar apenas elegíveis</span>
+          <span className="text-sm text-foreground">Mostrar apenas elegíveis</span>
         </label>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-700">
+      <div className="overflow-x-auto rounded-xl border border-border">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-700 bg-slate-900/60">
-              <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Nome</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Série</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Departamento</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Em Corrente Desde</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Vencimento</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Status</th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-slate-400 uppercase tracking-wider">Ações</th>
+            <tr className="border-b border-border bg-surface">
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Nome</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Série</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Departamento</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Em Corrente Desde</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Vencimento</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
+              <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Ações</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800">
+          <tbody className="divide-y divide-border">
             {isLoading ? (
               Array.from({ length: 6 }).map((_, i) => <SkeletonRow key={i} />)
             ) : filteredDocumentos.length === 0 ? (
               <tr>
                 <td colSpan={TABLE_COLUMN_COUNT} className="px-4 py-10 text-center">
-                  <div className="flex flex-col items-center gap-2 text-slate-500">
+                  <div className="flex flex-col items-center gap-2 text-muted-foreground">
                     <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
@@ -267,22 +267,22 @@ export function TransferenciaList() {
               </tr>
             ) : (
               filteredDocumentos.map((doc) => (
-                <tr key={doc.id} className="hover:bg-slate-800/40 transition-colors">
-                  <td className="px-4 py-3 text-slate-200 font-medium">{doc.nome}</td>
-                  <td className="px-4 py-3 text-slate-400">{resolveSerieLabel(doc.serieId)}</td>
-                  <td className="px-4 py-3 text-slate-400">{resolveDepartamentoNome(doc.departamentoId)}</td>
-                  <td className="px-4 py-3 text-slate-400">
+                <tr key={doc.id} className="hover:bg-foreground/5 transition-colors">
+                  <td className="px-4 py-3 text-foreground font-medium">{doc.nome}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{resolveSerieLabel(doc.serieId)}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{resolveDepartamentoNome(doc.departamentoId)}</td>
+                  <td className="px-4 py-3 text-muted-foreground">
                     {new Date(doc.faseCorrenteDesde).toLocaleDateString('pt-BR')}
                   </td>
-                  <td className="px-4 py-3 text-slate-400">
+                  <td className="px-4 py-3 text-muted-foreground">
                     {doc.vencimentoCorrente ? new Date(doc.vencimentoCorrente).toLocaleDateString('pt-BR') : '—'}
                   </td>
                   <td className="px-4 py-3">
                     <span
                       className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                         doc.elegivelTransferencia
-                          ? 'bg-emerald-900/40 text-emerald-400'
-                          : 'bg-slate-800 text-slate-500'
+                          ? 'bg-success/10 text-success'
+                          : 'bg-foreground/10 text-muted-foreground'
                       }`}
                     >
                       {doc.elegivelTransferencia ? 'Elegível' : 'Aguardando prazo'}
@@ -291,7 +291,7 @@ export function TransferenciaList() {
                   <td className="px-4 py-3 text-right">
                     <button
                       onClick={() => setTransferTarget(doc)}
-                      className="px-3 py-1.5 text-xs text-indigo-300 hover:text-indigo-100 border border-indigo-700 hover:border-indigo-500 rounded-lg transition-colors"
+                      className="px-3 py-1.5 text-xs text-primary hover:text-primary-hover border border-primary/40 hover:border-primary rounded-lg transition-colors"
                     >
                       Transferir
                     </button>
@@ -304,7 +304,7 @@ export function TransferenciaList() {
       </div>
 
       {total > 0 && (
-        <div className="mt-4 flex items-center justify-between text-sm text-slate-400">
+        <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
           <span>
             {total} documento{total !== 1 ? 's' : ''} · Página {currentPage} de {totalPages}
           </span>
@@ -312,14 +312,14 @@ export function TransferenciaList() {
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={currentPage <= 1}
-              className="px-3 py-1.5 rounded-lg border border-slate-700 hover:border-slate-500 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="px-3 py-1.5 rounded-lg border border-border hover:border-muted-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               Anterior
             </button>
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage >= totalPages}
-              className="px-3 py-1.5 rounded-lg border border-slate-700 hover:border-slate-500 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="px-3 py-1.5 rounded-lg border border-border hover:border-muted-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               Próxima
             </button>

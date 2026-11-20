@@ -101,9 +101,9 @@ export function ConfidentialitySection({ value, onChange, canManage, errors }: C
   return (
     <div className="space-y-4">
       <div className="max-w-xs">
-        <label className="mb-1 flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-400">
+        <label className="mb-1 flex items-center gap-1.5 text-sm text-muted-foreground">
           Confidencialidade
-          {!canManage && <Lock className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" aria-hidden="true" />}
+          {!canManage && <Lock className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />}
         </label>
         <Combobox
           value={value.confidencialidade}
@@ -114,13 +114,13 @@ export function ConfidentialitySection({ value, onChange, canManage, errors }: C
           error={canManage && !!errors?.confidencialidade}
         />
         {canManage && errors?.confidencialidade && (
-          <p className="mt-1 text-xs text-rose-500 dark:text-rose-400">{errors.confidencialidade}</p>
+          <p className="mt-1 text-xs text-danger">{errors.confidencialidade}</p>
         )}
         {canManage && !errors?.confidencialidade && (
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-500">Padrão: Restrito.</p>
+          <p className="mt-1 text-xs text-muted-foreground">Padrão: Restrito.</p>
         )}
         {!canManage && (
-          <p className="mt-1.5 flex items-start gap-1.5 text-xs text-slate-500 dark:text-slate-500">
+          <p className="mt-1.5 flex items-start gap-1.5 text-xs text-muted-foreground">
             <Lock className="mt-0.5 h-3 w-3 shrink-0" aria-hidden="true" />
             <span>Apenas administradores ou usuários com permissão podem definir outro nível.</span>
           </p>
@@ -130,11 +130,11 @@ export function ConfidentialitySection({ value, onChange, canManage, errors }: C
       {/* Um usuário sem a permissão DOCUMENTS_MANAGE_CONFIDENTIALITY nunca vê os
           controles de departamento/usuário abaixo — não só desabilitados, ausentes. */}
       {canManage && (
-        <div className="animate-dropdown-in space-y-4 rounded-lg border border-slate-200 bg-slate-50/60 p-4 dark:border-slate-700/60 dark:bg-slate-800/30">
+        <div className="animate-dropdown-in space-y-4 rounded-lg border border-border bg-foreground/5 p-4">
           {isPublico && (
             <div className="space-y-3">
               <div>
-                <span className="mb-1.5 block text-sm text-slate-600 dark:text-slate-400">
+                <span className="mb-1.5 block text-sm text-muted-foreground">
                   Acesso ao documento no portal público
                 </span>
                 <div role="radiogroup" aria-label="Acesso ao documento no portal público" className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -150,8 +150,8 @@ export function ConfidentialitySection({ value, onChange, canManage, errors }: C
                         className={cn(
                           'flex flex-col items-start gap-0.5 rounded-lg border px-3.5 py-2.5 text-left text-sm transition-colors',
                           isSelected
-                            ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:border-indigo-500 dark:bg-indigo-500/10 dark:text-indigo-300'
-                            : 'border-slate-300 text-slate-600 hover:border-slate-400 dark:border-slate-700 dark:text-slate-400 dark:hover:border-slate-600',
+                            ? 'border-primary/40 bg-primary-soft text-primary'
+                            : 'border-border text-muted-foreground hover:border-muted-foreground',
                         )}
                       >
                         <span className="font-medium">{option.label}</span>
@@ -168,7 +168,7 @@ export function ConfidentialitySection({ value, onChange, canManage, errors }: C
                   checked={value.destaque}
                   onChange={(e) => onChange({ ...value, destaque: e.target.checked })}
                 />
-                <label htmlFor="confidentiality-destaque" className="cursor-pointer text-sm text-slate-600 dark:text-slate-400">
+                <label htmlFor="confidentiality-destaque" className="cursor-pointer text-sm text-muted-foreground">
                   Exibir no portal público como destaque
                 </label>
               </div>
@@ -177,7 +177,7 @@ export function ConfidentialitySection({ value, onChange, canManage, errors }: C
 
           {isRestrito && (
             <div>
-              <label className="mb-1 block text-sm text-slate-600 dark:text-slate-400">
+              <label className="mb-1 block text-sm text-muted-foreground">
                 Departamentos adicionais com acesso
               </label>
               <MultiCombobox
@@ -187,7 +187,7 @@ export function ConfidentialitySection({ value, onChange, canManage, errors }: C
                 placeholder="Selecionar departamentos"
                 searchPlaceholder="Buscar departamento…"
               />
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-500">
+              <p className="mt-1 text-xs text-muted-foreground">
                 O departamento do documento sempre tem acesso.
               </p>
             </div>
@@ -195,12 +195,12 @@ export function ConfidentialitySection({ value, onChange, canManage, errors }: C
 
           {isConfidencial && (
             <div>
-              <label className="mb-1 block text-sm text-slate-600 dark:text-slate-400">Usuários com acesso</label>
+              <label className="mb-1 block text-sm text-muted-foreground">Usuários com acesso</label>
               {currentUserOption && (
                 <div className="mb-2 flex flex-wrap items-center gap-1.5">
                   <span
                     title="Você sempre tem acesso a documentos confidenciais que enviar"
-                    className="inline-flex items-center gap-1 rounded-md bg-slate-200/70 px-2 py-1 text-xs font-medium text-slate-600 dark:bg-slate-700/70 dark:text-slate-300"
+                    className="inline-flex items-center gap-1 rounded-md bg-foreground/10 px-2 py-1 text-xs font-medium text-muted-foreground"
                   >
                     <Lock className="h-3 w-3 shrink-0" aria-hidden="true" />
                     Você ({currentUserOption.name})
@@ -215,10 +215,10 @@ export function ConfidentialitySection({ value, onChange, canManage, errors }: C
                 searchPlaceholder="Buscar usuário…"
                 error={!!errors?.accessUserIds}
               />
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-500">
+              <p className="mt-1 text-xs text-muted-foreground">
                 Você sempre tem acesso como responsável pelo envio.
               </p>
-              {errors?.accessUserIds && <p className="text-xs text-rose-400 mt-1">{errors.accessUserIds}</p>}
+              {errors?.accessUserIds && <p className="text-xs text-danger mt-1">{errors.accessUserIds}</p>}
             </div>
           )}
         </div>
