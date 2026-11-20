@@ -9,10 +9,10 @@ export function NavigationProgress() {
 
   return (
     <div
-      className="fixed top-0 left-0 right-0 z-50 h-[2px] bg-indigo-100 dark:bg-indigo-900/40"
+      className="fixed top-0 left-0 right-0 z-50 h-[2px] bg-primary-soft"
       aria-hidden="true"
     >
-      <div className="h-full bg-indigo-500 animate-progress-bar" />
+      <div className="h-full bg-primary animate-progress-bar" />
     </div>
   );
 }

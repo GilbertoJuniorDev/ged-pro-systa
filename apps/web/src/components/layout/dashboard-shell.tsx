@@ -27,7 +27,7 @@ export function DashboardShell({
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-950">
+    <div className="flex h-screen overflow-hidden bg-background">
       <NavigationProgress />
       <Sidebar
         user={user}

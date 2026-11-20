@@ -16,9 +16,15 @@ const WORDMARK: Record<LogoScope, string> = {
   portal: 'GED Pro',
 };
 
+// Sistema: tokens semânticos (ADR 0002). Portal: aliases próprios até a fatia do portal.
 const MARK_COLOR_VAR: Record<LogoScope, string> = {
-  system: 'var(--color-primary)',
+  system: 'var(--ged-primary)',
   portal: 'var(--portal-color-primary)',
+};
+
+const MARK_FOREGROUND_VAR: Record<LogoScope, string> = {
+  system: 'var(--ged-primary-foreground)',
+  portal: 'var(--portal-color-primary-foreground)',
 };
 
 /**
@@ -73,7 +79,10 @@ export function Logo({ scope, variant = 'mark+wordmark', className }: LogoProps)
           className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg shadow-md"
           style={{ backgroundColor: MARK_COLOR_VAR[scope] }}
         >
-          <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <svg
+            className="h-5 w-5"
+            style={{ color: MARK_FOREGROUND_VAR[scope] }}
+            fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"

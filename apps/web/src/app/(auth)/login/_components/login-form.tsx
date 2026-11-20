@@ -54,14 +54,14 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
 
   return (
     <div>
-      <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Bem-vindo de volta</h2>
-      <p className="text-slate-500 dark:text-slate-400 mb-8">
+      <h2 className="text-3xl font-bold text-foreground mb-2">Bem-vindo de volta</h2>
+      <p className="text-muted-foreground mb-8">
         Insira suas credenciais para acessar o sistema.
       </p>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+          <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">
             E-mail corporativo
           </label>
           <input
@@ -70,22 +70,22 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
             id="email"
             data-testid="email"
             placeholder="voce@empresa.com.br"
-            className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-indigo-600 focus:border-transparent outline-none transition-all text-slate-700 dark:text-slate-100 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-700 placeholder-slate-400 dark:placeholder-slate-500"
+            className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-ring"
           />
           {errors.email && (
-            <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>
+            <p className="mt-1 text-xs text-danger">{errors.email.message}</p>
           )}
         </div>
 
         <div>
           <div className="flex items-center justify-between mb-1">
-            <label htmlFor="password" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+            <label htmlFor="password" className="block text-sm font-medium text-foreground">
               Senha
             </label>
             <button
               type="button"
               onClick={onForgotPassword}
-              className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 transition-colors"
+              className="text-sm font-medium text-primary hover:text-primary-hover transition-colors"
             >
               Esqueceu a senha?
             </button>
@@ -97,12 +97,12 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
               id="password"
               data-testid="password"
               placeholder="••••••••"
-              className="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-indigo-600 focus:border-transparent outline-none transition-all text-slate-700 dark:text-slate-100 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-700"
+              className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-ring"
             />
             <button
               type="button"
               onClick={() => setShowPassword((v) => !v)}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-primary transition-colors"
               aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
             >
               {showPassword ? (
@@ -118,7 +118,7 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
             </button>
           </div>
           {errors.password && (
-            <p className="mt-1 text-xs text-red-500">{errors.password.message}</p>
+            <p className="mt-1 text-xs text-danger">{errors.password.message}</p>
           )}
         </div>
 
@@ -134,7 +134,7 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
               />
             )}
           />
-          <label htmlFor="remember" className="text-sm text-slate-600 dark:text-slate-400 cursor-pointer select-none">
+          <label htmlFor="remember" className="text-sm text-muted-foreground cursor-pointer select-none">
             Lembrar de mim neste dispositivo
           </label>
         </div>
@@ -143,7 +143,7 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
           type="submit"
           data-testid="submit"
           disabled={isPending}
-          className="w-full bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-[var(--color-primary-foreground)] font-semibold py-3 px-4 rounded-lg transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-2 dark:focus:ring-offset-slate-900 disabled:opacity-60 disabled:cursor-not-allowed"
+          className="w-full bg-primary hover:bg-primary-hover text-primary-foreground font-semibold py-3 px-4 rounded-lg transition-colors shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {isPending ? (
             <span className="flex items-center justify-center gap-2">
