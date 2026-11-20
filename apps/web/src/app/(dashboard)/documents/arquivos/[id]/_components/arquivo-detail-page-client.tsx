@@ -34,10 +34,10 @@ function formatDate(iso: string | null): string {
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div>
-      <dt className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+      <dt className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
         {label}
       </dt>
-      <dd className="mt-1 text-sm text-slate-900 dark:text-slate-200">{children}</dd>
+      <dd className="mt-1 text-sm text-foreground">{children}</dd>
     </div>
   );
 }
@@ -77,7 +77,7 @@ export function ArquivoDetailPageClient({ id }: { id: string }) {
   const backLink = (
     <button
       onClick={() => router.push('/documents/arquivos')}
-      className="cursor-pointer text-sm text-slate-600 transition-colors hover:text-slate-950 dark:text-slate-400 dark:hover:text-slate-200"
+      className="cursor-pointer text-sm text-muted-foreground transition-colors hover:text-foreground"
     >
       ← Arquivos
     </button>
@@ -85,9 +85,9 @@ export function ArquivoDetailPageClient({ id }: { id: string }) {
 
   if (isLoading) {
     return (
-      <main className="flex-1 overflow-y-auto bg-slate-50 p-4 sm:p-6 lg:p-8 dark:bg-slate-950">
+      <main className="flex-1 overflow-y-auto bg-background p-4 sm:p-6 lg:p-8">
         <div className="mb-6">{backLink}</div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+        <div className="rounded-2xl border border-border bg-surface p-6">
           <Skeleton className="mb-4 h-7 w-64" />
           <div className="grid grid-cols-2 gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
@@ -101,9 +101,9 @@ export function ArquivoDetailPageClient({ id }: { id: string }) {
 
   if (isError || !arquivo) {
     return (
-      <main className="flex-1 overflow-y-auto bg-slate-50 p-4 sm:p-6 lg:p-8 dark:bg-slate-950">
+      <main className="flex-1 overflow-y-auto bg-background p-4 sm:p-6 lg:p-8">
         <div className="mb-6">{backLink}</div>
-        <p className="text-sm text-rose-500 dark:text-rose-400">Arquivo não encontrado.</p>
+        <p className="text-sm text-danger">Arquivo não encontrado.</p>
       </main>
     );
   }
@@ -117,7 +117,7 @@ export function ArquivoDetailPageClient({ id }: { id: string }) {
   const dossiesTotal = dossiesData?.total ?? 0;
 
   return (
-    <main className="flex-1 overflow-y-auto bg-slate-50 p-4 sm:p-6 lg:p-8 dark:bg-slate-950">
+    <main className="flex-1 overflow-y-auto bg-background p-4 sm:p-6 lg:p-8">
       <Breadcrumb
         items={[
           { label: 'Arquivos', href: '/documents/arquivos' },
@@ -125,22 +125,22 @@ export function ArquivoDetailPageClient({ id }: { id: string }) {
         ]}
       />
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+      <div className="rounded-2xl border border-border bg-surface p-6">
         <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h1 className="text-xl font-bold text-slate-950 dark:text-slate-100">
+            <h1 className="text-xl font-bold text-foreground">
               {arquivo.codigo} — {arquivo.nome}
             </h1>
             {arquivo.descricao && (
-              <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{arquivo.descricao}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{arquivo.descricao}</p>
             )}
             <div className="mt-3 flex flex-wrap gap-2">
               <ArquivoStatusBadge status={arquivo.status} />
             </div>
             {extraDepartmentNames.length > 0 && (
-              <p className="mt-2 text-xs text-slate-500 dark:text-slate-500">
+              <p className="mt-2 text-xs text-muted-foreground">
                 Também visível para:{' '}
-                <span className="text-slate-700 dark:text-slate-300">{extraDepartmentNames.join(', ')}</span>
+                <span className="text-muted-foreground">{extraDepartmentNames.join(', ')}</span>
               </p>
             )}
           </div>
@@ -150,13 +150,13 @@ export function ArquivoDetailPageClient({ id }: { id: string }) {
                 <>
                   <button
                     onClick={() => setShowEdit(true)}
-                    className="cursor-pointer rounded-lg border border-indigo-300 px-4 py-2 text-sm text-indigo-600 transition-colors hover:border-indigo-500 hover:text-indigo-800 dark:border-indigo-700 dark:text-indigo-300 dark:hover:border-indigo-500 dark:hover:text-indigo-100"
+                    className="cursor-pointer rounded-lg border border-primary/40 px-4 py-2 text-sm text-primary transition-colors hover:border-primary hover:text-primary-hover"
                   >
                     Editar
                   </button>
                   <button
                     onClick={() => setShowEncerrar(true)}
-                    className="cursor-pointer rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-600 transition-colors hover:border-slate-500 hover:text-slate-900 dark:border-slate-700 dark:text-slate-400 dark:hover:border-slate-500 dark:hover:text-slate-100"
+                    className="cursor-pointer rounded-lg border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:border-muted-foreground hover:text-foreground"
                   >
                     Encerrar
                   </button>
@@ -164,14 +164,14 @@ export function ArquivoDetailPageClient({ id }: { id: string }) {
               ) : (
                 <button
                   onClick={() => setShowReabrir(true)}
-                  className="cursor-pointer rounded-lg border border-emerald-300 px-4 py-2 text-sm text-emerald-600 transition-colors hover:border-emerald-500 hover:text-emerald-800 dark:border-emerald-700 dark:text-emerald-300 dark:hover:border-emerald-500 dark:hover:text-emerald-100"
+                  className="cursor-pointer rounded-lg border border-success/40 px-4 py-2 text-sm text-success transition-colors hover:border-success"
                 >
                   Reabrir
                 </button>
               )}
               <button
                 onClick={() => setShowDelete(true)}
-                className="cursor-pointer rounded-lg border border-rose-300 px-4 py-2 text-sm text-rose-600 transition-colors hover:border-rose-500 hover:text-rose-800 dark:border-rose-800 dark:text-rose-400 dark:hover:border-rose-600 dark:hover:text-rose-200"
+                className="cursor-pointer rounded-lg border border-danger/40 px-4 py-2 text-sm text-danger transition-colors hover:border-danger"
               >
                 Remover
               </button>
@@ -179,7 +179,7 @@ export function ArquivoDetailPageClient({ id }: { id: string }) {
           )}
         </div>
 
-        <dl className="grid grid-cols-1 gap-x-6 gap-y-4 border-t border-slate-200 pt-6 dark:border-slate-800 sm:grid-cols-2 lg:grid-cols-3">
+        <dl className="grid grid-cols-1 gap-x-6 gap-y-4 border-t border-border pt-6 sm:grid-cols-2 lg:grid-cols-3">
           <Field label="Departamento (dono)">{departamentoNome}</Field>
           <Field label="Localização física">{localizacaoArquivo(arquivo)}</Field>
           <Field label="Dossiês vinculados">{arquivo.dossiesCount}</Field>
@@ -192,10 +192,10 @@ export function ArquivoDetailPageClient({ id }: { id: string }) {
       <div className="mt-8">
         <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-100">
+            <h2 className="text-lg font-semibold text-foreground">
               Dossiês deste arquivo
             </h2>
-            <p className="text-sm text-slate-600 dark:text-slate-400">
+            <p className="text-sm text-muted-foreground">
               Clique num dossiê para abrir seus documentos no Explorador.
             </p>
           </div>
@@ -212,7 +212,7 @@ export function ArquivoDetailPageClient({ id }: { id: string }) {
             {canManageDossies && (
               <button
                 onClick={() => setShowCreateDossie(true)}
-                className="flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-500"
+                className="flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-hover"
               >
                 + Vincular dossiê
               </button>

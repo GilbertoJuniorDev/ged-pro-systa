@@ -23,11 +23,11 @@ function formatMeses(meses: number): string {
 
 function SkeletonRow() {
   return (
-    <tr className="border-b border-slate-800">
+    <tr className="border-b border-border">
       {Array.from({ length: COLUMN_COUNT }).map((_, i) => (
         <td key={i} className="px-4 py-3">
           <div
-            className="h-4 rounded bg-slate-800 animate-pulse"
+            className="h-4 rounded bg-border animate-pulse"
             style={{ width: i === COLUMN_COUNT - 1 ? '60%' : '70%' }}
           />
         </td>
@@ -80,43 +80,43 @@ export function TemporalidadeList() {
       </div>
 
       {isError ? (
-        <p className="text-rose-400 text-sm py-4">Erro ao carregar séries documentais.</p>
+        <p className="text-danger text-sm py-4">Erro ao carregar séries documentais.</p>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-slate-700">
+        <div className="overflow-x-auto rounded-xl border border-border">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-700 bg-slate-900/60">
-                <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+              <tr className="border-b border-border bg-surface">
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Código
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Série
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Prazo Corrente
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Prazo Intermediário
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Destinação Final
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Base Legal
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-slate-400 uppercase tracking-wider">
+                <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Ações
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="divide-y divide-border">
               {isLoading
                 ? Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
                 : total === 0
                   ? (
                     <tr>
                       <td colSpan={COLUMN_COUNT} className="px-4 py-10 text-center">
-                        <div className="flex flex-col items-center gap-2 text-slate-500">
+                        <div className="flex flex-col items-center gap-2 text-muted-foreground">
                           <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path
                               strokeLinecap="round"
@@ -126,7 +126,7 @@ export function TemporalidadeList() {
                             />
                           </svg>
                           <p>Nenhuma série cadastrada.</p>
-                          <p className="text-xs text-slate-600">
+                          <p className="text-xs text-muted-foreground">
                             Cadastre séries em Classificação primeiro.
                           </p>
                         </div>
@@ -134,30 +134,30 @@ export function TemporalidadeList() {
                     </tr>
                   )
                   : series?.map((s) => (
-                    <tr key={s.id} className="hover:bg-slate-800/40 transition-colors">
-                      <td className="px-4 py-3 text-slate-200 font-medium tabular-nums whitespace-nowrap">
+                    <tr key={s.id} className="hover:bg-foreground/5 transition-colors">
+                      <td className="px-4 py-3 text-foreground font-medium tabular-nums whitespace-nowrap">
                         {s.codigo}
                       </td>
-                      <td className="px-4 py-3 text-slate-200">{s.nome}</td>
-                      <td className="px-4 py-3 text-slate-300 tabular-nums whitespace-nowrap">
+                      <td className="px-4 py-3 text-foreground">{s.nome}</td>
+                      <td className="px-4 py-3 text-foreground tabular-nums whitespace-nowrap">
                         {formatMeses(s.prazoCorrenteMeses)}
                       </td>
-                      <td className="px-4 py-3 text-slate-300 tabular-nums whitespace-nowrap">
+                      <td className="px-4 py-3 text-foreground tabular-nums whitespace-nowrap">
                         {formatMeses(s.prazoIntermediarioMeses)}
                       </td>
                       <td className="px-4 py-3">
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                             s.destinacaoFinal === 'GUARDA_PERMANENTE'
-                              ? 'bg-emerald-900/40 text-emerald-400'
-                              : 'bg-rose-900/40 text-rose-400'
+                              ? 'ring-1 ring-inset ring-success/40 text-success'
+                              : 'bg-danger/10 text-danger'
                           }`}
                         >
                           {DESTINACAO_LABELS[s.destinacaoFinal]}
                         </span>
                       </td>
                       <td
-                        className="px-4 py-3 text-slate-400 max-w-xs truncate"
+                        className="px-4 py-3 text-muted-foreground max-w-xs truncate"
                         title={s.baseLegal ?? undefined}
                       >
                         {s.baseLegal ?? '—'}
@@ -165,7 +165,7 @@ export function TemporalidadeList() {
                       <td className="px-4 py-3 text-right">
                         <button
                           onClick={() => setEditTarget(s)}
-                          className="px-3 py-1 text-xs text-indigo-300 hover:text-indigo-100 border border-indigo-700 hover:border-indigo-500 rounded-lg transition-colors"
+                          className="px-3 py-1 text-xs text-primary hover:text-primary-hover border border-primary/40 hover:border-primary rounded-lg transition-colors"
                         >
                           Editar Prazos
                         </button>

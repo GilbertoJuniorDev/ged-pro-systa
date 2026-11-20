@@ -51,7 +51,7 @@ export function ArquivosPanel() {
   const [reabrirTarget, setReabrirTarget] = useState<ArquivoDto | null>(null);
 
   if (isError) {
-    return <p className="py-4 text-sm text-rose-500 dark:text-rose-400">Erro ao carregar arquivos.</p>;
+    return <p className="py-4 text-sm text-danger">Erro ao carregar arquivos.</p>;
   }
 
   const arquivos = data?.data ?? [];

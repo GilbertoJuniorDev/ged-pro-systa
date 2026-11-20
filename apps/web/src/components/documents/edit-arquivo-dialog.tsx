@@ -78,47 +78,47 @@ export function EditArquivoDialog({ arquivo, onClose }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
     >
-      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-700 dark:bg-slate-900">
-        <h2 className="mb-1 text-base font-semibold text-slate-950 dark:text-slate-100">
+      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-border bg-surface-elevated p-6 shadow-xl">
+        <h2 className="mb-1 text-base font-semibold text-foreground">
           Editar Arquivo {arquivo.codigo}
         </h2>
-        <p className="mb-5 text-xs text-slate-500 dark:text-slate-500">
-          Departamento (dono): <span className="text-slate-700 dark:text-slate-400">{departamentoNome}</span>
+        <p className="mb-5 text-xs text-muted-foreground">
+          Departamento (dono): <span className="text-muted-foreground">{departamentoNome}</span>
         </p>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <label className="mb-1 block text-sm text-slate-600 dark:text-slate-400" htmlFor="edit-nome">
-              Nome <span className="text-rose-500 dark:text-rose-400">*</span>
+            <label className="mb-1 block text-sm text-muted-foreground" htmlFor="edit-nome">
+              Nome <span className="text-danger">*</span>
             </label>
             <input
               id="edit-nome"
               {...register('nome')}
-              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+              className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             />
-            {errors.nome && <p className="mt-1 text-xs text-rose-500 dark:text-rose-400">{errors.nome.message}</p>}
+            {errors.nome && <p className="mt-1 text-xs text-danger">{errors.nome.message}</p>}
           </div>
 
           <div>
-            <label className="mb-1 block text-sm text-slate-600 dark:text-slate-400" htmlFor="edit-descricao">
+            <label className="mb-1 block text-sm text-muted-foreground" htmlFor="edit-descricao">
               Descrição
             </label>
             <textarea
               id="edit-descricao"
               {...register('descricao')}
               rows={2}
-              className="w-full resize-none rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+              className="w-full resize-none rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             />
             {errors.descricao && (
-              <p className="mt-1 text-xs text-rose-500 dark:text-rose-400">{errors.descricao.message}</p>
+              <p className="mt-1 text-xs text-danger">{errors.descricao.message}</p>
             )}
           </div>
 
           <div>
-            <label className="mb-1 block text-sm text-slate-600 dark:text-slate-400">
+            <label className="mb-1 block text-sm text-muted-foreground">
               Setores adicionais com acesso
             </label>
             <Controller
@@ -135,20 +135,20 @@ export function EditArquivoDialog({ arquivo, onClose }: Props) {
             />
           </div>
 
-          <fieldset className="rounded-lg border border-slate-200 p-3 dark:border-slate-700">
-            <legend className="px-1 text-xs font-medium text-slate-500 dark:text-slate-500">
+          <fieldset className="rounded-lg border border-border p-3">
+            <legend className="px-1 text-xs font-medium text-muted-foreground">
               Localização física
             </legend>
             <div className="grid grid-cols-2 gap-3">
               {(['predio', 'sala', 'estante', 'prateleira', 'caixa'] as const).map((field) => (
                 <div key={field}>
-                  <label className="mb-1 block text-xs capitalize text-slate-500 dark:text-slate-500" htmlFor={`edit-${field}`}>
+                  <label className="mb-1 block text-xs capitalize text-muted-foreground" htmlFor={`edit-${field}`}>
                     {field}
                   </label>
                   <input
                     id={`edit-${field}`}
                     {...register(field)}
-                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                    className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                   />
                 </div>
               ))}
@@ -160,14 +160,14 @@ export function EditArquivoDialog({ arquivo, onClose }: Props) {
               type="button"
               onClick={onClose}
               disabled={update.isPending}
-              className="px-4 py-2 text-sm text-slate-600 transition-colors hover:text-slate-900 disabled:opacity-50 dark:text-slate-300 dark:hover:text-slate-100"
+              className="px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={update.isPending}
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm text-white transition-colors hover:bg-indigo-500 disabled:opacity-50"
+              className="rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground transition-colors hover:bg-primary-hover disabled:opacity-50"
             >
               {update.isPending ? 'Salvando…' : 'Salvar'}
             </button>

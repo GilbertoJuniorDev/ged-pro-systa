@@ -172,8 +172,8 @@ export function UploadDocumentForm() {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
       {/* Dropzone */}
       <div>
-        <label className="block text-sm text-slate-600 dark:text-slate-400 mb-1.5">
-          Documento <span className="text-rose-500 dark:text-rose-400">*</span>
+        <label className="block text-sm text-muted-foreground mb-1.5">
+          Documento <span className="text-danger">*</span>
         </label>
         <input
           ref={fileInputRef}
@@ -183,11 +183,11 @@ export function UploadDocumentForm() {
           onChange={(e) => validateAndSetFile(e.target.files?.[0])}
         />
         {file ? (
-          <div className="flex items-center gap-3 rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-800/60">
-            <FileText className="h-8 w-8 shrink-0 text-indigo-500 dark:text-indigo-400" />
+          <div className="flex items-center gap-3 rounded-xl border border-border bg-background px-4 py-3">
+            <FileText className="h-8 w-8 shrink-0 text-primary" />
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">{file.name}</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">{formatBytes(file.size)}</p>
+              <p className="truncate text-sm font-medium text-foreground">{file.name}</p>
+              <p className="text-xs text-muted-foreground">{formatBytes(file.size)}</p>
             </div>
             <button
               type="button"
@@ -196,7 +196,7 @@ export function UploadDocumentForm() {
                 if (fileInputRef.current) fileInputRef.current.value = '';
               }}
               aria-label="Remover documento"
-              className="shrink-0 rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-200 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100"
+              className="shrink-0 rounded-lg p-2 text-muted-foreground transition-colors hover:bg-foreground/10 hover:text-foreground"
             >
               <X className="h-4 w-4" />
             </button>
@@ -217,37 +217,37 @@ export function UploadDocumentForm() {
             onDrop={handleDrop}
             className={`flex min-h-[160px] cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed px-4 py-6 text-center transition-colors ${
               isDragging
-                ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-950/20'
-                : 'border-slate-300 hover:border-slate-400 dark:border-slate-700 dark:hover:border-slate-600'
+                ? 'border-primary bg-primary-soft'
+                : 'border-border hover:border-muted-foreground'
             }`}
           >
-            <Upload className="h-8 w-8 text-slate-400 dark:text-slate-500" />
-            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            <Upload className="h-8 w-8 text-muted-foreground" />
+            <p className="text-sm font-medium text-muted-foreground">
               Arraste um documento ou clique para selecionar
             </p>
-            <p className="text-xs text-slate-500 dark:text-slate-500">
+            <p className="text-xs text-muted-foreground">
               PDF, Word, Excel, imagens ou texto — máx. 25MB
             </p>
           </div>
         )}
-        {fileError && <p className="text-rose-500 dark:text-rose-400 text-xs mt-1">{fileError}</p>}
+        {fileError && <p className="text-danger text-xs mt-1">{fileError}</p>}
       </div>
 
       <div>
-        <label className="block text-sm text-slate-600 dark:text-slate-400 mb-1" htmlFor="nome">
+        <label className="block text-sm text-muted-foreground mb-1" htmlFor="nome">
           Nome
         </label>
         <input
           id="nome"
           {...register('nome')}
           placeholder="ex: Contrato de Prestação de Serviços"
-          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-500"
+          className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
         />
-        {errors.nome && <p className="text-rose-500 dark:text-rose-400 text-xs mt-1">{errors.nome.message}</p>}
+        {errors.nome && <p className="text-danger text-xs mt-1">{errors.nome.message}</p>}
       </div>
 
       <div>
-        <label className="block text-sm text-slate-600 dark:text-slate-400 mb-1" htmlFor="descricao">
+        <label className="block text-sm text-muted-foreground mb-1" htmlFor="descricao">
           Descrição
         </label>
         <textarea
@@ -255,14 +255,14 @@ export function UploadDocumentForm() {
           {...register('descricao')}
           rows={2}
           placeholder="Descreva o conteúdo do documento..."
-          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-500"
+          className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
         />
-        {errors.descricao && <p className="text-rose-500 dark:text-rose-400 text-xs mt-1">{errors.descricao.message}</p>}
+        {errors.descricao && <p className="text-danger text-xs mt-1">{errors.descricao.message}</p>}
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
-          <label className="block text-sm text-slate-600 dark:text-slate-400 mb-1">Departamento</label>
+          <label className="block text-sm text-muted-foreground mb-1">Departamento</label>
           <Controller
             name="departamentoId"
             control={control}
@@ -277,11 +277,11 @@ export function UploadDocumentForm() {
             )}
           />
           {errors.departamentoId && (
-            <p className="text-rose-500 dark:text-rose-400 text-xs mt-1">{errors.departamentoId.message}</p>
+            <p className="text-danger text-xs mt-1">{errors.departamentoId.message}</p>
           )}
         </div>
         <div>
-          <label className="block text-sm text-slate-600 dark:text-slate-400 mb-1">Validade</label>
+          <label className="block text-sm text-muted-foreground mb-1">Validade</label>
           <Controller
             name="validade"
             control={control}
@@ -294,7 +294,7 @@ export function UploadDocumentForm() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
-          <label className="block text-sm text-slate-600 dark:text-slate-400 mb-1">Série</label>
+          <label className="block text-sm text-muted-foreground mb-1">Série</label>
           <Controller
             name="serieId"
             control={control}
@@ -310,15 +310,15 @@ export function UploadDocumentForm() {
             )}
           />
           {errors.serieId ? (
-            <p className="text-rose-500 dark:text-rose-400 text-xs mt-1">{errors.serieId.message}</p>
+            <p className="text-danger text-xs mt-1">{errors.serieId.message}</p>
           ) : (
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-500">
+            <p className="mt-1 text-xs text-muted-foreground">
               Opcional — você pode classificar o documento depois.
             </p>
           )}
         </div>
         <div>
-          <label className="block text-sm text-slate-600 dark:text-slate-400 mb-1">Dossiê</label>
+          <label className="block text-sm text-muted-foreground mb-1">Dossiê</label>
           <Controller
             name="dossieId"
             control={control}
@@ -353,19 +353,19 @@ export function UploadDocumentForm() {
         />
       </div>
 
-      <div className="flex justify-end gap-3 border-t border-slate-200 pt-5 dark:border-slate-700">
+      <div className="flex justify-end gap-3 border-t border-border pt-5">
         <button
           type="button"
           onClick={() => router.push('/documents')}
           disabled={upload.isPending}
-          className="px-4 py-2 text-sm text-slate-600 hover:text-slate-900 transition-colors disabled:opacity-50 dark:text-slate-400 dark:hover:text-slate-100"
+          className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
         >
           Cancelar
         </button>
         <button
           type="submit"
           disabled={upload.isPending}
-          className="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors disabled:opacity-50"
+          className="px-4 py-2 text-sm bg-primary hover:bg-primary-hover text-primary-foreground rounded-lg transition-colors disabled:opacity-50"
         >
           {upload.isPending ? 'Protocolando…' : 'Protocolar Documento'}
         </button>

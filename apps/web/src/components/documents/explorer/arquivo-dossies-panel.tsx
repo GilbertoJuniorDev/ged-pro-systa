@@ -30,7 +30,7 @@ export function ArquivoDossiesPanel({ arquivoId }: { arquivoId: string }) {
   const [deleteTarget, setDeleteTarget] = useState<DossieDto | null>(null);
 
   if (isError) {
-    return <p className="py-4 text-sm text-rose-500 dark:text-rose-400">Erro ao carregar dossiês.</p>;
+    return <p className="py-4 text-sm text-danger">Erro ao carregar dossiês.</p>;
   }
 
   const dossies = data?.data ?? [];
@@ -42,7 +42,7 @@ export function ArquivoDossiesPanel({ arquivoId }: { arquivoId: string }) {
         <div className="mb-4 flex justify-end">
           <button
             onClick={() => setShowCreate(true)}
-            className="cursor-pointer rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-500"
+            className="cursor-pointer rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-hover"
           >
             + Vincular dossiê
           </button>
