@@ -85,11 +85,11 @@ export function ArquivosPageClient() {
     Boolean(debouncedSearch) || Boolean(status) || Boolean(departamentoId) || Boolean(ano);
 
   return (
-    <main className="flex-1 overflow-y-auto bg-slate-50 p-4 sm:p-6 lg:p-8 dark:bg-slate-950">
+    <main className="flex-1 overflow-y-auto bg-background p-4 sm:p-6 lg:p-8">
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-950 dark:text-slate-100">Arquivos</h1>
-          <p className="text-slate-600 dark:text-slate-400">
+          <h1 className="text-2xl font-bold text-foreground">Arquivos</h1>
+          <p className="text-muted-foreground">
             Crie e gerencie os arquivos de guarda física/lógica. Para navegar entre arquivo,
             dossiês e documentos, use o Explorador.
           </p>
@@ -97,7 +97,7 @@ export function ArquivosPageClient() {
         <div className="flex flex-wrap items-center gap-3">
           <Link
             href="/documents?view=arquivos"
-            className="flex items-center gap-1.5 self-start rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:border-slate-500 hover:text-slate-900 dark:border-slate-700 dark:text-slate-400 dark:hover:border-slate-500 dark:hover:text-slate-100 sm:self-auto"
+            className="flex items-center gap-1.5 self-start rounded-xl border border-border px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:border-muted-foreground hover:text-foreground sm:self-auto"
           >
             Abrir no Explorador
             <ArrowUpRight className="h-4 w-4" />
@@ -105,7 +105,7 @@ export function ArquivosPageClient() {
           {canManage && (
             <button
               onClick={() => setShowCreate(true)}
-              className="flex cursor-pointer items-center gap-2 self-start rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-500 sm:self-auto"
+              className="flex cursor-pointer items-center gap-2 self-start rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-hover sm:self-auto"
             >
               <Plus className="h-4 w-4" />
               Novo Arquivo
@@ -161,7 +161,7 @@ export function ArquivosPageClient() {
       </div>
 
       {isError ? (
-        <p className="py-4 text-sm text-rose-500 dark:text-rose-400">Erro ao carregar arquivos.</p>
+        <p className="py-4 text-sm text-danger">Erro ao carregar arquivos.</p>
       ) : (
         <ArquivosDataTable
           arquivos={arquivos}

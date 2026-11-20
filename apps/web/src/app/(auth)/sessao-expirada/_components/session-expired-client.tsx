@@ -11,18 +11,18 @@ export function SessionExpiredClient() {
   const progress = ((COUNTDOWN_SECONDS - secondsLeft) / COUNTDOWN_SECONDS) * 100;
 
   return (
-    <div className="relative flex min-h-dvh flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
+    <div className="relative flex min-h-dvh flex-col overflow-hidden bg-background">
       {/* Fundo decorativo — mesmos orbes do seletor de departamento, sem animate-blob */}
-      <div className="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full bg-indigo-600 opacity-10 mix-blend-multiply blur-3xl dark:opacity-20" />
-      <div className="pointer-events-none absolute -left-24 bottom-0 h-96 w-96 rounded-full bg-blue-500 opacity-10 mix-blend-multiply blur-3xl dark:opacity-15" />
+      <div className="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full bg-primary opacity-10 mix-blend-multiply blur-3xl" />
+      <div className="pointer-events-none absolute -left-24 bottom-0 h-96 w-96 rounded-full bg-secondary opacity-10 mix-blend-multiply blur-3xl" />
 
       <main className="relative z-10 flex flex-1 flex-col items-center justify-center px-6 py-16 sm:px-10">
         <div className="w-full max-w-md animate-fade-in">
           {/* Marca */}
           <div className="mb-8 flex items-center justify-center">
-            <div className="mr-3 flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 shadow-md">
+            <div className="mr-3 flex h-8 w-8 items-center justify-center rounded-lg bg-primary shadow-md">
               <svg
-                className="h-5 w-5 text-white"
+                className="h-5 w-5 text-primary-foreground"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -36,16 +36,16 @@ export function SessionExpiredClient() {
                 />
               </svg>
             </div>
-            <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
+            <span className="text-lg font-bold tracking-tight text-foreground">
               GED Pro
             </span>
           </div>
 
           {/* Card */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:p-8">
+          <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm sm:p-8">
             <div className="flex flex-col items-center text-center">
-              {/* Cor nunca é o único sinal: chip âmbar + ícone + heading textual */}
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400">
+              {/* Cor nunca é o único sinal: chip warning + ícone + heading textual */}
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-warning/10 text-warning">
                 <Clock className="h-6 w-6" strokeWidth={1.5} aria-hidden="true" />
               </div>
 
@@ -54,10 +54,10 @@ export function SessionExpiredClient() {
                 leitor de tela não relê a página sozinho — a live region é o que anuncia.
               */}
               <div role="status" className="mt-4">
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+                <h1 className="text-2xl font-bold text-foreground">
                   Sua sessão expirou
                 </h1>
-                <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                   Por segurança, sua sessão foi encerrada. Isso acontece após um período
                   sem uso ou quando a senha da conta é alterada. Entre novamente para
                   continuar.
@@ -70,7 +70,7 @@ export function SessionExpiredClient() {
               */}
               <p
                 aria-hidden="true"
-                className="mt-6 text-sm font-medium text-slate-500 dark:text-slate-400"
+                className="mt-6 text-sm font-medium text-muted-foreground"
               >
                 {isRedirecting
                   ? 'Redirecionando…'
@@ -79,10 +79,10 @@ export function SessionExpiredClient() {
 
               <div
                 aria-hidden="true"
-                className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800"
+                className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-border"
               >
                 <div
-                  className="h-full rounded-full bg-indigo-600 transition-[width] duration-1000 ease-linear motion-reduce:transition-none dark:bg-indigo-500"
+                  className="h-full rounded-full bg-primary transition-[width] duration-1000 ease-linear motion-reduce:transition-none"
                   style={{ width: `${progress}%` }}
                 />
               </div>
@@ -91,7 +91,7 @@ export function SessionExpiredClient() {
                 type="button"
                 onClick={redirectNow}
                 disabled={isRedirecting}
-                className="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 dark:hover:bg-indigo-500 text-white font-semibold py-3 px-4 rounded-lg transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="mt-6 w-full bg-primary hover:bg-primary-hover text-primary-foreground font-semibold py-3 px-4 rounded-lg transition-colors shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {isRedirecting ? (
                   <span className="flex items-center justify-center gap-2">
@@ -108,7 +108,7 @@ export function SessionExpiredClient() {
             </div>
           </div>
 
-          <p className="mt-8 text-center text-xs text-slate-500 dark:text-slate-400">
+          <p className="mt-8 text-center text-xs text-muted-foreground">
             &copy; 2026 GED Pro. Todos os direitos reservados.
           </p>
         </div>

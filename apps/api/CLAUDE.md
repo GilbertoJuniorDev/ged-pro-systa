@@ -10,7 +10,9 @@ Camadas por feature-module: **`Controller → Service → Repository (via token 
 - Toda regra de negócio no Service.
 - Escrita multi-entidade → extrair para `*.use-case.ts` com `dataSource.transaction(async (manager) => …)` via `@InjectDataSource()`. Ex.: `modules/users/use-cases/create-user-with-profile.use-case.ts`.
 
-> **CQRS, Adapter de Storage e EventEmitter/Domain Events são planejados, NÃO implementados.** Não invente essas estruturas — siga o padrão de `users`/`company`/`permissions`.
+> **CQRS e EventEmitter/Domain Events são planejados, NÃO implementados.** Não invente essas estruturas — siga o padrão de `users`/`company`/`permissions`.
+>
+> **Storage:** um único adapter, `S3StorageService` (`modules/storage/`), injetado pelo token `STORAGE_SERVICE` (`IStorageService`: `save`/`getStream`/`delete`). Não há seleção de provedor nem outros adapters — provedores compatíveis com S3 (MinIO em dev, R2, Wasabi) entram via `S3_ENDPOINT`.
 
 ## DI por token de interface
 

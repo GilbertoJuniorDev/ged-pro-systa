@@ -70,7 +70,7 @@ describe('Sidebar', () => {
     render(<Sidebar user={defaultUser} isOpen={false} onClose={jest.fn()} />);
 
     const dashboardLink = screen.getByText('Dashboard').closest('a');
-    expect(dashboardLink).toHaveClass('bg-indigo-50');
+    expect(dashboardLink).toHaveClass('bg-primary-soft');
   });
 
   it('should reflect the isOpen prop in the sidebar translate classes', () => {
@@ -105,7 +105,7 @@ describe('Sidebar', () => {
 
     const inventarioLink = screen.getByText('Explorador').closest('a');
     expect(inventarioLink).toHaveAttribute('href', '/documents');
-    expect(inventarioLink).toHaveClass('bg-indigo-50');
+    expect(inventarioLink).toHaveClass('bg-primary-soft');
   });
 
   it('should render Acervo as a non-navigable group header', () => {
@@ -118,7 +118,7 @@ describe('Sidebar', () => {
 
     const header = documentos.closest('button');
     expect(header).not.toBeNull();
-    expect(header).not.toHaveClass('bg-indigo-50');
+    expect(header).not.toHaveClass('bg-primary-soft');
   });
 
   it('should activate only the deepest matching child on a nested route', () => {
@@ -126,8 +126,8 @@ describe('Sidebar', () => {
 
     render(<Sidebar user={defaultUser} isOpen={false} onClose={jest.fn()} />);
 
-    expect(screen.getByText('Protocolar').closest('a')).toHaveClass('bg-indigo-50');
-    expect(screen.getByText('Explorador').closest('a')).not.toHaveClass('bg-indigo-50');
+    expect(screen.getByText('Protocolar').closest('a')).toHaveClass('bg-primary-soft');
+    expect(screen.getByText('Explorador').closest('a')).not.toHaveClass('bg-primary-soft');
   });
 
   it('should toggle the Acervo group header without navigating', () => {

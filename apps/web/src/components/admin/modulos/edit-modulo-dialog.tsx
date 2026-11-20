@@ -67,49 +67,49 @@ export function EditModuloDialog({ modulo, onClose }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
     >
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl shadow-xl w-full max-w-md mx-4 p-6">
-        <h2 className="text-base font-semibold text-slate-100 mb-5">Editar Módulo</h2>
+      <div className="bg-surface-elevated border border-border rounded-2xl shadow-xl w-full max-w-md mx-4 p-6">
+        <h2 className="text-base font-semibold text-foreground mb-5">Editar Módulo</h2>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <label className="block text-sm text-slate-400 mb-1" htmlFor="edit-nome">
-              Nome <span className="text-rose-400">*</span>
+            <label className="block text-sm text-muted-foreground mb-1" htmlFor="edit-nome">
+              Nome <span className="text-danger">*</span>
             </label>
             <input
               id="edit-nome"
               {...register('nome')}
-              className="w-full rounded-lg bg-slate-800 border border-slate-600 px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full rounded-lg bg-background border border-border px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             />
-            {errors.nome && <p className="text-rose-400 text-xs mt-1">{errors.nome.message}</p>}
+            {errors.nome && <p className="text-danger text-xs mt-1">{errors.nome.message}</p>}
           </div>
           <div>
-            <label className="block text-sm text-slate-400 mb-1" htmlFor="edit-slug">
-              Slug <span className="text-rose-400">*</span>
+            <label className="block text-sm text-muted-foreground mb-1" htmlFor="edit-slug">
+              Slug <span className="text-danger">*</span>
             </label>
             <input
               id="edit-slug"
               {...register('slug')}
-              className="w-full rounded-lg bg-slate-800 border border-slate-600 px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
+              className="w-full rounded-lg bg-background border border-border px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring font-mono"
             />
-            {errors.slug && <p className="text-rose-400 text-xs mt-1">{errors.slug.message}</p>}
+            {errors.slug && <p className="text-danger text-xs mt-1">{errors.slug.message}</p>}
           </div>
           <div>
-            <label className="block text-sm text-slate-400 mb-1" htmlFor="edit-descricao">
+            <label className="block text-sm text-muted-foreground mb-1" htmlFor="edit-descricao">
               Descrição
             </label>
             <textarea
               id="edit-descricao"
               {...register('descricao')}
               rows={2}
-              className="w-full rounded-lg bg-slate-800 border border-slate-600 px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+              className="w-full rounded-lg bg-background border border-border px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
             />
-            {errors.descricao && <p className="text-rose-400 text-xs mt-1">{errors.descricao.message}</p>}
+            {errors.descricao && <p className="text-danger text-xs mt-1">{errors.descricao.message}</p>}
           </div>
           <div>
-            <label className="block text-sm text-slate-400 mb-1" htmlFor="edit-ordem">
+            <label className="block text-sm text-muted-foreground mb-1" htmlFor="edit-ordem">
               Ordem de exibição
             </label>
             <input
@@ -117,16 +117,16 @@ export function EditModuloDialog({ modulo, onClose }: Props) {
               type="number"
               min={0}
               {...register('ordem')}
-              className="w-full rounded-lg bg-slate-800 border border-slate-600 px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full rounded-lg bg-background border border-border px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             />
-            {errors.ordem && <p className="text-rose-400 text-xs mt-1">{errors.ordem.message}</p>}
+            {errors.ordem && <p className="text-danger text-xs mt-1">{errors.ordem.message}</p>}
           </div>
           <div className="flex items-center gap-3">
             <Checkbox
               id="edit-isActive"
               {...register('isActive')}
             />
-            <label className="text-sm text-slate-400 cursor-pointer" htmlFor="edit-isActive">
+            <label className="text-sm text-muted-foreground cursor-pointer" htmlFor="edit-isActive">
               Módulo ativo
             </label>
           </div>
@@ -135,14 +135,14 @@ export function EditModuloDialog({ modulo, onClose }: Props) {
               type="button"
               onClick={onClose}
               disabled={update.isPending}
-              className="px-4 py-2 text-sm text-slate-300 hover:text-slate-100 transition-colors disabled:opacity-50"
+              className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={update.isPending}
-              className="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors disabled:opacity-50"
+              className="px-4 py-2 text-sm bg-primary hover:bg-primary-hover text-primary-foreground rounded-lg transition-colors disabled:opacity-50"
             >
               {update.isPending ? 'Salvando…' : 'Salvar'}
             </button>

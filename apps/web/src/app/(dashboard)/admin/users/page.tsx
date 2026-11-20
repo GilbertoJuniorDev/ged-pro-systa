@@ -7,10 +7,10 @@ export const metadata: Metadata = {
 
 export default function AdminUsersPage() {
   return (
-    <main className="flex-1 overflow-y-auto bg-slate-50 p-4 sm:p-6 lg:p-8 dark:bg-slate-950">
+    <main className="flex-1 overflow-y-auto bg-background p-4 sm:p-6 lg:p-8">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-950 dark:text-slate-100">Gerenciar Usuários</h1>
-        <p className="text-slate-600 dark:text-slate-400">Edite, ative/desative e remova usuários do sistema.</p>
+        <h1 className="text-2xl font-bold text-foreground">Gerenciar Usuários</h1>
+        <p className="text-muted-foreground">Edite, ative/desative e remova usuários do sistema.</p>
       </div>
 
       <UserList />

@@ -90,21 +90,21 @@ export function EditDocumentClassificationDialog({ document, onClose }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
     >
-      <div className="w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-xl">
+      <div className="w-full max-w-md rounded-2xl border border-border bg-surface-elevated p-6 shadow-xl">
         <div className="mb-5 flex items-start justify-between">
           <div className="min-w-0">
-            <p className="font-semibold text-slate-100">Alterar classificação</p>
-            <p className="mt-0.5 truncate text-sm text-slate-400">&quot;{document.nome}&quot;</p>
+            <p className="font-semibold text-foreground">Alterar classificação</p>
+            <p className="mt-0.5 truncate text-sm text-muted-foreground">&quot;{document.nome}&quot;</p>
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Fechar"
-            className="shrink-0 rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-slate-800 hover:text-slate-200"
+            className="shrink-0 rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground"
           >
             <X className="h-4 w-4" />
           </button>
@@ -112,9 +112,9 @@ export function EditDocumentClassificationDialog({ document, onClose }: Props) {
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <label className="mb-1 block text-sm text-slate-400">Departamento</label>
+            <label className="mb-1 block text-sm text-muted-foreground">Departamento</label>
             {isDepartamentoLocked ? (
-              <p className="rounded-lg border border-slate-700 bg-slate-800/60 px-3.5 py-2.5 text-sm text-slate-300">
+              <p className="rounded-lg border border-border bg-foreground/10 px-3.5 py-2.5 text-sm text-foreground">
                 {departamentoNomeAtual}
               </p>
             ) : (
@@ -128,7 +128,7 @@ export function EditDocumentClassificationDialog({ document, onClose }: Props) {
           </div>
 
           <div>
-            <label className="mb-1 block text-sm text-slate-400">Série</label>
+            <label className="mb-1 block text-sm text-muted-foreground">Série</label>
             <Controller
               name="serieId"
               control={control}
@@ -143,11 +143,11 @@ export function EditDocumentClassificationDialog({ document, onClose }: Props) {
                 />
               )}
             />
-            {errors.serieId && <p className="mt-1 text-xs text-rose-400">{errors.serieId.message}</p>}
+            {errors.serieId && <p className="mt-1 text-xs text-danger">{errors.serieId.message}</p>}
           </div>
 
           <div>
-            <label className="mb-1 block text-sm text-slate-400">Dossiê</label>
+            <label className="mb-1 block text-sm text-muted-foreground">Dossiê</label>
             <Controller
               name="dossieId"
               control={control}
@@ -163,19 +163,19 @@ export function EditDocumentClassificationDialog({ document, onClose }: Props) {
             />
           </div>
 
-          <div className="flex justify-end gap-3 border-t border-slate-800 pt-4">
+          <div className="flex justify-end gap-3 border-t border-border pt-4">
             <button
               type="button"
               onClick={onClose}
               disabled={updateDocument.isPending}
-              className="px-4 py-2 text-sm text-slate-300 transition-colors hover:text-slate-100 disabled:opacity-50"
+              className="px-4 py-2 text-sm text-foreground transition-colors hover:text-foreground disabled:opacity-50"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={updateDocument.isPending}
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm text-white transition-colors hover:bg-indigo-500 disabled:opacity-50"
+              className="rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground transition-colors hover:bg-primary-hover disabled:opacity-50"
             >
               {updateDocument.isPending ? 'Salvando…' : 'Salvar'}
             </button>

@@ -1,11 +1,13 @@
 'use client';
 
 import { useTheme } from 'next-themes';
+import { tokenVar } from '@/lib/theme-style';
 
 /**
  * Theme-aware chart color tokens for Recharts. `fill`/`stroke` props need
  * literal values — Tailwind classes don't apply to SVG attributes — so this
- * module is the single place literal hex values live for dashboard charts.
+ * module is the single place literal hex values live for dashboard charts
+ * (categorical/ordinal data colors only — chrome uses the semantic tokens).
  *
  * Palette derived and validated per the dataviz skill's method
  * (`node scripts/validate_palette.js`): every slot below passes the
@@ -53,7 +55,14 @@ export type OrdinalRamp = readonly [string, string, string];
 const ORDINAL_LIGHT: OrdinalRamp = ['#a78bfa', '#7c3aed', '#5b21b6'];
 const ORDINAL_DARK: OrdinalRamp = ['#c4b5fd', '#8b5cf6', '#6d28d9'];
 
+/**
+ * Chart chrome (surfaces, grid, axis, tooltip) follows the semantic tokens of
+ * ADR 0002 via `var(--ged-*)` — SVG presentation attributes and inline styles
+ * resolve CSS variables, so the chrome tracks Paleta × Tema with no hex here.
+ */
 export interface ChartChrome {
+  /** Card background — separates pie slices / active dots from the card. */
+  readonly surface: string;
   readonly grid: string;
   readonly axis: string;
   readonly tooltipBg: string;
@@ -61,26 +70,22 @@ export interface ChartChrome {
   readonly tooltipText: string;
 }
 
-const CHROME_LIGHT: ChartChrome = {
-  grid: '#e2e8f0',
-  axis: '#64748b',
-  tooltipBg: '#ffffff',
-  tooltipBorder: '#e2e8f0',
-  tooltipText: '#0f172a',
-};
-
-const CHROME_DARK: ChartChrome = {
-  grid: '#334155',
-  axis: '#94a3b8',
-  tooltipBg: '#0f172a',
-  tooltipBorder: '#334155',
-  tooltipText: '#f1f5f9',
+const CHROME: ChartChrome = {
+  surface: tokenVar('surface'),
+  grid: tokenVar('border'),
+  axis: tokenVar('muted-foreground'),
+  tooltipBg: tokenVar('surface-elevated'),
+  tooltipBorder: tokenVar('border'),
+  tooltipText: tokenVar('foreground'),
 };
 
 export interface ChartPalette {
   readonly categorical: ChartColorSet;
   readonly confidencialidade: OrdinalRamp;
-  /** Single hue for magnitude bars/lines (nominal categorical → one series, one hue). */
+  /**
+   * Single hue for magnitude bars/lines (nominal categorical → one series, one
+   * hue): the Paleta primary, already contrast-adjusted per Tema.
+   */
   readonly sequential: string;
   readonly chrome: ChartChrome;
 }
@@ -95,7 +100,7 @@ export function useChartPalette(): ChartPalette {
   return {
     categorical,
     confidencialidade: isLight ? ORDINAL_LIGHT : ORDINAL_DARK,
-    sequential: categorical.indigo,
-    chrome: isLight ? CHROME_LIGHT : CHROME_DARK,
+    sequential: tokenVar('primary'),
+    chrome: CHROME,
   };
 }

@@ -7,7 +7,7 @@
     "build": "turbo run build",
     "lint": "turbo run lint",
     "type-check": "turbo run type-check",
-    "test": "turbo run test",
+    "test": "turbo run test --concurrency=2",
     "db:migrate": "pnpm --filter=@ged/database db:migrate",
     "db:migrate:revert": "pnpm --filter=@ged/database db:migrate:revert",
     "docker:dev": "docker compose --env-file .env -f infra/docker-compose.dev.yml up --build",

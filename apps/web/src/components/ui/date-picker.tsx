@@ -186,16 +186,16 @@ export function DatePicker({
         onClick={() => setOpen((o) => !o)}
         className={cn(
           'w-full flex items-center gap-2 rounded-lg px-3.5 py-2.5 text-sm transition-colors',
-          'border bg-white text-left dark:bg-slate-800',
+          'border bg-background text-left',
           error
-            ? 'border-rose-500 focus:ring-rose-500'
-            : 'border-slate-300 focus:ring-indigo-500 dark:border-slate-700',
+            ? 'border-danger focus:ring-danger'
+            : 'border-border focus:ring-ring',
           'focus:outline-none focus:ring-2 focus:border-transparent',
-          selected ? 'text-slate-900 dark:text-slate-100' : 'text-slate-500',
+          selected ? 'text-foreground' : 'text-muted-foreground',
           disabled && 'opacity-50 cursor-not-allowed',
         )}
       >
-        <CalendarIcon className="w-4 h-4 shrink-0 text-slate-500 dark:text-slate-400" />
+        <CalendarIcon className="w-4 h-4 shrink-0 text-muted-foreground" />
         <span className="flex-1">
           {selected ? formatDisplay(selected) : placeholder}
         </span>
@@ -205,8 +205,8 @@ export function DatePicker({
       {open && (
         <div
           className={cn(
-            'absolute z-50 mt-2 w-72 rounded-xl border border-slate-200',
-            'animate-scale-in bg-white p-3 shadow-lg dark:border-slate-700 dark:bg-slate-900 dark:shadow-2xl dark:shadow-black/40',
+            'absolute z-50 mt-2 w-72 rounded-xl border border-border',
+            'animate-scale-in bg-surface-elevated p-3 shadow-lg',
           )}
         >
           {/* ── Header ── */}
@@ -219,7 +219,7 @@ export function DatePicker({
                 else if (viewMode === 'years') setYearRangeCenter((c) => c - 20);
               }}
               className={cn(
-                'rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100',
+                'rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground',
                 viewMode === 'months' && 'invisible',
               )}
               aria-label="Anterior"
@@ -232,23 +232,23 @@ export function DatePicker({
               type="button"
               onClick={toggleViewMode}
               aria-label="Alternar visualização do calendário"
-              className="flex select-none items-center gap-1 rounded-lg px-2 py-1 text-sm font-semibold text-slate-950 transition-colors hover:bg-slate-100 hover:text-indigo-700 dark:text-slate-100 dark:hover:bg-slate-800 dark:hover:text-indigo-300"
+              className="flex select-none items-center gap-1 rounded-lg px-2 py-1 text-sm font-semibold text-foreground transition-colors hover:bg-foreground/5 hover:text-primary"
             >
               {viewMode === 'days' && (
                 <>
                   <span>{MONTHS_LONG[viewMonth]}</span>
-                  <span className="text-indigo-400">{viewYear}</span>
+                  <span className="text-primary">{viewYear}</span>
                 </>
               )}
               {viewMode === 'months' && (
-                <span className="text-indigo-400">{viewYear}</span>
+                <span className="text-primary">{viewYear}</span>
               )}
               {viewMode === 'years' && (
                 <span>{yearRange[0]} – {yearRange[yearRange.length - 1]}</span>
               )}
               <ChevronUp
                 className={cn(
-                  'w-3.5 h-3.5 text-slate-500 transition-transform duration-200',
+                  'w-3.5 h-3.5 text-muted-foreground transition-transform duration-200',
                   viewMode === 'days' && 'rotate-180',
                   viewMode === 'months' && 'rotate-0',
                   viewMode === 'years' && 'rotate-0',
@@ -264,7 +264,7 @@ export function DatePicker({
                 else if (viewMode === 'years') setYearRangeCenter((c) => c + 20);
               }}
               className={cn(
-                'rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100',
+                'rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground',
                 viewMode === 'months' && 'invisible',
               )}
               aria-label="Próximo"
@@ -284,10 +284,10 @@ export function DatePicker({
                   className={cn(
                     'rounded-lg py-2 text-xs font-medium transition-colors',
                     y === viewYear
-                      ? 'bg-indigo-600 text-white'
-                      : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700',
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-foreground hover:bg-foreground/5',
                     y === today.getFullYear() && y !== viewYear &&
-                      'ring-1 ring-indigo-500/50 text-indigo-300',
+                      'ring-1 ring-primary/50 text-primary',
                   )}
                 >
                   {y}
@@ -307,12 +307,12 @@ export function DatePicker({
                   className={cn(
                     'rounded-lg py-2.5 text-sm font-medium transition-colors',
                     i === viewMonth
-                      ? 'bg-indigo-600 text-white'
-                      : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700',
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-foreground hover:bg-foreground/5',
                     i === today.getMonth() &&
                       viewYear === today.getFullYear() &&
                       i !== viewMonth &&
-                      'ring-1 ring-indigo-500/50 text-indigo-300',
+                      'ring-1 ring-primary/50 text-primary',
                   )}
                 >
                   {label}
@@ -329,7 +329,7 @@ export function DatePicker({
                 {WEEKDAYS.map((wd) => (
                   <span
                     key={wd}
-                    className="text-center text-xs font-medium text-slate-500 py-1 select-none"
+                    className="text-center text-xs font-medium text-muted-foreground py-1 select-none"
                   >
                     {wd}
                   </span>
@@ -350,10 +350,10 @@ export function DatePicker({
                       onClick={() => selectDay(day)}
                       className={cn(
                         'mx-auto flex h-8 w-8 items-center justify-center rounded-full text-xs transition-colors',
-                        !isCurrentMonth && 'text-slate-400 dark:text-slate-600',
-                        isCurrentMonth && !isSelected && 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700',
-                        isToday && !isSelected && 'ring-1 ring-indigo-400 text-indigo-300',
-                        isSelected && 'bg-indigo-600 text-white font-semibold hover:bg-indigo-500',
+                        !isCurrentMonth && 'text-muted-foreground',
+                        isCurrentMonth && !isSelected && 'text-foreground hover:bg-foreground/5',
+                        isToday && !isSelected && 'ring-1 ring-primary text-primary',
+                        isSelected && 'bg-primary text-primary-foreground font-semibold hover:bg-primary-hover',
                       )}
                     >
                       {day.getDate()}
@@ -363,11 +363,11 @@ export function DatePicker({
               </div>
 
               {/* Rodapé — botão Hoje */}
-              <div className="mt-3 border-t border-slate-200 pt-3 dark:border-slate-700/60">
+              <div className="mt-3 border-t border-border pt-3">
                 <button
                   type="button"
                   onClick={() => selectDay(today)}
-                  className="w-full rounded-lg py-1 text-xs text-indigo-700 transition-colors hover:bg-slate-100 hover:text-indigo-800 dark:text-indigo-400 dark:hover:bg-slate-800 dark:hover:text-indigo-300"
+                  className="w-full rounded-lg py-1 text-xs text-primary transition-colors hover:bg-foreground/5 hover:text-primary-hover"
                 >
                   Hoje
                 </button>

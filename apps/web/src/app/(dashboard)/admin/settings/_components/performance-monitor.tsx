@@ -5,15 +5,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { formatBytes } from '@/lib/utils';
 
 function barColor(percent: number): string {
-  if (percent > 85) return 'bg-rose-500';
-  if (percent > 60) return 'bg-amber-500';
-  return 'bg-emerald-500';
+  if (percent > 85) return 'bg-danger';
+  if (percent > 60) return 'bg-warning';
+  return 'bg-success';
 }
 
 function textColor(percent: number): string {
-  if (percent > 85) return 'text-rose-400';
-  if (percent > 60) return 'text-amber-400';
-  return 'text-emerald-400';
+  if (percent > 85) return 'text-danger';
+  if (percent > 60) return 'text-warning';
+  return 'text-success';
 }
 
 function ResourceGauge({
@@ -28,16 +28,16 @@ function ResourceGauge({
   return (
     <div>
       <div className="flex justify-between text-sm mb-2">
-        <span className="text-slate-600 dark:text-slate-400">{label}</span>
+        <span className="text-muted-foreground">{label}</span>
         <span className={`font-bold ${textColor(percent)}`}>{percent.toFixed(0)}%</span>
       </div>
-      <div className="h-2 w-full rounded-full bg-slate-200 dark:bg-slate-800">
+      <div className="h-2 w-full rounded-full bg-foreground/10">
         <div
           className={`h-2 rounded-full ${barColor(percent)}`}
           style={{ width: `${Math.min(percent, 100)}%` }}
         />
       </div>
-      {caption && <p className="mt-1 text-xs text-slate-500 dark:text-slate-500">{caption}</p>}
+      {caption && <p className="mt-1 text-xs text-muted-foreground">{caption}</p>}
     </div>
   );
 }
@@ -46,7 +46,7 @@ function ResourceGaugeSkeleton({ label }: { readonly label: string }) {
   return (
     <div>
       <div className="flex justify-between text-sm mb-2">
-        <span className="text-slate-600 dark:text-slate-400">{label}</span>
+        <span className="text-muted-foreground">{label}</span>
         <Skeleton className="h-4 w-10" />
       </div>
       <Skeleton className="h-2 w-full rounded-full" />
@@ -60,22 +60,22 @@ export function PerformanceMonitor() {
   const isOnline = !isError && (isLoading || !!data);
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:col-span-2 lg:col-span-3 dark:border-slate-700 dark:bg-slate-900">
+    <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm md:col-span-2 lg:col-span-3">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
-          <div className="mr-4 flex h-12 w-12 items-center justify-center rounded-xl bg-rose-50 text-rose-700 dark:bg-rose-900/40 dark:text-rose-400">
+          <div className="mr-4 flex h-12 w-12 items-center justify-center rounded-xl bg-danger/10 text-danger">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
           </div>
-          <h3 className="text-lg font-bold text-slate-950 dark:text-slate-100">Monitores de Desempenho</h3>
+          <h3 className="text-lg font-bold text-foreground">Monitores de Desempenho</h3>
         </div>
         <span
           className={`text-xs font-bold flex items-center ${
-            isOnline ? 'animate-pulse text-emerald-400' : 'text-rose-400'
+            isOnline ? 'animate-pulse text-success' : 'text-danger'
           }`}
         >
-          <span className={`w-2 h-2 rounded-full mr-2 ${isOnline ? 'bg-emerald-400' : 'bg-rose-400'}`} />
+          <span className={`w-2 h-2 rounded-full mr-2 ${isOnline ? 'bg-success' : 'bg-danger'}`} />
           {isOnline ? 'SISTEMA ONLINE' : 'SISTEMA OFFLINE'}
         </span>
       </div>
@@ -104,9 +104,9 @@ export function PerformanceMonitor() {
             ) : (
               <div>
                 <div className="flex justify-between text-sm mb-2">
-                  <span className="text-slate-600 dark:text-slate-400">Disco</span>
+                  <span className="text-muted-foreground">Disco</span>
                 </div>
-                <p className="text-xs text-slate-500 dark:text-slate-500">Indisponível neste ambiente</p>
+                <p className="text-xs text-muted-foreground">Indisponível neste ambiente</p>
               </div>
             )}
           </>

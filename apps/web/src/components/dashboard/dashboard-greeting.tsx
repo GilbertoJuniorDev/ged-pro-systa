@@ -8,10 +8,10 @@ export function DashboardGreeting() {
 
   return (
     <>
-      <h2 className="text-2xl font-bold text-slate-950 dark:text-slate-100">
+      <h2 className="text-2xl font-bold text-foreground">
         Olá, {name}
       </h2>
-      <p className="text-slate-600 dark:text-slate-400">Bem-vindo ao GED Pro.</p>
+      <p className="text-muted-foreground">Bem-vindo ao GED Pro.</p>
     </>
   );
 }

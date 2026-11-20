@@ -42,15 +42,15 @@ export function AvulsosPanel() {
   return (
     <>
       <div className="mb-4 flex flex-wrap items-end justify-between gap-4">
-        <div className="flex gap-1 rounded-lg border border-slate-200 p-1 dark:border-slate-700">
+        <div className="flex gap-1 rounded-lg border border-border p-1">
           {SUB_TABS.map((tab) => (
             <button
               key={tab.value}
               onClick={() => setParams({ avulsos: tab.value, page: undefined })}
               className={`cursor-pointer rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
                 params.avulsos === tab.value
-                  ? 'bg-indigo-600 text-white'
-                  : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               {tab.label}
@@ -96,7 +96,7 @@ function AvulsosDocumentos({
   });
 
   if (isError) {
-    return <p className="py-4 text-sm text-rose-500 dark:text-rose-400">Erro ao carregar documentos.</p>;
+    return <p className="py-4 text-sm text-danger">Erro ao carregar documentos.</p>;
   }
 
   const documentos = data?.data ?? [];
@@ -145,7 +145,7 @@ function AvulsosDossies({
   const [deleteTarget, setDeleteTarget] = useState<DossieDto | null>(null);
 
   if (isError) {
-    return <p className="py-4 text-sm text-rose-500 dark:text-rose-400">Erro ao carregar dossiês.</p>;
+    return <p className="py-4 text-sm text-danger">Erro ao carregar dossiês.</p>;
   }
 
   const dossies = data?.data ?? [];
@@ -177,33 +177,33 @@ function AvulsosDossies({
           ) : (
             dossies.map((d) => (
               <DataTableRow key={d.id} onClick={() => drillDossie(undefined, d.id)}>
-                <DataTableTd className="font-medium text-slate-900 dark:text-slate-200">{d.nome}</DataTableTd>
-                <DataTableTd className="text-slate-600 dark:text-slate-400">{nomeById(d.departamentoId)}</DataTableTd>
+                <DataTableTd className="font-medium text-foreground">{d.nome}</DataTableTd>
+                <DataTableTd className="text-muted-foreground">{nomeById(d.departamentoId)}</DataTableTd>
                 <DataTableTd>
                   <span
                     className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
                       d.isActive
-                        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                        : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+                        ? 'ring-1 ring-inset ring-success/40 text-success'
+                        : 'bg-foreground/5 text-muted-foreground'
                     }`}
                   >
                     {d.isActive ? 'Ativo' : 'Inativo'}
                   </span>
                 </DataTableTd>
-                <DataTableTd align="right" className="tabular-nums text-slate-600 dark:text-slate-400">
+                <DataTableTd align="right" className="tabular-nums text-muted-foreground">
                   {d.documentsCount}
                 </DataTableTd>
                 <DataTableTd align="right">
                   <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
                     <button
                       onClick={() => setEditTarget(d)}
-                      className={`${ACTION_BTN} border-indigo-300 text-indigo-600 hover:border-indigo-500 hover:text-indigo-800 dark:border-indigo-700 dark:text-indigo-300 dark:hover:border-indigo-500 dark:hover:text-indigo-100`}
+                      className={`${ACTION_BTN} border-primary/40 text-primary hover:border-primary hover:text-primary-hover`}
                     >
                       Editar
                     </button>
                     <button
                       onClick={() => setDeleteTarget(d)}
-                      className={`${ACTION_BTN} border-rose-300 text-rose-600 hover:border-rose-500 hover:text-rose-800 dark:border-rose-800 dark:text-rose-400 dark:hover:border-rose-600 dark:hover:text-rose-200`}
+                      className={`${ACTION_BTN} border-danger/40 text-danger hover:border-danger`}
                     >
                       Remover
                     </button>

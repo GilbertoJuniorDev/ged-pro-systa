@@ -1,17 +1,23 @@
 import {
+  classifyPrimaryAdjustment,
   COLOR_SHADES,
   contrastRatio,
+  LARGE_PRIMARY_ADJUSTMENT_CONTRAST,
+  meetsContrast,
   deriveColorScale,
+  deriveSemanticTokens,
   deriveThemeScales,
   hexToHsl,
+  THEME_MODES,
   hslToHex,
   readableForeground,
   relativeLuminance,
   TAILWIND_INDIGO_SCALE,
   TAILWIND_SKY_SCALE,
   TAILWIND_SLATE_SCALE,
+  WCAG_AA_CONTRAST,
 } from './theme';
-import type { ColorScale } from './theme';
+import type { ColorScale, Palette, SemanticTokens } from './theme';
 
 function hexToRgb(hex: string): [number, number, number] {
   return [
@@ -183,5 +189,231 @@ describe('deriveThemeScales — preservação de contraste no neutro', () => {
     expect(scales.primary).toEqual<ColorScale>(TAILWIND_INDIGO_SCALE);
     expect(scales.secondary).toEqual<ColorScale>(TAILWIND_SKY_SCALE);
     expect(scales.neutral).toEqual<ColorScale>(TAILWIND_SLATE_SCALE);
+  });
+});
+
+// ─── Tokens semânticos (ADR 0002) ───────────────────────────────────────────
+
+const DEFAULT_PALETTE = {
+  primaryColor: '#4f46e5',
+  secondaryColor: '#0ea5e9',
+  backgroundColor: '#0f172a',
+} as const;
+
+const BACKGROUND_COLORS = ['#0f172a', '#ffffff', '#000000', '#fef08a', '#7f1d1d', '#22c55e', '#f8fafc'];
+
+describe('deriveSemanticTokens — luminosidade fixa por Tema', () => {
+  it.each(BACKGROUND_COLORS)('o fundo do Tema claro é sempre claro (fundo da Paleta %s)', (backgroundColor) => {
+    const { tokens } = deriveSemanticTokens({ ...DEFAULT_PALETTE, backgroundColor }, 'light');
+
+    for (const canvas of [tokens.background, tokens.surface, tokens['surface-elevated']]) {
+      expect(relativeLuminance(canvas)).toBeGreaterThan(0.8);
+    }
+  });
+
+  it.each(BACKGROUND_COLORS)('o fundo do Tema escuro é sempre escuro (fundo da Paleta %s)', (backgroundColor) => {
+    const { tokens } = deriveSemanticTokens({ ...DEFAULT_PALETTE, backgroundColor }, 'dark');
+
+    for (const canvas of [tokens.background, tokens.surface, tokens['surface-elevated']]) {
+      expect(relativeLuminance(canvas)).toBeLessThan(0.05);
+    }
+  });
+
+  it('a cor de fundo da Paleta tinge os neutros com o seu matiz', () => {
+    const red = deriveSemanticTokens({ ...DEFAULT_PALETTE, backgroundColor: '#7f1d1d' }, 'dark');
+    const green = deriveSemanticTokens({ ...DEFAULT_PALETTE, backgroundColor: '#14532d' }, 'dark');
+
+    expect(red.tokens.surface).not.toBe(green.tokens.surface);
+    const hue = hexToHsl(red.tokens.surface).h;
+    expect(Math.min(hue, 360 - hue)).toBeLessThan(30);
+  });
+});
+
+// Casos-limite pedidos pelo ticket #20: primária amarela, fundo escuro, fundo branco — e
+// primárias nos dois extremos de luminância.
+const EDGE_PALETTES: readonly (readonly [string, Palette])[] = [
+  ['padrão', DEFAULT_PALETTE],
+  ['primária amarela', { ...DEFAULT_PALETTE, primaryColor: '#facc15' }],
+  ['primária amarela + fundo branco', { ...DEFAULT_PALETTE, primaryColor: '#ffff00', backgroundColor: '#ffffff' }],
+  ['fundo preto', { ...DEFAULT_PALETTE, backgroundColor: '#000000' }],
+  ['fundo branco', { ...DEFAULT_PALETTE, backgroundColor: '#ffffff' }],
+  ['primária quase preta', { ...DEFAULT_PALETTE, primaryColor: '#111111' }],
+  ['primária branca', { ...DEFAULT_PALETTE, primaryColor: '#ffffff', secondaryColor: '#ffffff' }],
+  ['secundária amarela', { ...DEFAULT_PALETTE, secondaryColor: '#fde047' }],
+];
+
+const CASES = THEME_MODES.flatMap((mode) =>
+  EDGE_PALETTES.map(([label, palette]) => [mode, label, palette] as const),
+);
+
+function canvasesOf(tokens: SemanticTokens): string[] {
+  return [tokens.background, tokens.surface, tokens['surface-elevated']];
+}
+
+describe('deriveSemanticTokens — contraste AA (4.5:1)', () => {
+  it.each(CASES)('Tema %s, %s: texto sobre os fundos', (mode, _label, palette) => {
+    const { tokens } = deriveSemanticTokens(palette, mode);
+
+    for (const canvas of canvasesOf(tokens)) {
+      expect(contrastRatio(tokens.foreground, canvas)).toBeGreaterThanOrEqual(4.5);
+      expect(contrastRatio(tokens['muted-foreground'], canvas)).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it.each(CASES)('Tema %s, %s: primária e secundária sobre os fundos', (mode, _label, palette) => {
+    const { tokens } = deriveSemanticTokens(palette, mode);
+
+    for (const canvas of canvasesOf(tokens)) {
+      expect(contrastRatio(tokens.primary, canvas)).toBeGreaterThanOrEqual(4.5);
+      expect(contrastRatio(tokens.secondary, canvas)).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it.each(CASES)('Tema %s, %s: texto sobre a primária', (mode, _label, palette) => {
+    const { tokens } = deriveSemanticTokens(palette, mode);
+
+    expect(contrastRatio(tokens['primary-foreground'], tokens.primary)).toBeGreaterThanOrEqual(4.5);
+  });
+});
+
+describe('deriveSemanticTokens — status fixos', () => {
+  it.each(THEME_MODES)('Tema %s: status idênticos para qualquer Paleta', (mode) => {
+    const statusOf = (palette: Palette) => {
+      const { tokens } = deriveSemanticTokens(palette, mode);
+      return [tokens.success, tokens.warning, tokens.danger, tokens.info];
+    };
+    const reference = statusOf(DEFAULT_PALETTE);
+
+    for (const [, palette] of EDGE_PALETTES) {
+      expect(statusOf(palette)).toEqual(reference);
+    }
+  });
+
+  it.each(CASES)('Tema %s, %s: status com contraste AA sobre os fundos', (mode, _label, palette) => {
+    const { tokens } = deriveSemanticTokens(palette, mode);
+
+    for (const canvas of canvasesOf(tokens)) {
+      for (const status of [tokens.success, tokens.warning, tokens.danger, tokens.info]) {
+        expect(contrastRatio(status, canvas)).toBeGreaterThanOrEqual(4.5);
+      }
+    }
+  });
+
+  it('status mudam entre os Temas', () => {
+    expect(deriveSemanticTokens(DEFAULT_PALETTE, 'light').tokens.danger).not.toBe(
+      deriveSemanticTokens(DEFAULT_PALETTE, 'dark').tokens.danger,
+    );
+  });
+});
+
+describe('deriveSemanticTokens — ajuste da primária', () => {
+  it('mantém a primária escolhida, sem ajuste, quando ela já atinge 4.5:1', () => {
+    const derived = deriveSemanticTokens(DEFAULT_PALETTE, 'light');
+
+    expect(derived.tokens.primary).toBe('#4f46e5');
+    expect(derived.primaryAdjusted).toBe(false);
+  });
+
+  it('ajusta e informa quando a primária não atinge 4.5:1 (amarela no claro)', () => {
+    const derived = deriveSemanticTokens({ ...DEFAULT_PALETTE, primaryColor: '#facc15' }, 'light');
+
+    expect(derived.primaryAdjusted).toBe(true);
+    expect(derived.tokens.primary).not.toBe('#facc15');
+  });
+
+  it('ajusta e informa quando a primária não atinge 4.5:1 (índigo padrão no escuro)', () => {
+    const derived = deriveSemanticTokens(DEFAULT_PALETTE, 'dark');
+
+    expect(derived.primaryAdjusted).toBe(true);
+    expect(relativeLuminance(derived.tokens.primary)).toBeGreaterThan(relativeLuminance('#4f46e5'));
+  });
+
+  it('o ajuste preserva o matiz da primária', () => {
+    const { tokens } = deriveSemanticTokens({ ...DEFAULT_PALETTE, primaryColor: '#facc15' }, 'light');
+    const delta = Math.abs(hexToHsl(tokens.primary).h - hexToHsl('#facc15').h);
+
+    expect(delta).toBeLessThan(3);
+  });
+
+  it('a amarela no escuro não precisa de ajuste', () => {
+    expect(
+      deriveSemanticTokens({ ...DEFAULT_PALETTE, primaryColor: '#facc15' }, 'dark').primaryAdjusted,
+    ).toBe(false);
+  });
+
+  it('o ajuste da secundária não conta como ajuste da primária', () => {
+    expect(
+      deriveSemanticTokens({ ...DEFAULT_PALETTE, secondaryColor: '#fde047' }, 'light').primaryAdjusted,
+    ).toBe(false);
+  });
+
+  it('lança erro para Paleta corrompida', () => {
+    expect(() => deriveSemanticTokens({ ...DEFAULT_PALETTE, primaryColor: 'red' }, 'dark')).toThrow();
+  });
+});
+
+describe('meetsContrast', () => {
+  it('exporta o limiar AA do WCAG para texto normal', () => {
+    expect(WCAG_AA_CONTRAST).toBe(4.5);
+  });
+
+  it('exige 4.5:1 contra TODOS os fundos', () => {
+    expect(meetsContrast('#0f172a', ['#ffffff', '#f8fafc'])).toBe(true);
+    expect(meetsContrast('#4f46e5', ['#ffffff', '#020617'])).toBe(false);
+  });
+});
+
+describe('classifyPrimaryAdjustment', () => {
+  it('é "none" quando a cor final é a escolhida', () => {
+    expect(classifyPrimaryAdjustment('#4f46e5', '#4f46e5')).toBe('none');
+  });
+
+  // Limiar objetivo: 3:1 entre a escolhida e a final é o contraste mínimo do WCAG para
+  // componentes distinguíveis (1.4.11) — a partir dele o tom aplicado já é "outra cor".
+  it('usa 3:1 (WCAG 1.4.11) como limiar de ajuste grande', () => {
+    expect(LARGE_PRIMARY_ADJUSTMENT_CONTRAST).toBe(3);
+  });
+
+  it('é "minor" quando a final difere da escolhida em menos de 3:1', () => {
+    expect(contrastRatio('#4f46e5', '#8882ed')).toBeLessThan(3);
+    expect(classifyPrimaryAdjustment('#4f46e5', '#8882ed')).toBe('minor');
+  });
+
+  it('é "large" quando a final difere da escolhida em 3:1 ou mais', () => {
+    expect(classifyPrimaryAdjustment('#1e1b4b', '#8b87d4')).toBe('large');
+  });
+});
+
+describe('deriveSemanticTokens — tamanho do ajuste da primária', () => {
+  it('a Paleta padrão não tem ajuste no claro', () => {
+    expect(deriveSemanticTokens(DEFAULT_PALETTE, 'light').primaryAdjustment).toBe('none');
+  });
+
+  it('a Paleta padrão tem ajuste pequeno no escuro (#4f46e5 → #8882ed)', () => {
+    const derived = deriveSemanticTokens(DEFAULT_PALETTE, 'dark');
+
+    expect(derived.tokens.primary).toBe('#8882ed');
+    expect(derived.primaryAdjustment).toBe('minor');
+  });
+
+  it('uma primária quase preta tem ajuste grande no escuro', () => {
+    const derived = deriveSemanticTokens({ ...DEFAULT_PALETTE, primaryColor: '#1e1b4b' }, 'dark');
+
+    expect(derived.primaryAdjustment).toBe('large');
+  });
+
+  it('uma primária quase branca tem ajuste grande no claro', () => {
+    const derived = deriveSemanticTokens({ ...DEFAULT_PALETTE, primaryColor: '#e0e7ff' }, 'light');
+
+    expect(derived.primaryAdjustment).toBe('large');
+  });
+
+  it('primaryAdjusted continua coerente com primaryAdjustment', () => {
+    for (const primaryColor of ['#4f46e5', '#1e1b4b', '#facc15', '#e0e7ff']) {
+      for (const mode of THEME_MODES) {
+        const derived = deriveSemanticTokens({ ...DEFAULT_PALETTE, primaryColor }, mode);
+        expect(derived.primaryAdjusted).toBe(derived.primaryAdjustment !== 'none');
+      }
+    }
   });
 });

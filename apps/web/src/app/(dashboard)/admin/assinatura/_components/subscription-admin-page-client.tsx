@@ -89,18 +89,18 @@ export function SubscriptionAdminPageClient() {
 
   if (isLoading) {
     return (
-      <main className="flex flex-1 items-center justify-center bg-slate-50 dark:bg-slate-950">
+      <main className="flex flex-1 items-center justify-center bg-background">
         <Spinner />
       </main>
     );
   }
 
   return (
-    <main className="flex-1 overflow-y-auto bg-slate-50 p-4 sm:p-6 lg:p-8 dark:bg-slate-950">
+    <main className="flex-1 overflow-y-auto bg-background p-4 sm:p-6 lg:p-8">
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-slate-950 dark:text-slate-100">Assinatura</h2>
-          <p className="text-slate-600 dark:text-slate-400">
+          <h2 className="text-2xl font-bold text-foreground">Assinatura</h2>
+          <p className="text-muted-foreground">
             Gerencie a assinatura desta instância (status, datas, valor e pagamentos).
           </p>
         </div>
@@ -110,7 +110,7 @@ export function SubscriptionAdminPageClient() {
             <button
               type="button"
               onClick={() => setShowPayment(true)}
-              className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500"
+              className="rounded-xl bg-success px-4 py-2 text-sm font-medium text-background hover:bg-success/90"
             >
               Registrar pagamento
             </button>
@@ -119,18 +119,18 @@ export function SubscriptionAdminPageClient() {
       </div>
 
       {!data && (
-        <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/40 dark:bg-amber-900/20 dark:text-amber-300">
+        <div className="mb-6 rounded-lg border border-warning/30 px-4 py-3 text-sm text-warning">
           Nenhuma assinatura cadastrada. Preencha os dados abaixo para criar.
         </div>
       )}
 
       <form
         onSubmit={handleSubmit}
-        className="max-w-3xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900"
+        className="max-w-3xl rounded-2xl border border-border bg-surface p-6 shadow-sm"
       >
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div className="flex flex-col gap-1">
-            <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Status</span>
+            <span className="text-xs font-medium text-muted-foreground">Status</span>
             <Combobox
               value={form.status}
               onValueChange={(v) => update('status', v as SubscriptionStatus)}
@@ -156,28 +156,28 @@ export function SubscriptionAdminPageClient() {
             />
           </Field>
           <div className="flex flex-col gap-1">
-            <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Início *</span>
+            <span className="text-xs font-medium text-muted-foreground">Início *</span>
             <DatePicker
               value={form.startDate || undefined}
               onChange={(v) => update('startDate', v)}
             />
           </div>
           <div className="flex flex-col gap-1">
-            <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Fim</span>
+            <span className="text-xs font-medium text-muted-foreground">Fim</span>
             <DatePicker
               value={form.endDate || undefined}
               onChange={(v) => update('endDate', v)}
             />
           </div>
           <div className="flex flex-col gap-1">
-            <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Próximo vencimento</span>
+            <span className="text-xs font-medium text-muted-foreground">Próximo vencimento</span>
             <DatePicker
               value={form.nextBillingDate || undefined}
               onChange={(v) => update('nextBillingDate', v)}
             />
           </div>
           <label className="md:col-span-2 flex flex-col gap-1">
-            <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Observações</span>
+            <span className="text-xs font-medium text-muted-foreground">Observações</span>
             <textarea
               rows={3}
               value={form.notes}
@@ -195,7 +195,7 @@ export function SubscriptionAdminPageClient() {
                   type="button"
                   disabled={suspend.isPending}
                   onClick={() => suspend.mutate()}
-                  className="rounded-xl border border-amber-300 px-4 py-2 text-sm font-medium text-amber-700 hover:bg-amber-50 disabled:opacity-60 dark:border-amber-700/60 dark:text-amber-300 dark:hover:bg-amber-900/20"
+                  className="rounded-xl border border-warning/30 px-4 py-2 text-sm font-medium text-warning hover:bg-warning/20 disabled:opacity-60"
                 >
                   Suspender
                 </button>
@@ -205,7 +205,7 @@ export function SubscriptionAdminPageClient() {
                   type="button"
                   disabled={reactivate.isPending}
                   onClick={() => reactivate.mutate()}
-                  className="rounded-xl border border-emerald-300 px-4 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50 disabled:opacity-60 dark:border-emerald-700/60 dark:text-emerald-300 dark:hover:bg-emerald-900/20"
+                  className="rounded-xl border border-success/30 px-4 py-2 text-sm font-medium text-success hover:bg-success/20 disabled:opacity-60"
                 >
                   Reativar
                 </button>
@@ -217,7 +217,7 @@ export function SubscriptionAdminPageClient() {
                   onClick={() => {
                     if (confirm('Confirma o cancelamento da assinatura?')) cancel.mutate();
                   }}
-                  className="rounded-xl border border-rose-300 px-4 py-2 text-sm font-medium text-rose-700 hover:bg-rose-50 disabled:opacity-60 dark:border-rose-700/60 dark:text-rose-300 dark:hover:bg-rose-900/20"
+                  className="rounded-xl border border-danger/30 px-4 py-2 text-sm font-medium text-danger hover:bg-danger/20 disabled:opacity-60"
                 >
                   Cancelar
                 </button>
@@ -229,7 +229,7 @@ export function SubscriptionAdminPageClient() {
           <button
             type="submit"
             disabled={upsert.isPending}
-            className="rounded-xl bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-60"
+            className="rounded-xl bg-primary px-5 py-2 text-sm font-medium text-primary-foreground hover:bg-primary-hover disabled:opacity-60"
           >
             {upsert.isPending ? 'Salvando...' : data ? 'Salvar alterações' : 'Criar assinatura'}
           </button>
@@ -250,12 +250,12 @@ export function SubscriptionAdminPageClient() {
 }
 
 const inputCls =
-  'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100';
+  'w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-ring/30';
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="flex flex-col gap-1">
-      <span className="text-xs font-medium text-slate-700 dark:text-slate-300">{label}</span>
+      <span className="text-xs font-medium text-muted-foreground">{label}</span>
       {children}
     </label>
   );

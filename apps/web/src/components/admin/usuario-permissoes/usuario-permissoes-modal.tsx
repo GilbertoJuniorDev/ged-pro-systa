@@ -55,7 +55,7 @@ export function UsuarioPermissoesContent({ userId }: ContentProps) {
     return (
       <div className="space-y-3 py-2">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-10 rounded-lg bg-slate-800 animate-pulse" />
+          <div key={i} className="h-10 rounded-lg bg-border animate-pulse" />
         ))}
       </div>
     );
@@ -64,7 +64,7 @@ export function UsuarioPermissoesContent({ userId }: ContentProps) {
   const renderPermissoesList = (permissoes: NonNullable<typeof todasPermissoes>) => (
     <div className="px-4 py-3">
       {permissoes.length === 0 ? (
-        <p className="text-xs text-slate-500 italic">Nenhuma permissão cadastrada neste módulo.</p>
+        <p className="text-xs text-muted-foreground italic">Nenhuma permissão cadastrada neste módulo.</p>
       ) : (
         <div className="grid grid-cols-1 gap-2">
           {permissoes.map((permissao) => {
@@ -83,10 +83,10 @@ export function UsuarioPermissoesContent({ userId }: ContentProps) {
                   onChange={() => handleToggle(permissao.id, isAssigned)}
                 />
                 <div className="min-w-0">
-                  <span className="text-sm text-slate-300 group-hover:text-slate-100 transition-colors leading-tight block">
+                  <span className="text-sm text-foreground group-hover:text-foreground transition-colors leading-tight block">
                     {label}
                   </span>
-                  <span className="text-xs text-slate-500 leading-tight block mt-0.5">
+                  <span className="text-xs text-muted-foreground leading-tight block mt-0.5">
                     {description}
                   </span>
                 </div>
@@ -105,13 +105,13 @@ export function UsuarioPermissoesContent({ userId }: ContentProps) {
         return (
           <div
             key={modulo.id}
-            className="rounded-lg border border-slate-700 bg-slate-800/50 overflow-hidden"
+            className="rounded-lg border border-border bg-foreground/5 overflow-hidden"
           >
-            <div className="flex items-center gap-3 px-4 py-3 bg-slate-800 border-b border-slate-700">
+            <div className="flex items-center gap-3 px-4 py-3 bg-background border-b border-border">
               {modulo.icone && (
                 <span className="text-base leading-none">{modulo.icone}</span>
               )}
-              <span className="text-sm font-medium text-slate-200">{modulo.nome}</span>
+              <span className="text-sm font-medium text-foreground">{modulo.nome}</span>
             </div>
             {renderPermissoesList(permissoes)}
           </div>
@@ -120,16 +120,16 @@ export function UsuarioPermissoesContent({ userId }: ContentProps) {
 
       {/* Permissões sem módulo */}
       {(permissoesPorModulo.get(null) ?? []).length > 0 && (
-        <div className="rounded-lg border border-slate-700 bg-slate-800/50 overflow-hidden">
-          <div className="flex items-center gap-3 px-4 py-3 bg-slate-800 border-b border-slate-700">
-            <span className="text-sm font-medium text-slate-400 italic">Sem módulo</span>
+        <div className="rounded-lg border border-border bg-foreground/5 overflow-hidden">
+          <div className="flex items-center gap-3 px-4 py-3 bg-background border-b border-border">
+            <span className="text-sm font-medium text-muted-foreground italic">Sem módulo</span>
           </div>
           {renderPermissoesList(permissoesPorModulo.get(null) ?? [])}
         </div>
       )}
 
       {modulos.length === 0 && (todasPermissoes ?? []).length === 0 && (
-        <p className="text-slate-500 text-sm text-center py-6">
+        <p className="text-muted-foreground text-sm text-center py-6">
           Nenhuma permissão cadastrada.
         </p>
       )}
@@ -146,19 +146,19 @@ interface ModalProps {
 export function UsuarioPermissoesModal({ userId, userName, onClose }: ModalProps) {
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-background/80 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
     >
-      <div className="bg-slate-900 border border-slate-700 rounded-t-2xl sm:rounded-2xl shadow-xl w-full max-w-lg mx-0 sm:mx-4 p-6 max-h-[85vh] flex flex-col">
+      <div className="bg-surface-elevated border border-border rounded-t-2xl sm:rounded-2xl shadow-xl w-full max-w-lg mx-0 sm:mx-4 p-6 max-h-[85vh] flex flex-col">
         <div className="flex items-center justify-between mb-5">
           <div>
-            <h2 className="text-base font-semibold text-slate-100">Permissões</h2>
-            <p className="text-xs text-slate-400">{userName}</p>
+            <h2 className="text-base font-semibold text-foreground">Permissões</h2>
+            <p className="text-xs text-muted-foreground">{userName}</p>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-500 hover:text-slate-300 transition-colors"
+            className="text-muted-foreground hover:text-foreground transition-colors"
             aria-label="Fechar"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

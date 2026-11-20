@@ -45,12 +45,12 @@ export function ResetPasswordForm() {
   if (!token) {
     return (
       <div>
-        <div className="rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 px-4 py-4 text-sm text-red-700 dark:text-red-400 mb-6">
+        <div className="rounded-lg bg-danger/10 border border-danger/30 px-4 py-4 text-sm text-danger mb-6">
           Link inválido ou expirado. Solicite um novo link de recuperação.
         </div>
         <Link
           href="/login"
-          className="inline-flex items-center text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
+          className="inline-flex items-center text-sm font-medium text-primary hover:text-primary-hover transition-colors"
         >
           <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -84,7 +84,7 @@ export function ResetPasswordForm() {
     <div>
       <Link
         href="/login"
-        className="text-sm font-medium text-slate-500 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors flex items-center mb-6"
+        className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors flex items-center mb-6"
       >
         <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -92,14 +92,14 @@ export function ResetPasswordForm() {
         Voltar para o login
       </Link>
 
-      <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Redefinir Senha</h2>
-      <p className="text-slate-500 dark:text-slate-400 mb-8">
+      <h2 className="text-3xl font-bold text-foreground mb-2">Redefinir Senha</h2>
+      <p className="text-muted-foreground mb-8">
         Crie uma nova senha para sua conta.
       </p>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
         <div>
-          <label htmlFor="newPassword" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+          <label htmlFor="newPassword" className="block text-sm font-medium text-foreground mb-1">
             Nova senha
           </label>
           <div className="relative">
@@ -109,12 +109,12 @@ export function ResetPasswordForm() {
               id="newPassword"
               placeholder="Mínimo 8 caracteres"
               disabled={isPending}
-              className="w-full px-4 py-3 pr-12 rounded-lg border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-indigo-600 focus:border-transparent outline-none transition-all text-slate-700 dark:text-slate-100 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-700 placeholder-slate-400 dark:placeholder-slate-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-4 py-3 pr-12 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
             />
             <button
               type="button"
               onClick={() => setShowPassword((v) => !v)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
               aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
             >
               {showPassword ? (
@@ -130,12 +130,12 @@ export function ResetPasswordForm() {
             </button>
           </div>
           {errors.newPassword && (
-            <p className="mt-1 text-xs text-red-500">{errors.newPassword.message}</p>
+            <p className="mt-1 text-xs text-danger">{errors.newPassword.message}</p>
           )}
         </div>
 
         <div>
-          <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+          <label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground mb-1">
             Confirmar nova senha
           </label>
           <div className="relative">
@@ -145,12 +145,12 @@ export function ResetPasswordForm() {
               id="confirmPassword"
               placeholder="Repita a nova senha"
               disabled={isPending}
-              className="w-full px-4 py-3 pr-12 rounded-lg border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-indigo-600 focus:border-transparent outline-none transition-all text-slate-700 dark:text-slate-100 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-700 placeholder-slate-400 dark:placeholder-slate-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-4 py-3 pr-12 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
             />
             <button
               type="button"
               onClick={() => setShowConfirm((v) => !v)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
               aria-label={showConfirm ? 'Ocultar senha' : 'Mostrar senha'}
             >
               {showConfirm ? (
@@ -166,7 +166,7 @@ export function ResetPasswordForm() {
             </button>
           </div>
           {errors.confirmPassword && (
-            <p className="mt-1 text-xs text-red-500">{errors.confirmPassword.message}</p>
+            <p className="mt-1 text-xs text-danger">{errors.confirmPassword.message}</p>
           )}
         </div>
 
@@ -174,7 +174,7 @@ export function ResetPasswordForm() {
         <button
           type="submit"
           disabled={isPending}
-          className="w-full bg-indigo-600 hover:bg-indigo-700 dark:hover:bg-indigo-500 text-white font-semibold py-3 px-4 rounded-lg transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 flex justify-center items-center disabled:opacity-60 disabled:cursor-not-allowed"
+          className="w-full bg-primary hover:bg-primary-hover text-primary-foreground font-semibold py-3 px-4 rounded-lg transition-colors shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface flex justify-center items-center disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {isPending ? (
             <>

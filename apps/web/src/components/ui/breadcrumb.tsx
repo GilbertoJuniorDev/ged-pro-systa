@@ -9,25 +9,25 @@ export interface BreadcrumbItem {
 export function Breadcrumb({ items }: { items: readonly BreadcrumbItem[] }) {
   return (
     <nav aria-label="Trilha de navegação" className="mb-4">
-      <ol className="flex flex-wrap items-center gap-1 text-sm text-slate-500 dark:text-slate-400">
+      <ol className="flex flex-wrap items-center gap-1 text-sm text-muted-foreground">
         {items.map((item, index) => {
           const isLast = index === items.length - 1;
           return (
             <li key={`${item.label}-${index}`} className="flex items-center gap-1">
               {index > 0 && (
-                <ChevronRight className="h-3.5 w-3.5 text-slate-400 dark:text-slate-600" aria-hidden="true" />
+                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
               )}
               {item.href && !isLast ? (
                 <Link
                   href={item.href}
-                  className="transition-colors hover:text-indigo-600 dark:hover:text-indigo-400"
+                  className="transition-colors hover:text-primary"
                 >
                   {item.label}
                 </Link>
               ) : (
                 <span
                   aria-current={isLast ? 'page' : undefined}
-                  className={isLast ? 'font-medium text-slate-900 dark:text-slate-100' : undefined}
+                  className={isLast ? 'font-medium text-foreground' : undefined}
                 >
                   {item.label}
                 </span>

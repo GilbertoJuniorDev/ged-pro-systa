@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { buildLogoUrl, type LogoScope } from '@/lib/appearance';
+import { tokenVar } from '@/lib/theme-style';
 import { usePublicPortalAppearance, usePublicSystemAppearance } from '@/hooks/use-public-appearance';
 
 interface LogoProps {
@@ -16,9 +17,15 @@ const WORDMARK: Record<LogoScope, string> = {
   portal: 'GED Pro',
 };
 
+// Sistema: tokens semânticos (ADR 0002). Portal: aliases próprios até a fatia do portal.
 const MARK_COLOR_VAR: Record<LogoScope, string> = {
-  system: 'var(--color-primary)',
+  system: tokenVar('primary'),
   portal: 'var(--portal-color-primary)',
+};
+
+const MARK_FOREGROUND_VAR: Record<LogoScope, string> = {
+  system: tokenVar('primary-foreground'),
+  portal: 'var(--portal-color-primary-foreground)',
 };
 
 /**
@@ -39,13 +46,21 @@ export function Logo({ scope, variant = 'mark+wordmark', className }: LogoProps)
   useEffect(() => setFailed(false), [logoVersion, scope]);
 
   const hasLogo = (data?.hasLogo ?? false) && !failed;
+  const logoUrl = buildLogoUrl(scope, logoVersion);
+
+  // O fallback para a marca padrão é visualmente indistinguível de "sem logo" — sem
+  // este aviso uma falha (ex.: CORP bloqueando a imagem) volta a ser invisível.
+  const handleLogoError = () => {
+    console.warn(`[Logo] Falha ao carregar o logo (${scope}) em ${logoUrl}; usando a marca padrão.`);
+    setFailed(true);
+  };
 
   return (
     <span className={`inline-flex items-center gap-3 ${className ?? ''}`}>
       {hasLogo ? (
         <span className="relative block h-8 w-8 shrink-0">
           <Image
-            src={buildLogoUrl(scope, logoVersion)}
+            src={logoUrl}
             alt={WORDMARK[scope]}
             fill
             sizes="32px"
@@ -57,7 +72,7 @@ export function Logo({ scope, variant = 'mark+wordmark', className }: LogoProps)
             // (a API responde em http://api:3333). Sem isto o logo simplesmente não
             // carrega em Docker. Servir direto também não custa nada: é um PNG de 32px.
             unoptimized
-            onError={() => setFailed(true)}
+            onError={handleLogoError}
           />
         </span>
       ) : (
@@ -65,7 +80,10 @@ export function Logo({ scope, variant = 'mark+wordmark', className }: LogoProps)
           className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg shadow-md"
           style={{ backgroundColor: MARK_COLOR_VAR[scope] }}
         >
-          <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <svg
+            className="h-5 w-5"
+            style={{ color: MARK_FOREGROUND_VAR[scope] }}
+            fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"

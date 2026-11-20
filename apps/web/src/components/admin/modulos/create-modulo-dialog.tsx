@@ -46,42 +46,42 @@ export function CreateModuloDialog({ onClose }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
     >
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl shadow-xl w-full max-w-md mx-4 p-6">
-        <h2 className="text-base font-semibold text-slate-100 mb-5">Novo Módulo</h2>
+      <div className="bg-surface-elevated border border-border rounded-2xl shadow-xl w-full max-w-md mx-4 p-6">
+        <h2 className="text-base font-semibold text-foreground mb-5">Novo Módulo</h2>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <label className="block text-sm text-slate-400 mb-1" htmlFor="nome">
-              Nome <span className="text-rose-400">*</span>
+            <label className="block text-sm text-muted-foreground mb-1" htmlFor="nome">
+              Nome <span className="text-danger">*</span>
             </label>
             <input
               id="nome"
               {...register('nome')}
               placeholder="ex: Documentos"
-              className="w-full rounded-lg bg-slate-800 border border-slate-600 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full rounded-lg bg-background border border-border px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             />
-            {errors.nome && <p className="text-rose-400 text-xs mt-1">{errors.nome.message}</p>}
+            {errors.nome && <p className="text-danger text-xs mt-1">{errors.nome.message}</p>}
           </div>
           <div>
-            <label className="block text-sm text-slate-400 mb-1" htmlFor="slug">
-              Slug <span className="text-rose-400">*</span>
+            <label className="block text-sm text-muted-foreground mb-1" htmlFor="slug">
+              Slug <span className="text-danger">*</span>
             </label>
             <input
               id="slug"
               {...register('slug')}
               placeholder="ex: documentos"
-              className="w-full rounded-lg bg-slate-800 border border-slate-600 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
+              className="w-full rounded-lg bg-background border border-border px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring font-mono"
             />
-            {errors.slug && <p className="text-rose-400 text-xs mt-1">{errors.slug.message}</p>}
-            <p className="text-slate-500 text-xs mt-1">
+            {errors.slug && <p className="text-danger text-xs mt-1">{errors.slug.message}</p>}
+            <p className="text-muted-foreground text-xs mt-1">
               O slug é o identificador usado no código para controlar acesso (ex: <code>documentos</code>).
             </p>
           </div>
           <div>
-            <label className="block text-sm text-slate-400 mb-1" htmlFor="descricao">
+            <label className="block text-sm text-muted-foreground mb-1" htmlFor="descricao">
               Descrição
             </label>
             <textarea
@@ -89,12 +89,12 @@ export function CreateModuloDialog({ onClose }: Props) {
               {...register('descricao')}
               rows={2}
               placeholder="Descreva o que este módulo representa..."
-              className="w-full rounded-lg bg-slate-800 border border-slate-600 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+              className="w-full rounded-lg bg-background border border-border px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
             />
-            {errors.descricao && <p className="text-rose-400 text-xs mt-1">{errors.descricao.message}</p>}
+            {errors.descricao && <p className="text-danger text-xs mt-1">{errors.descricao.message}</p>}
           </div>
           <div>
-            <label className="block text-sm text-slate-400 mb-1" htmlFor="ordem">
+            <label className="block text-sm text-muted-foreground mb-1" htmlFor="ordem">
               Ordem de exibição
             </label>
             <input
@@ -103,23 +103,23 @@ export function CreateModuloDialog({ onClose }: Props) {
               min={0}
               {...register('ordem')}
               placeholder="0"
-              className="w-full rounded-lg bg-slate-800 border border-slate-600 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full rounded-lg bg-background border border-border px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             />
-            {errors.ordem && <p className="text-rose-400 text-xs mt-1">{errors.ordem.message}</p>}
+            {errors.ordem && <p className="text-danger text-xs mt-1">{errors.ordem.message}</p>}
           </div>
           <div className="flex gap-3 justify-end pt-2">
             <button
               type="button"
               onClick={onClose}
               disabled={create.isPending}
-              className="px-4 py-2 text-sm text-slate-300 hover:text-slate-100 transition-colors disabled:opacity-50"
+              className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={create.isPending}
-              className="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors disabled:opacity-50"
+              className="px-4 py-2 text-sm bg-primary hover:bg-primary-hover text-primary-foreground rounded-lg transition-colors disabled:opacity-50"
             >
               {create.isPending ? 'Criando…' : 'Criar Módulo'}
             </button>

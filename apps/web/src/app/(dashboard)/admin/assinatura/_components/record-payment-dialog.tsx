@@ -31,18 +31,18 @@ export function RecordPaymentDialog({ subscription, onClose }: Props) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-700 dark:bg-slate-900"
+        className="w-full max-w-md rounded-2xl border border-border bg-surface-elevated p-6 shadow-xl"
       >
-        <h3 className="mb-4 text-lg font-bold text-slate-950 dark:text-slate-100">
+        <h3 className="mb-4 text-lg font-bold text-foreground">
           Registrar Pagamento
         </h3>
 
         <div className="space-y-4">
           <div className="flex flex-col gap-1">
-            <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
+            <span className="text-xs font-medium text-muted-foreground">
               Data do pagamento *
             </span>
             <DatePicker
@@ -52,7 +52,7 @@ export function RecordPaymentDialog({ subscription, onClose }: Props) {
           </div>
 
           <div className="flex flex-col gap-1">
-            <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
+            <span className="text-xs font-medium text-muted-foreground">
               Próximo vencimento
             </span>
             <DatePicker
@@ -66,14 +66,14 @@ export function RecordPaymentDialog({ subscription, onClose }: Props) {
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+            className="rounded-xl border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-foreground/5"
           >
             Cancelar
           </button>
           <button
             type="submit"
             disabled={recordPayment.isPending}
-            className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-60"
+            className="rounded-xl bg-success px-4 py-2 text-sm font-medium text-background hover:bg-success/90 disabled:opacity-60"
           >
             {recordPayment.isPending ? 'Salvando...' : 'Registrar'}
           </button>

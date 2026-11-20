@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
 import { SessionProvider } from 'next-auth/react';
 import { auth } from '@/lib/auth';
 import { ThemeProvider } from '@/providers/theme-provider';
@@ -11,9 +10,8 @@ import { SessionExpiryProvider } from '@/providers/session-expiry-provider';
 import { getSystemAppearance } from '@/lib/appearance';
 import { SystemAppearanceProvider } from '@/providers/appearance-provider';
 import { buildSystemThemeCss } from '@/lib/theme-style';
+import { fontSans } from './fonts';
 import './globals.css';
-
-const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'GED Pro',
@@ -30,13 +28,13 @@ export default async function RootLayout({
   const themeCss = buildSystemThemeCss(appearance);
 
   return (
-    <html lang="pt-BR" suppressHydrationWarning>
+    <html lang="pt-BR" className={fontSans.variable} suppressHydrationWarning>
       <head>
         {/* Renderizado no servidor, antes do primeiro paint — evita FOUC ao trocar a
             cor do sistema. Ver lib/appearance.ts (fetch) e lib/theme-style.ts (CSS). */}
         <style id="ged-theme-vars" dangerouslySetInnerHTML={{ __html: themeCss }} />
       </head>
-      <body className={inter.className}>
+      <body className="font-sans">
         <SessionProvider session={session}>
           <ThemeProvider>
             <QueryProvider>

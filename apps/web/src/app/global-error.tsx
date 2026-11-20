@@ -2,6 +2,12 @@
 
 import { useEffect } from 'react';
 import { reportUnknown } from '@/lib/error-reporter';
+import { buildSystemThemeCss, DEFAULT_SYSTEM_PALETTE } from '@/lib/theme-style';
+
+// global-error substitui o RootLayout inteiro, então o <style> com os tokens (`--ged-*`)
+// que ele injeta não existe aqui — declara os da Paleta padrão, no Tema claro (sem
+// next-themes nesta tela; era claro antes também).
+const FALLBACK_THEME_CSS = buildSystemThemeCss(DEFAULT_SYSTEM_PALETTE);
 
 interface Props {
   error: Error & { digest?: string };
@@ -14,18 +20,21 @@ export default function GlobalError({ error, reset }: Props): React.JSX.Element 
   }, [error]);
 
   return (
-    <html lang="pt-BR">
-      <body className="flex min-h-screen flex-col items-center justify-center gap-4 bg-slate-50 p-8 text-center dark:bg-slate-950">
-        <h2 className="text-2xl font-bold text-slate-950 dark:text-slate-100">
+    <html lang="pt-BR" className="light">
+      <head>
+        <style dangerouslySetInnerHTML={{ __html: FALLBACK_THEME_CSS }} />
+      </head>
+      <body className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background p-8 text-center text-foreground">
+        <h2 className="text-2xl font-bold text-foreground">
           Erro crítico
         </h2>
-        <p className="max-w-md text-slate-600 dark:text-slate-400">
+        <p className="max-w-md text-muted-foreground">
           Não foi possível carregar a aplicação. O erro foi registrado.
         </p>
         <button
           type="button"
           onClick={reset}
-          className="mt-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm text-white transition-colors hover:bg-indigo-500"
+          className="mt-2 rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           Recarregar
         </button>

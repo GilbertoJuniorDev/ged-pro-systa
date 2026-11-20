@@ -48,9 +48,9 @@ export function PortalSearchFilter({
         />
       </div>
       <div className="w-full sm:w-64">
-        {/* `light` força a Combobox (que usa `dark:` internamente) a ignorar o `.dark`
-            ambiente do <html> — o portal público é sempre claro. Overrides correspondentes
-            em app/globals.css (`.light .dark\:*`). */}
+        {/* `light` marca a Combobox como trecho de Tema claro (ADR 0002): os tokens
+            `--ged-*` são redeclarados no próprio wrapper, então ela fica clara mesmo com
+            <html class="dark"> — o portal público é sempre claro. */}
         <Combobox
           value={serieId}
           onValueChange={onSerieChange}

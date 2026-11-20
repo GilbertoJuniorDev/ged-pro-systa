@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { Logo } from './logo';
 
 // Em produção o logo sempre aponta para a API por URL absoluta (o binário não é servido
@@ -64,5 +64,20 @@ describe('Logo', () => {
     render(<Logo scope="system" />);
 
     expect(screen.getByRole('img').getAttribute('src')).not.toContain('/_next/image');
+  });
+
+  // Regressão: o navegador bloqueava o Logo (CORP same-origin na API) e o fallback
+  // silencioso escondia a falha — o sintoma era só "a logo não está sendo usada".
+  it('em erro de carregamento mostra a marca padrão e avisa no console', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+    mockSystem.mockReturnValue({ data: { hasLogo: true, logoVersion: 2 } });
+
+    render(<Logo scope="system" />);
+    fireEvent.error(screen.getByRole('img'));
+
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
+    expect(screen.getByText('GED Pro')).toBeInTheDocument();
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('/public/appearance/system/logo'));
+    warn.mockRestore();
   });
 });
