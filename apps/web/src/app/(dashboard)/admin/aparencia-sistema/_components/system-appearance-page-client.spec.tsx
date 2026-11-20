@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type { SystemAppearanceDto } from '@/types';
 import { SystemAppearancePageClient } from './system-appearance-page-client';
 
@@ -66,5 +66,23 @@ describe('SystemAppearancePageClient', () => {
 
     expect(screen.queryByDisplayValue('#4f46e5')).not.toBeInTheDocument();
     expect(screen.queryByText('Salvar cores')).not.toBeInTheDocument();
+  });
+
+  it('mostra a Paleta nos dois Temas e avisa o ajuste sem bloquear o salvamento', async () => {
+    mockUseSystemAppearance.mockReturnValue({ data: SAVED, isLoading: false, isError: false });
+
+    render(<SystemAppearancePageClient />);
+
+    expect(screen.getByRole('group', { name: /tema claro/i })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: /tema escuro/i })).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent(/ajustada automaticamente/i);
+
+    const save = screen.getByRole('button', { name: 'Salvar cores' });
+    expect(save).toBeEnabled();
+    fireEvent.click(save);
+
+    await waitFor(() =>
+      expect(mockMutate).toHaveBeenCalledWith(expect.objectContaining({ primaryColor: '#16a34a' })),
+    );
   });
 });

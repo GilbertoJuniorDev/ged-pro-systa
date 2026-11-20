@@ -1,14 +1,13 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { useTheme } from 'next-themes';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Spinner } from '@/components/ui/spinner';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ColorField } from '@/components/branding/color-field';
-import { AppearancePreview } from '@/components/branding/appearance-preview';
+import { PaletteThemePreview } from '@/components/branding/palette-theme-preview';
 import { buildLogoUrl } from '@/lib/appearance';
 import { useLogoPreview } from '@/hooks/use-logo-preview';
 import { DEFAULT_SYSTEM_APPEARANCE } from '@ged/types';
@@ -46,7 +45,6 @@ export function SystemAppearancePageClient() {
   const deleteLogo = useDeleteSystemLogo();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { previewUrl, setFile, clear: clearPreview } = useLogoPreview();
-  const { resolvedTheme } = useTheme();
 
   const {
     control,
@@ -242,12 +240,7 @@ export function SystemAppearancePageClient() {
 
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
             <h3 className="mb-3 text-sm font-semibold text-slate-900 dark:text-slate-100">Pré-visualização</h3>
-            <AppearancePreview
-              primaryColor={previewColors.primaryColor}
-              secondaryColor={previewColors.secondaryColor}
-              backgroundColor={previewColors.backgroundColor}
-              mode={resolvedTheme === 'light' ? 'light' : 'dark'}
-            />
+            <PaletteThemePreview palette={previewColors} />
           </div>
         </div>
       )}
