@@ -137,7 +137,7 @@ export function MultiCombobox({
         onClick={() => setOpen((o) => !o)}
         className={cn(
           'w-full flex items-center justify-between gap-2 rounded-lg px-3.5 py-2.5 text-sm transition-colors',
-          'border bg-surface text-left',
+          'border bg-background text-left',
           error
             ? 'border-danger focus:ring-danger'
             : 'border-border focus:ring-ring',

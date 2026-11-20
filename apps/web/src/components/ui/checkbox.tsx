@@ -70,7 +70,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
             'border-2 transition-all duration-150 ease-in-out',
             isActive
               ? 'bg-primary border-primary shadow-[0_0_0_3px_color-mix(in_oklab,var(--ged-primary)_18%,transparent)]'
-              : 'border-muted-foreground bg-surface',
+              : 'border-muted-foreground bg-background',
             !disabled && !isActive
               ? 'group-hover:border-foreground peer-hover:border-foreground'
               : '',
