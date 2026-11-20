@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 
 export function DataTable({ children }: { children: ReactNode }) {
   return (
-    <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
+    <div className="overflow-x-auto rounded-xl border border-border">
       <table className="w-full text-sm">{children}</table>
     </div>
   );
@@ -12,7 +12,7 @@ export function DataTable({ children }: { children: ReactNode }) {
 export function DataTableHead({ children }: { children: ReactNode }) {
   return (
     <thead>
-      <tr className="border-b border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900/60">
+      <tr className="border-b border-border bg-surface">
         {children}
       </tr>
     </thead>
@@ -29,7 +29,7 @@ export function DataTableTh({
   return (
     <th
       className={cn(
-        'px-4 py-3 text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400',
+        'px-4 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground',
         align === 'right' ? 'text-right' : 'text-left',
       )}
     >
@@ -39,7 +39,7 @@ export function DataTableTh({
 }
 
 export function DataTableBody({ children }: { children: ReactNode }) {
-  return <tbody className="divide-y divide-slate-200 dark:divide-slate-800">{children}</tbody>;
+  return <tbody className="divide-y divide-border">{children}</tbody>;
 }
 
 export function DataTableRow({
@@ -55,7 +55,7 @@ export function DataTableRow({
     <tr
       onClick={onClick}
       className={cn(
-        'transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/40',
+        'transition-colors hover:bg-foreground/5',
         onClick && 'cursor-pointer',
         className,
       )}
