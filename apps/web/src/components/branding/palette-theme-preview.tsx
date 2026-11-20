@@ -3,24 +3,19 @@
 import type { CSSProperties } from 'react';
 import {
   deriveSemanticTokens,
-  SEMANTIC_TOKEN_NAMES,
   THEME_MODES,
   type DerivedTheme,
   type Palette,
   type ThemeMode,
 } from '@ged/utils';
-import { SEMANTIC_TOKEN_PREFIX } from '@/lib/theme-style';
-import { PrimaryAdjustmentWarning } from './primary-adjustment-warning';
+import { semanticTokenVars, type SemanticTokenVars } from '@/lib/theme-style';
+import { PrimaryAdjustmentNotice } from './primary-adjustment-notice';
+import { themeModeTitle } from './theme-mode-label';
 
 interface PaletteThemePreviewProps {
   /** Paleta em edição — o preview acompanha cada mudança do formulário. */
   readonly palette: Palette;
 }
-
-const MODE_TITLE: Readonly<Record<ThemeMode, string>> = {
-  light: 'Tema claro',
-  dark: 'Tema escuro',
-};
 
 const STATUS_SAMPLES = [
   { label: 'Sucesso', className: 'ring-success/40 text-success' },
@@ -48,21 +43,16 @@ function deriveBothThemes(palette: Palette): DerivedThemes | null {
  * `.light.light`/`.dark.dark` (theme-style.ts), então o painel mostra a Paleta EM EDIÇÃO,
  * não a salva — e as classes semânticas de dentro resolvem contra esses valores.
  */
-function tokensAsStyle({ tokens }: DerivedTheme): CSSProperties {
-  const style: Record<string, string> = {};
-  for (const name of SEMANTIC_TOKEN_NAMES) style[`${SEMANTIC_TOKEN_PREFIX}${name}`] = tokens[name];
-  return style as CSSProperties;
-}
-
 function ThemePanel({ mode, theme }: { readonly mode: ThemeMode; readonly theme: DerivedTheme }) {
-  const title = MODE_TITLE[mode];
+  const title = themeModeTitle(mode);
+  const style: CSSProperties & SemanticTokenVars = semanticTokenVars(theme.tokens);
 
   return (
     <div
       role="group"
       aria-label={title}
       className={`${mode} rounded-xl border border-border bg-background p-3 text-foreground`}
-      style={tokensAsStyle(theme)}
+      style={style}
     >
       <p className="mb-2 text-xs font-semibold text-muted-foreground">{title}</p>
       <div className="space-y-3 rounded-lg border border-border bg-surface p-3">
@@ -104,8 +94,8 @@ function ThemePanel({ mode, theme }: { readonly mode: ThemeMode; readonly theme:
 }
 
 /**
- * Pré-visualização da Paleta nos dois Temas (claro e escuro), lado a lado, com o aviso de
- * primária ajustada. Usa a mesma derivação que o app aplica (`deriveSemanticTokens`).
+ * Pré-visualização da Paleta nos dois Temas (claro e escuro), lado a lado, com a nota (ou
+ * o alerta, se o ajuste for grande) de primária ajustada. Usa a mesma derivação que o app aplica (`deriveSemanticTokens`).
  */
 export function PaletteThemePreview({ palette }: PaletteThemePreviewProps) {
   const themes = deriveBothThemes(palette);
@@ -118,11 +108,14 @@ export function PaletteThemePreview({ palette }: PaletteThemePreviewProps) {
     );
   }
 
-  const adjustedModes = THEME_MODES.filter((mode) => themes[mode].primaryAdjusted);
+  const adjustments = {
+    light: themes.light.primaryAdjustment,
+    dark: themes.dark.primaryAdjustment,
+  };
 
   return (
     <div className="space-y-3">
-      <PrimaryAdjustmentWarning adjustedModes={adjustedModes} />
+      <PrimaryAdjustmentNotice adjustments={adjustments} />
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-1">
         {THEME_MODES.map((mode) => (
           <ThemePanel key={mode} mode={mode} theme={themes[mode]} />

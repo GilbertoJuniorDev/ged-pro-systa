@@ -94,7 +94,8 @@ export function contrastRatio(hexA: string, hexB: string): number {
   return (lighter + 0.05) / (darker + 0.05);
 }
 
-const WCAG_AA_CONTRAST = 4.5;
+/** Contraste mínimo do WCAG 2.x (AA) para texto normal. */
+export const WCAG_AA_CONTRAST = 4.5;
 const FOREGROUND_LIGHT = '#ffffff';
 const FOREGROUND_DARK = '#0f172a';
 
@@ -425,10 +426,34 @@ export const SEMANTIC_TOKEN_NAMES = [
 export type SemanticTokenName = (typeof SEMANTIC_TOKEN_NAMES)[number];
 export type SemanticTokens = Readonly<Record<SemanticTokenName, string>>;
 
+/**
+ * Tamanho do ajuste que a derivação fez na primária num Tema:
+ * - `none`: a cor escolhida já atingia 4.5:1 e foi usada intacta;
+ * - `minor`: ajustada, mas o tom final ainda é reconhecível como a cor escolhida;
+ * - `large`: o tom final é visivelmente outra cor (ver `LARGE_PRIMARY_ADJUSTMENT_CONTRAST`).
+ */
+export type PrimaryAdjustment = 'none' | 'minor' | 'large';
+
+/**
+ * Contraste entre a primária escolhida e a final a partir do qual o ajuste é "grande".
+ * 3:1 é o mínimo do WCAG 1.4.11 para duas cores serem distinguíveis entre si — acima dele
+ * o admin veria, no app, uma cor claramente diferente da que escolheu. A Paleta padrão
+ * fica abaixo (#4f46e5 → #8882ed no escuro ≈ 1.9:1).
+ */
+export const LARGE_PRIMARY_ADJUSTMENT_CONTRAST = 3;
+
+/** Classifica a distância entre a primária escolhida e a que a derivação aplicou. */
+export function classifyPrimaryAdjustment(chosen: string, applied: string): PrimaryAdjustment {
+  if (chosen.toLowerCase() === applied.toLowerCase()) return 'none';
+  return contrastRatio(chosen, applied) >= LARGE_PRIMARY_ADJUSTMENT_CONTRAST ? 'large' : 'minor';
+}
+
 export interface DerivedTheme {
   readonly tokens: SemanticTokens;
   /** true quando a primária da Paleta não atingia 4.5:1 neste Tema e foi ajustada. */
   readonly primaryAdjusted: boolean;
+  /** Tamanho do ajuste da primária neste Tema — ver `classifyPrimaryAdjustment`. */
+  readonly primaryAdjustment: PrimaryAdjustment;
 }
 
 type NeutralRole = 'background' | 'surface' | 'surface-elevated' | 'foreground' | 'muted-foreground' | 'border';
@@ -469,7 +494,8 @@ const HOVER_LIGHTNESS_STEP = 8;
 const SOFT_LIGHTNESS: Readonly<Record<ThemeMode, number>> = { light: 96, dark: 14 };
 const SOFT_SATURATION_RATIO: Readonly<Record<ThemeMode, number>> = { light: 1, dark: 0.6 };
 
-function meetsContrast(hex: string, canvases: readonly string[]): boolean {
+/** true quando `hex` atinge 4.5:1 (AA) contra todos os `canvases`. */
+export function meetsContrast(hex: string, canvases: readonly string[]): boolean {
   return canvases.every((canvas) => contrastRatio(hex, canvas) >= WCAG_AA_CONTRAST);
 }
 
@@ -540,6 +566,9 @@ export function deriveSemanticTokens(palette: Palette, mode: ThemeMode): Derived
 
   return {
     primaryAdjusted: primary.adjusted,
+    primaryAdjustment: primary.adjusted
+      ? classifyPrimaryAdjustment(palette.primaryColor, primary.color)
+      : 'none',
     tokens: {
       background,
       surface,

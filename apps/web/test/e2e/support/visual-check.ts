@@ -4,12 +4,12 @@ import path from 'node:path';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 
+import { THEME_MODES, type ThemeMode } from '@ged/utils';
+
 import { hasAdminCredentials, loginAsAdmin, MISSING_CREDENTIALS_REASON } from './login';
 import {
   screenshotFileName,
   summarizeViolations,
-  THEMES,
-  type Theme,
   type ViolationSummary,
   type VisualScreen,
 } from './visual-screens';
@@ -33,13 +33,13 @@ const NEXT_DEV_OVERLAY = 'nextjs-portal';
 export interface ScreenThemeResult {
   screen: string;
   path: string;
-  theme: Theme;
+  theme: ThemeMode;
   screenshot: string;
   violations: ViolationSummary[];
 }
 
 /** Aplica o Tema via localStorage e recarrega a rota, como se o usuário tivesse escolhido. */
-async function openInTheme(page: Page, route: string, theme: Theme): Promise<void> {
+async function openInTheme(page: Page, route: string, theme: ThemeMode): Promise<void> {
   await page.goto(route);
   await page.evaluate(([key, value]) => window.localStorage.setItem(key, value), [
     THEME_STORAGE_KEY,
@@ -57,7 +57,7 @@ async function openInTheme(page: Page, route: string, theme: Theme): Promise<voi
 export async function checkScreenInTheme(
   page: Page,
   screen: VisualScreen,
-  theme: Theme,
+  theme: ThemeMode,
   outDir: string = VISUAL_OUT_DIR,
 ): Promise<ScreenThemeResult> {
   await openInTheme(page, screen.path, theme);
@@ -138,7 +138,7 @@ export function defineVisualSuite(screens: VisualScreen[], outDir: string = VISU
 
         if (screen.requiresAuth) await loginAsAdmin(page);
 
-        for (const theme of THEMES) {
+        for (const theme of THEME_MODES) {
           const result = await checkScreenInTheme(page, screen, theme, outDir);
           await testInfo.attach(screenshotFileName(screen.name, theme), {
             path: result.screenshot,

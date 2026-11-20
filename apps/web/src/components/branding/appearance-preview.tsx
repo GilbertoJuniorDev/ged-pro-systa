@@ -2,10 +2,11 @@
 
 import {
   COLOR_SHADES,
-  contrastRatio,
   deriveThemeScales,
+  meetsContrast,
   readableForeground,
   type ColorScale,
+  type ThemeMode,
   type ThemeScales,
 } from '@ged/utils';
 
@@ -14,21 +15,20 @@ interface AppearancePreviewProps {
   readonly secondaryColor: string;
   readonly backgroundColor: string;
   /** Qual variante mostrar — o admin segue o tema ativo, o portal é claro fixo. */
-  readonly mode: 'dark' | 'light';
+  readonly mode: ThemeMode;
 }
 
 /**
- * Paradas que cada modo realmente usa em tela — as mesmas que `lib/theme-style.ts` injeta
- * e que `globals.css` aliasa. Manter este mapa alinhado com aqueles dois é o que faz a
- * pré-visualização mostrar o que o app vai de fato renderizar, e não uma segunda
- * derivação parecida (era esse o problema da versão anterior).
+ * Paradas que cada modo realmente usa em tela — no claro, as mesmas dos aliases
+ * `--portal-color-*` que `buildPortalThemeCss` (`lib/theme-style.ts`) declara. Manter este
+ * mapa alinhado com aquele é o que faz a pré-visualização mostrar o que o portal vai de
+ * fato renderizar, e não uma segunda derivação parecida. (O formulário do sistema usa
+ * `PaletteThemePreview`, que deriva os tokens semânticos.)
  */
 const SHADES = {
   dark: { primary: 600, surface: 950, elevated: 900, text: 50, secondary: 500 },
   light: { primary: 700, surface: 50, elevated: 100, text: 900, secondary: 600 },
 } as const;
-
-const AA_CONTRAST = 4.5;
 
 /**
  * Primeira parada da rampa, a partir de `from` e andando na direção do contraste (para o
@@ -39,13 +39,13 @@ function readableShade(
   scale: ColorScale,
   from: number,
   background: string,
-  mode: 'dark' | 'light',
+  mode: ThemeMode,
 ): string {
   const shades =
     mode === 'dark'
       ? COLOR_SHADES.filter((shade) => shade <= from).reverse()
       : COLOR_SHADES.filter((shade) => shade >= from);
-  const found = shades.find((shade) => contrastRatio(scale[shade], background) >= AA_CONTRAST);
+  const found = shades.find((shade) => meetsContrast(scale[shade], [background]));
   return found === undefined ? readableForeground(background) : scale[found];
 }
 
@@ -74,9 +74,9 @@ export function AppearancePreview({
   const shades = SHADES[mode];
   const primary = scales.primary[shades.primary];
   const surface = scales.neutral[shades.surface];
-  // No modo claro os cards são brancos (ver globals.css: `.light .bg-slate-900` é #ffffff),
-  // então a superfície elevada do preview precisa seguir a mesma regra para não prometer
-  // um card tingido que a aplicação não entrega.
+  // No modo claro cards e popovers são brancos (tokens `surface`/`surface-elevated` do
+  // Tema claro, ver `deriveSemanticTokens`), então a superfície elevada do preview segue a
+  // mesma regra para não prometer um card tingido que a aplicação não entrega.
   const elevated = mode === 'light' ? '#ffffff' : scales.neutral[shades.elevated];
   const text = scales.neutral[shades.text];
   const secondaryBackground = scales.secondary[mode === 'dark' ? 950 : 50];

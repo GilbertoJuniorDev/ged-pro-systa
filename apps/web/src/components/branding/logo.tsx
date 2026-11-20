@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { buildLogoUrl, type LogoScope } from '@/lib/appearance';
+import { tokenVar } from '@/lib/theme-style';
 import { usePublicPortalAppearance, usePublicSystemAppearance } from '@/hooks/use-public-appearance';
 
 interface LogoProps {
@@ -18,12 +19,12 @@ const WORDMARK: Record<LogoScope, string> = {
 
 // Sistema: tokens semânticos (ADR 0002). Portal: aliases próprios até a fatia do portal.
 const MARK_COLOR_VAR: Record<LogoScope, string> = {
-  system: 'var(--ged-primary)',
+  system: tokenVar('primary'),
   portal: 'var(--portal-color-primary)',
 };
 
 const MARK_FOREGROUND_VAR: Record<LogoScope, string> = {
-  system: 'var(--ged-primary-foreground)',
+  system: tokenVar('primary-foreground'),
   portal: 'var(--portal-color-primary-foreground)',
 };
 

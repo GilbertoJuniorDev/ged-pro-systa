@@ -1,17 +1,51 @@
 import { DEFAULT_PORTAL_APPEARANCE, DEFAULT_SYSTEM_APPEARANCE } from '@ged/types';
-import { deriveSemanticTokens, SEMANTIC_TOKEN_NAMES } from '@ged/utils';
-import { buildPortalThemeCss, buildSystemThemeCss, PORTAL_THEME_CLASS } from './theme-style';
-import type { PortalAppearanceDto, SystemAppearanceDto } from '@/types';
+import { deriveSemanticTokens, SEMANTIC_TOKEN_NAMES, type Palette } from '@ged/utils';
+import {
+  buildPortalThemeCss,
+  buildSystemThemeCss,
+  DEFAULT_SYSTEM_PALETTE,
+  PORTAL_THEME_CLASS,
+  semanticTokenVars,
+  tokenVar,
+} from './theme-style';
 
-const UPDATED_AT = new Date(0).toISOString();
-
-function systemAppearance(overrides: Partial<SystemAppearanceDto> = {}): SystemAppearanceDto {
-  return { ...DEFAULT_SYSTEM_APPEARANCE, updatedAt: UPDATED_AT, ...overrides };
+function systemAppearance(overrides: Partial<Palette> = {}): Palette {
+  return { ...DEFAULT_SYSTEM_PALETTE, ...overrides };
 }
 
-function portalAppearance(overrides: Partial<PortalAppearanceDto> = {}): PortalAppearanceDto {
-  return { ...DEFAULT_PORTAL_APPEARANCE, updatedAt: UPDATED_AT, ...overrides };
+function portalAppearance(overrides: Partial<Palette> = {}): Palette {
+  return { ...DEFAULT_PORTAL_APPEARANCE, ...overrides };
 }
+
+describe('DEFAULT_SYSTEM_PALETTE', () => {
+  it('should equal the shared default colors when read from @ged/types', () => {
+    expect(DEFAULT_SYSTEM_PALETTE).toEqual({
+      primaryColor: DEFAULT_SYSTEM_APPEARANCE.primaryColor,
+      secondaryColor: DEFAULT_SYSTEM_APPEARANCE.secondaryColor,
+      backgroundColor: DEFAULT_SYSTEM_APPEARANCE.backgroundColor,
+    });
+  });
+});
+
+describe('tokenVar', () => {
+  it('should reference the --ged-* custom property when given a token name', () => {
+    expect(tokenVar('primary')).toBe('var(--ged-primary)');
+    expect(tokenVar('surface-elevated')).toBe('var(--ged-surface-elevated)');
+  });
+});
+
+describe('semanticTokenVars', () => {
+  it('should map every token to its --ged-* property when given derived tokens', () => {
+    const { tokens } = deriveSemanticTokens(DEFAULT_SYSTEM_PALETTE, 'dark');
+
+    const vars = semanticTokenVars(tokens);
+
+    expect(Object.keys(vars)).toHaveLength(SEMANTIC_TOKEN_NAMES.length);
+    for (const name of SEMANTIC_TOKEN_NAMES) {
+      expect(vars[`--ged-${name}`]).toBe(tokens[name]);
+    }
+  });
+});
 
 describe('buildSystemThemeCss', () => {
   // Contract do ADR 0002: fora do portal ninguém usa mais rampa crua do Tailwind (a regra
@@ -102,7 +136,7 @@ describe('buildSystemThemeCss — tokens semânticos por Tema', () => {
     return '';
   }
 
-  function mountTheme(appearance: SystemAppearanceDto): void {
+  function mountTheme(appearance: Palette): void {
     document.head.innerHTML = `<style>${buildSystemThemeCss(appearance)}</style>`;
   }
 

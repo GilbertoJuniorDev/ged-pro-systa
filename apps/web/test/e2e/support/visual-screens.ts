@@ -1,12 +1,10 @@
+import type { ThemeMode } from '@ged/utils';
+
 /**
  * Parte pura do harness de verificação visual (sem Playwright), para ser testável no Jest.
- * Ver `visual-check.ts` para o lado que dirige o navegador.
+ * Ver `visual-check.ts` para o lado que dirige o navegador. Os Temas percorridos são
+ * `THEME_MODES` de @ged/utils (claro, depois escuro).
  */
-
-export type Theme = 'light' | 'dark';
-
-/** Os dois Temas do ADR 0002, na ordem em que o harness os percorre. */
-export const THEMES: readonly Theme[] = ['light', 'dark'];
 
 export interface VisualScreen {
   /** Usado nos nomes dos arquivos gerados (`<name>--<tema>.png`). */
@@ -61,7 +59,7 @@ export function parseScreens(publicRoutes: string, authRoutes: string): VisualSc
   ];
 }
 
-export function screenshotFileName(screen: string, theme: Theme): string {
+export function screenshotFileName(screen: string, theme: ThemeMode): string {
   return `${screen}--${theme}.png`;
 }
 

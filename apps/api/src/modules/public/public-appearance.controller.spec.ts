@@ -186,7 +186,7 @@ describe('PublicAppearanceController', () => {
 
     const logoFile = () => ({ stream: Readable.from([Buffer.from('png')]), mimeType: 'image/png' });
 
-    it('libera cross-origin no binário do Logo do sistema', async () => {
+    it('should send CORP cross-origin when serving the system Logo binary', async () => {
       systemAppearanceService.getLogoFile.mockResolvedValue(logoFile());
 
       const res = await request(app.getHttpServer()).get('/public/appearance/system/logo').expect(200);
@@ -194,7 +194,7 @@ describe('PublicAppearanceController', () => {
       expect(res.headers['cross-origin-resource-policy']).toBe('cross-origin');
     });
 
-    it('libera cross-origin no binário do Logo do portal', async () => {
+    it('should send CORP cross-origin when serving the portal Logo binary', async () => {
       portalAppearanceService.getLogoFile.mockResolvedValue(logoFile());
 
       const res = await request(app.getHttpServer()).get('/public/appearance/portal/logo').expect(200);
@@ -202,7 +202,7 @@ describe('PublicAppearanceController', () => {
       expect(res.headers['cross-origin-resource-policy']).toBe('cross-origin');
     });
 
-    it('mantém same-origin nas demais rotas', async () => {
+    it('should keep CORP same-origin when serving any other route', async () => {
       systemAppearanceService.getEffectiveAppearance.mockResolvedValue({
         primaryColor: '#4f46e5',
         secondaryColor: '#0ea5e9',
@@ -217,7 +217,7 @@ describe('PublicAppearanceController', () => {
       expect(res.headers['cross-origin-resource-policy']).toBe('same-origin');
     });
 
-    it('mantém same-origin no 404 de Logo não configurado', async () => {
+    it('should keep CORP same-origin when the Logo is not configured (404)', async () => {
       systemAppearanceService.getLogoFile.mockResolvedValue(null);
 
       const res = await request(app.getHttpServer()).get('/public/appearance/system/logo').expect(404);

@@ -6,11 +6,12 @@ import {
   SEMANTIC_TOKEN_NAMES,
   type ColorScale,
   type Palette,
+  type SemanticTokenName,
+  type SemanticTokens,
   type ThemeMode,
   type ThemeScales,
 } from '@ged/utils';
 import { DEFAULT_PORTAL_APPEARANCE, DEFAULT_SYSTEM_APPEARANCE } from '@ged/types';
-import type { PortalAppearanceDto, SystemAppearanceDto } from '@/types';
 
 /**
  * CSS de tema injetado em runtime a partir da Aparência salva pelo admin.
@@ -34,16 +35,21 @@ import type { PortalAppearanceDto, SystemAppearanceDto } from '@/types';
 /** Classe do wrapper do portal — ver `app/(public)/portal/layout.tsx`. */
 export const PORTAL_THEME_CLASS = 'ged-portal';
 
-// Usados só no caminho de erro (cor corrompida no banco): o CSS vai para
-// `dangerouslySetInnerHTML`, então cair nos defaults é preferível a emitir lixo.
-const DEFAULT_SYSTEM_DTO: SystemAppearanceDto = {
-  ...DEFAULT_SYSTEM_APPEARANCE,
-  updatedAt: new Date(0).toISOString(),
+/**
+ * Paleta padrão do sistema. Também é o fallback do caminho de erro (cor corrompida no
+ * banco): o CSS vai para `dangerouslySetInnerHTML`, então cair nos defaults é preferível a
+ * emitir lixo.
+ */
+export const DEFAULT_SYSTEM_PALETTE: Palette = {
+  primaryColor: DEFAULT_SYSTEM_APPEARANCE.primaryColor,
+  secondaryColor: DEFAULT_SYSTEM_APPEARANCE.secondaryColor,
+  backgroundColor: DEFAULT_SYSTEM_APPEARANCE.backgroundColor,
 };
 
-const DEFAULT_PORTAL_DTO: PortalAppearanceDto = {
-  ...DEFAULT_PORTAL_APPEARANCE,
-  updatedAt: new Date(0).toISOString(),
+const DEFAULT_PORTAL_PALETTE: Palette = {
+  primaryColor: DEFAULT_PORTAL_APPEARANCE.primaryColor,
+  secondaryColor: DEFAULT_PORTAL_APPEARANCE.secondaryColor,
+  backgroundColor: DEFAULT_PORTAL_APPEARANCE.backgroundColor,
 };
 
 const RAMP_PREFIX = {
@@ -65,20 +71,42 @@ function declareAllRamps(scales: ThemeScales): string {
 }
 
 /** CSS do tema do sistema — os tokens semânticos `--ged-*` por Tema. */
-export function buildSystemThemeCss(appearance: SystemAppearanceDto): string {
+export function buildSystemThemeCss(palette: Palette): string {
   try {
-    return renderSemanticTokensCss(appearance);
+    return renderSemanticTokensCss(palette);
   } catch {
-    return renderSemanticTokensCss(DEFAULT_SYSTEM_DTO);
+    return renderSemanticTokensCss(DEFAULT_SYSTEM_PALETTE);
   }
 }
 
 /** Prefixo das custom properties dos tokens semânticos — `--ged-primary`, `--ged-surface`… */
 export const SEMANTIC_TOKEN_PREFIX = '--ged-';
 
+/**
+ * Custom properties `--ged-*` de um conjunto de tokens — serve de CSS ou de estilo inline
+ * (`CSSProperties & SemanticTokenVars` aceita as chaves `--*` sem cast).
+ */
+export type SemanticTokenVars = Readonly<Record<`--${string}`, string>>;
+
+function tokenProperty(name: SemanticTokenName): `--${string}` {
+  return `${SEMANTIC_TOKEN_PREFIX}${name}`;
+}
+
+/** `var(--ged-<name>)` — para usar um token em código TS (SVG, estilo inline). */
+export function tokenVar(name: SemanticTokenName): string {
+  return `var(${tokenProperty(name)})`;
+}
+
+/** Os tokens como `{ '--ged-primary': '#…', … }`, na ordem de `SEMANTIC_TOKEN_NAMES`. */
+export function semanticTokenVars(tokens: SemanticTokens): SemanticTokenVars {
+  return Object.fromEntries(SEMANTIC_TOKEN_NAMES.map((name) => [tokenProperty(name), tokens[name]]));
+}
+
 function declareSemanticTokens(palette: Palette, mode: ThemeMode): string {
-  const { tokens } = deriveSemanticTokens(palette, mode);
-  return SEMANTIC_TOKEN_NAMES.map((name) => `${SEMANTIC_TOKEN_PREFIX}${name}:${tokens[name]};`).join('');
+  const vars = semanticTokenVars(deriveSemanticTokens(palette, mode).tokens);
+  return Object.entries(vars)
+    .map(([property, value]) => `${property}:${value};`)
+    .join('');
 }
 
 /**
@@ -113,16 +141,16 @@ function renderSemanticTokensCss(palette: Palette): string {
  * herdado. Declarados em `:root`, resolveriam contra a rampa do sistema e herdariam esse
  * valor congelado para dentro do portal.
  */
-export function buildPortalThemeCss(appearance: PortalAppearanceDto): string {
+export function buildPortalThemeCss(palette: Palette): string {
   try {
-    return renderPortalCss(appearance);
+    return renderPortalCss(palette);
   } catch {
-    return renderPortalCss(DEFAULT_PORTAL_DTO);
+    return renderPortalCss(DEFAULT_PORTAL_PALETTE);
   }
 }
 
-function renderPortalCss(appearance: PortalAppearanceDto): string {
-  const scales = deriveThemeScales(appearance);
+function renderPortalCss(palette: Palette): string {
+  const scales = deriveThemeScales(palette);
 
   return (
     `.${PORTAL_THEME_CLASS}.${PORTAL_THEME_CLASS}{${declareAllRamps(scales)}` +

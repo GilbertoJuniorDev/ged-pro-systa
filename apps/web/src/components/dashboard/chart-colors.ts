@@ -1,6 +1,7 @@
 'use client';
 
 import { useTheme } from 'next-themes';
+import { tokenVar } from '@/lib/theme-style';
 
 /**
  * Theme-aware chart color tokens for Recharts. `fill`/`stroke` props need
@@ -70,12 +71,12 @@ export interface ChartChrome {
 }
 
 const CHROME: ChartChrome = {
-  surface: 'var(--ged-surface)',
-  grid: 'var(--ged-border)',
-  axis: 'var(--ged-muted-foreground)',
-  tooltipBg: 'var(--ged-surface-elevated)',
-  tooltipBorder: 'var(--ged-border)',
-  tooltipText: 'var(--ged-foreground)',
+  surface: tokenVar('surface'),
+  grid: tokenVar('border'),
+  axis: tokenVar('muted-foreground'),
+  tooltipBg: tokenVar('surface-elevated'),
+  tooltipBorder: tokenVar('border'),
+  tooltipText: tokenVar('foreground'),
 };
 
 export interface ChartPalette {
@@ -99,7 +100,7 @@ export function useChartPalette(): ChartPalette {
   return {
     categorical,
     confidencialidade: isLight ? ORDINAL_LIGHT : ORDINAL_DARK,
-    sequential: 'var(--ged-primary)',
+    sequential: tokenVar('primary'),
     chrome: CHROME,
   };
 }

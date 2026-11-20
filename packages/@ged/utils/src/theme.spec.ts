@@ -1,6 +1,9 @@
 import {
+  classifyPrimaryAdjustment,
   COLOR_SHADES,
   contrastRatio,
+  LARGE_PRIMARY_ADJUSTMENT_CONTRAST,
+  meetsContrast,
   deriveColorScale,
   deriveSemanticTokens,
   deriveThemeScales,
@@ -12,6 +15,7 @@ import {
   TAILWIND_INDIGO_SCALE,
   TAILWIND_SKY_SCALE,
   TAILWIND_SLATE_SCALE,
+  WCAG_AA_CONTRAST,
 } from './theme';
 import type { ColorScale, Palette, SemanticTokens } from './theme';
 
@@ -345,5 +349,71 @@ describe('deriveSemanticTokens — ajuste da primária', () => {
 
   it('lança erro para Paleta corrompida', () => {
     expect(() => deriveSemanticTokens({ ...DEFAULT_PALETTE, primaryColor: 'red' }, 'dark')).toThrow();
+  });
+});
+
+describe('meetsContrast', () => {
+  it('exporta o limiar AA do WCAG para texto normal', () => {
+    expect(WCAG_AA_CONTRAST).toBe(4.5);
+  });
+
+  it('exige 4.5:1 contra TODOS os fundos', () => {
+    expect(meetsContrast('#0f172a', ['#ffffff', '#f8fafc'])).toBe(true);
+    expect(meetsContrast('#4f46e5', ['#ffffff', '#020617'])).toBe(false);
+  });
+});
+
+describe('classifyPrimaryAdjustment', () => {
+  it('é "none" quando a cor final é a escolhida', () => {
+    expect(classifyPrimaryAdjustment('#4f46e5', '#4f46e5')).toBe('none');
+  });
+
+  // Limiar objetivo: 3:1 entre a escolhida e a final é o contraste mínimo do WCAG para
+  // componentes distinguíveis (1.4.11) — a partir dele o tom aplicado já é "outra cor".
+  it('usa 3:1 (WCAG 1.4.11) como limiar de ajuste grande', () => {
+    expect(LARGE_PRIMARY_ADJUSTMENT_CONTRAST).toBe(3);
+  });
+
+  it('é "minor" quando a final difere da escolhida em menos de 3:1', () => {
+    expect(contrastRatio('#4f46e5', '#8882ed')).toBeLessThan(3);
+    expect(classifyPrimaryAdjustment('#4f46e5', '#8882ed')).toBe('minor');
+  });
+
+  it('é "large" quando a final difere da escolhida em 3:1 ou mais', () => {
+    expect(classifyPrimaryAdjustment('#1e1b4b', '#8b87d4')).toBe('large');
+  });
+});
+
+describe('deriveSemanticTokens — tamanho do ajuste da primária', () => {
+  it('a Paleta padrão não tem ajuste no claro', () => {
+    expect(deriveSemanticTokens(DEFAULT_PALETTE, 'light').primaryAdjustment).toBe('none');
+  });
+
+  it('a Paleta padrão tem ajuste pequeno no escuro (#4f46e5 → #8882ed)', () => {
+    const derived = deriveSemanticTokens(DEFAULT_PALETTE, 'dark');
+
+    expect(derived.tokens.primary).toBe('#8882ed');
+    expect(derived.primaryAdjustment).toBe('minor');
+  });
+
+  it('uma primária quase preta tem ajuste grande no escuro', () => {
+    const derived = deriveSemanticTokens({ ...DEFAULT_PALETTE, primaryColor: '#1e1b4b' }, 'dark');
+
+    expect(derived.primaryAdjustment).toBe('large');
+  });
+
+  it('uma primária quase branca tem ajuste grande no claro', () => {
+    const derived = deriveSemanticTokens({ ...DEFAULT_PALETTE, primaryColor: '#e0e7ff' }, 'light');
+
+    expect(derived.primaryAdjustment).toBe('large');
+  });
+
+  it('primaryAdjusted continua coerente com primaryAdjustment', () => {
+    for (const primaryColor of ['#4f46e5', '#1e1b4b', '#facc15', '#e0e7ff']) {
+      for (const mode of THEME_MODES) {
+        const derived = deriveSemanticTokens({ ...DEFAULT_PALETTE, primaryColor }, mode);
+        expect(derived.primaryAdjusted).toBe(derived.primaryAdjustment !== 'none');
+      }
+    }
   });
 });

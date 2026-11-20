@@ -46,10 +46,23 @@ describe('PaletteThemePreview', () => {
     expect(themePanel(/tema claro/i).style.getPropertyValue('--ged-primary')).toBe('#1d4ed8');
   });
 
-  it('avisa em qual Tema a primária foi ajustada', () => {
+  // Decisão do usuário (#28): a Paleta padrão (#4f46e5 → #8882ed no escuro) é um ajuste
+  // pequeno e aparece como nota neutra — nunca como alerta.
+  it('should show the neutral note, not a warning, when the Paleta is the default', () => {
     render(<PaletteThemePreview palette={DEFAULT_PALETTE} />);
 
+    const note = screen.getByRole('status');
+    expect(note).toHaveAttribute('data-tone', 'info');
+    expect(note).toHaveTextContent(
+      'No Tema escuro usamos um tom mais claro da primária para manter a legibilidade.',
+    );
+  });
+
+  it('should warn when the primary is adjusted to a visibly different color', () => {
+    render(<PaletteThemePreview palette={{ ...DEFAULT_PALETTE, primaryColor: '#1e1b4b' }} />);
+
     const warning = screen.getByRole('status');
+    expect(warning).toHaveAttribute('data-tone', 'warning');
     expect(warning).toHaveTextContent(/no Tema escuro/);
   });
 

@@ -1,7 +1,6 @@
 import { render, screen } from '@testing-library/react';
-import { DEFAULT_SYSTEM_APPEARANCE } from '@ged/types';
 import { deriveSemanticTokens } from '@ged/utils';
-import { buildSystemThemeCss } from '@/lib/theme-style';
+import { buildSystemThemeCss, DEFAULT_SYSTEM_PALETTE } from '@/lib/theme-style';
 import { PortalSearchFilter } from './portal-search-filter';
 
 // A Combobox compartilhada pinta-se com os tokens semânticos `--ged-*` (ADR 0002). O portal
@@ -42,7 +41,7 @@ describe('PortalSearchFilter', () => {
   });
 
   it('a Combobox resolve os tokens do Tema claro com o usuário em Tema escuro', () => {
-    const appearance = { ...DEFAULT_SYSTEM_APPEARANCE, updatedAt: new Date(0).toISOString() };
+    const appearance = DEFAULT_SYSTEM_PALETTE;
     document.head.innerHTML = `<style>${buildSystemThemeCss(appearance)}</style>`;
     document.documentElement.className = 'dark';
     renderFilter();

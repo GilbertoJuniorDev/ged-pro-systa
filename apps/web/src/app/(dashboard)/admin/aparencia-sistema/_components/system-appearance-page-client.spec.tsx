@@ -75,7 +75,10 @@ describe('SystemAppearancePageClient', () => {
 
     expect(screen.getByRole('group', { name: /tema claro/i })).toBeInTheDocument();
     expect(screen.getByRole('group', { name: /tema escuro/i })).toBeInTheDocument();
-    expect(screen.getByRole('status')).toHaveTextContent(/ajustada automaticamente/i);
+    // Ajustes pequenos da primária (#16a34a) → nota neutra, não alerta.
+    const note = screen.getByRole('status');
+    expect(note).toHaveAttribute('data-tone', 'info');
+    expect(note).toHaveTextContent(/para manter a legibilidade/i);
 
     const save = screen.getByRole('button', { name: 'Salvar cores' });
     expect(save).toBeEnabled();

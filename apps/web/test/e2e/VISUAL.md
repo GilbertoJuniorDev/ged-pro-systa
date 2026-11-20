@@ -74,3 +74,24 @@ Seletores: login/escuro `.text-xl` (logo), `.bottom-8` (rodapé); home/escuro `.
 `.text-[10px]`, `.gap-1.5 > .truncate`, `.text-xs.truncate.text-slate-500`,
 `.mt-1.text-xs.dark:text-slate-500`; aparência/claro `.mt-2`; aparência/escuro `.text-xl`,
 `.text-[10px]`, `.gap-1.5 > .truncate`, `.text-left > .truncate:nth-child(2)`.
+
+## Resultado final (depois da migração — spec #27)
+
+Varredura pós-migração (contract #26), `VISUAL_STRICT=1`, uma rota por execução, nos dois
+Temas: **0 nós com violação de `color-contrast`** em todas as telas abaixo.
+
+- Públicas: `/login`, `/reset-password`, `/sessao-expirada`.
+- Autenticadas: `/`, `/selecionar-departamento`, `/sobre`, `/configuracoes/assinatura`,
+  `/documents` (+ `/arquivos`, `/classificacao`, `/dossies`, `/temporalidade`,
+  `/transferencias`, `/upload`), `/admin/users` (+ `/new`), `/admin/aparencia-sistema`,
+  `/admin/aparencia-portal`, `/admin/assinatura`, `/admin/audit-logs`,
+  `/admin/departamentos`, `/admin/empresa`, `/admin/logs`, `/admin/modulos`,
+  `/admin/permissoes`, `/admin/settings`, `/admin/sobre`.
+
+Fora do resultado:
+
+- **Portal** (`/portal`): claro 0, escuro 1 nó conhecido (`.mt-1`, texto do rodapé). O portal
+  ainda usa o modelo antigo de rampas e está fora do escopo do #27 (ver exceção da regra
+  `ged/no-raw-color-classes`).
+- **Rotas com `[id]`** (detalhes de documento/dossiê/usuário etc.) não foram varridas — exigem
+  ids reais do banco de dev.

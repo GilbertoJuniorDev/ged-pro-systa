@@ -1,17 +1,13 @@
 'use client';
 
 import { useEffect } from 'react';
-import { DEFAULT_SYSTEM_APPEARANCE } from '@ged/types';
 import { reportUnknown } from '@/lib/error-reporter';
-import { buildSystemThemeCss } from '@/lib/theme-style';
+import { buildSystemThemeCss, DEFAULT_SYSTEM_PALETTE } from '@/lib/theme-style';
 
 // global-error substitui o RootLayout inteiro, então o <style> com os tokens (`--ged-*`)
 // que ele injeta não existe aqui — declara os da Paleta padrão, no Tema claro (sem
 // next-themes nesta tela; era claro antes também).
-const FALLBACK_THEME_CSS = buildSystemThemeCss({
-  ...DEFAULT_SYSTEM_APPEARANCE,
-  updatedAt: new Date(0).toISOString(),
-});
+const FALLBACK_THEME_CSS = buildSystemThemeCss(DEFAULT_SYSTEM_PALETTE);
 
 interface Props {
   error: Error & { digest?: string };

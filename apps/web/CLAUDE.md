@@ -30,13 +30,23 @@ export function useAlgo() {
 
 ## Formulários
 
-react-hook-form + Zod + `zodResolver`. Mensagem de erro: `text-xs text-rose-400`. Referência: `components/admin/create-user-form.tsx`. `Combobox`/`DatePicker`/`Checkbox` são **controlados** — usar `Controller`, nunca form não-controlado.
+react-hook-form + Zod + `zodResolver`. Mensagem de erro: `text-xs text-danger`; campo inválido: `border-danger focus:ring-danger`. Referência: `components/admin/create-user-form.tsx`. `Combobox`/`DatePicker`/`Checkbox` são **controlados** — usar `Controller`, nunca form não-controlado.
 
 ## Estilo
 
-- Tailwind **v4 CSS-first** (sem `tailwind.config`); **dark-first**, paleta slate (superfícies) + indigo (primária) + rose (erro).
-- Merge de classes: `cn()` de `lib/utils`. Ao criar superfície slate nova, adicionar override `.light .*` em `app/globals.css` — sempre referenciando `var(--color-slate-N)`, **nunca** um literal `rgb()`/hex. Para alpha: `color-mix(in oklab, var(--color-slate-N) X%, transparent)`.
-- **A paleta é dinâmica.** As rampas `indigo-*`/`sky-*`/`slate-*` são redefinidas em runtime com as cores que o admin escolhe (ver `lib/theme-style.ts`). Por isso um literal de cor em CSS congela aquele ponto e quebra a customização — foi exatamente esse o bug que deixava a "cor de fundo" sem efeito no tema claro. Em componentes, continuar usando as classes normais (`bg-slate-900`, `text-indigo-400`): elas já compilam para `var(--color-*)` e seguem a cor configurada sozinhas.
+- Tailwind **v4 CSS-first** (sem `tailwind.config`). Merge de classes: `cn()` de `lib/utils`.
+- **Cor só por token semântico** (ADR 0002 — *Tokens semânticos derivados de Paleta × Tema*; vocabulário no `GLOSSARY.md`). Os tokens são derivados da **Paleta** (cores do admin) × **Tema** (claro/escuro do usuário) em `lib/theme-style.ts` e emitidos como `--ged-*`; com eles a tela já fica certa nos dois Temas e com qualquer Paleta.
+- Utilities disponíveis (qualquer prefixo de cor: `bg-`/`text-`/`border-`/`ring-`/`divide-`/`fill-`…, com modificador de opacidade, ex. `bg-danger/10`):
+  `background`, `surface`, `surface-elevated`, `foreground`, `muted-foreground`, `border`, `ring`, `primary`, `primary-hover`, `primary-soft`, `primary-foreground`, `secondary`, `success`, `warning`, `danger`, `info`.
+  - página `bg-background`; card/sidebar/painel `bg-surface`; dropdown/modal/popover `bg-surface-elevated`;
+  - texto `text-foreground`, secundário/ícones `text-muted-foreground`, bordas `border-border`, foco `focus-visible:ring-ring`;
+  - botão primário `bg-primary hover:bg-primary-hover text-primary-foreground`; item selecionado `bg-primary-soft text-primary`;
+  - hover neutro sobre superfícies `hover:bg-foreground/5`; erro `text-danger`, caixa de erro `bg-danger/10 border-danger/30 text-danger`.
+- **Chips de status: padrão ring**, `ring-1 ring-inset ring-success/40 text-success` (idem `warning`/`info`/`danger`). **Não** usar `bg-success/10 text-success` nem `bg-warning/10 text-warning`: reprovam 4.5:1 no Tema claro.
+- **Proibido** (a regra de lint `ged/no-raw-color-classes` — `eslint-rules/raw-color-classes.js` — barra): rampas cruas (`slate-*`, `indigo-*`, `rose-*`…), `white`/`black`, arbitrários `[#…]`/`[rgb…]`/`[var(--color-…)]` e qualquer variante `dark:` — os tokens já trocam por Tema. Também não criar overrides `.light .x` em `globals.css`. Exceção temporária: `app/(public)/portal/**` (ainda no modelo antigo de rampas, até migrar).
+- **Tema por trecho da tela**: um wrapper com `className="light"` (ou `"dark"`) força aquele Tema na subárvore — o ancestral marcado mais próximo vence. Ex.: painel de marca sempre escuro no login; Combobox clara no portal.
+- Em TS (SVG/Recharts, estilo inline), referenciar token com `tokenVar('primary')` de `lib/theme-style` — nunca hex nem `'var(--ged-…)'` escrito à mão. Hex só para cores de *dados* de gráfico (`components/dashboard/chart-colors.ts`).
+- Verificação visual nos dois Temas (screenshot + axe `color-contrast`): `test/e2e/VISUAL.md`.
 - Reusar primitives de `components/ui/*`. **Proibido** `<select>` / `<input type="date">` / `<input type="checkbox">` nativos → usar `Combobox` / `DatePicker` / `Checkbox`.
 - `next/image` (nunca `<img>`), `next/link` (nunca `<a>`). Copy em **PT-BR**.
 
