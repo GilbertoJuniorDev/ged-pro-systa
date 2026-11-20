@@ -34,15 +34,15 @@ export function DashboardOverview() {
       </div>
 
       {summaryQuery.isError || !summaryQuery.data ? (
-        <p className="text-rose-400 text-sm">Erro ao carregar o resumo do dashboard.</p>
+        <p className="text-danger text-sm">Erro ao carregar o resumo do dashboard.</p>
       ) : summaryQuery.data.totalDocumentos === 0 ? (
         <EmptyState />
       ) : (
         <DashboardContent summary={summaryQuery.data} departamentos={adminSummaryQuery.data} />
       )}
 
-      <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-        <h3 className="mb-4 font-bold text-slate-950 dark:text-slate-100">Documentos Recentes</h3>
+      <div className="mt-6 rounded-2xl border border-border bg-surface p-6 shadow-sm">
+        <h3 className="mb-4 font-bold text-foreground">Documentos Recentes</h3>
         <RecentDocumentsList
           documents={recentDocumentsQuery.data?.data ?? []}
           isLoading={recentDocumentsQuery.isLoading}
@@ -55,15 +55,15 @@ export function DashboardOverview() {
 
 function EmptyState() {
   return (
-    <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-slate-300 py-16 text-center dark:border-slate-700">
-      <Files className="h-10 w-10 text-slate-400 dark:text-slate-600" strokeWidth={1.5} aria-hidden="true" />
-      <p className="font-medium text-slate-700 dark:text-slate-300">Nenhum documento cadastrado ainda</p>
-      <p className="max-w-sm text-sm text-slate-500 dark:text-slate-500">
+    <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border py-16 text-center">
+      <Files className="h-10 w-10 text-muted-foreground" strokeWidth={1.5} aria-hidden="true" />
+      <p className="font-medium text-foreground">Nenhum documento cadastrado ainda</p>
+      <p className="max-w-sm text-sm text-muted-foreground">
         Envie o primeiro documento para começar a ver estatísticas e gráficos aqui.
       </p>
       <Link
         href="/documents/upload"
-        className="mt-2 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-500"
+        className="mt-2 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-hover"
       >
         <Upload className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
         Protocolar documento
@@ -84,14 +84,14 @@ function DashboardContent({ summary, departamentos }: DashboardContentProps) {
     <>
       <div className="mb-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <div className="animate-slide-up" style={{ animationDelay: '0ms' }}>
-          <StatCard title="Total de documentos" value={summary.totalDocumentos} icon={Files} accent="indigo" />
+          <StatCard title="Total de documentos" value={summary.totalDocumentos} icon={Files} tone="primary" />
         </div>
         <div className="animate-slide-up" style={{ animationDelay: '75ms' }}>
           <StatCard
             title="Armazenamento utilizado"
             value={formatBytes(summary.armazenamentoTotalBytes)}
             icon={HardDrive}
-            accent="cyan"
+            tone="info"
           />
         </div>
         <div className="animate-slide-up" style={{ animationDelay: '150ms' }}>
@@ -99,7 +99,7 @@ function DashboardContent({ summary, departamentos }: DashboardContentProps) {
             title="Aptos para transferência"
             value={summary.documentosElegiveisTransferencia}
             icon={ArrowRightLeft}
-            accent={temTransferenciasPendentes ? 'amber' : 'emerald'}
+            tone={temTransferenciasPendentes ? 'warning' : 'success'}
             hint={
               temTransferenciasPendentes
                 ? 'Prazo da fase corrente vencido'
@@ -112,7 +112,7 @@ function DashboardContent({ summary, departamentos }: DashboardContentProps) {
             title="Documentos na fase corrente"
             value={summary.documentosPorFase.corrente}
             icon={FolderOpen}
-            accent="violet"
+            tone="secondary"
           />
         </div>
       </div>

@@ -25,32 +25,32 @@ export function UserSubscriptionPageClient() {
 
   if (loadingSub || loadingCompany) {
     return (
-      <main className="flex flex-1 items-center justify-center bg-slate-50 dark:bg-slate-950">
+      <main className="flex flex-1 items-center justify-center bg-background">
         <Spinner />
       </main>
     );
   }
 
   return (
-    <main className="flex-1 overflow-y-auto bg-slate-50 p-4 sm:p-6 lg:p-8 dark:bg-slate-950">
+    <main className="flex-1 overflow-y-auto bg-background p-4 sm:p-6 lg:p-8">
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-slate-950 dark:text-slate-100">Minha Assinatura</h2>
-        <p className="text-slate-600 dark:text-slate-400">
+        <h2 className="text-2xl font-bold text-foreground">Minha Assinatura</h2>
+        <p className="text-muted-foreground">
           Visualize o status e os detalhes da assinatura desta instância.
         </p>
       </div>
 
       {!subscription ? (
-        <div className="max-w-2xl rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900">
-          <p className="text-slate-700 dark:text-slate-300">
+        <div className="max-w-2xl rounded-2xl border border-border bg-surface p-8 text-center shadow-sm">
+          <p className="text-foreground">
             Nenhuma assinatura cadastrada. Contate o administrador do sistema.
           </p>
         </div>
       ) : (
         <div className="max-w-3xl space-y-6">
           {company && (
-            <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-              <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            <section className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
+              <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                 Empresa
               </h3>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -63,9 +63,9 @@ export function UserSubscriptionPageClient() {
             </section>
           )}
 
-          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+          <section className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
             <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                 Detalhes da Assinatura
               </h3>
               <SubscriptionStatusBadge status={subscription.status} />
@@ -91,18 +91,18 @@ export function UserSubscriptionPageClient() {
             </div>
 
             {subscription.notes && (
-              <div className="mt-4 border-t border-slate-200 pt-4 dark:border-slate-700">
-                <p className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">
+              <div className="mt-4 border-t border-border pt-4">
+                <p className="mb-1 text-xs font-medium text-muted-foreground">
                   Observações
                 </p>
-                <p className="whitespace-pre-wrap text-sm text-slate-800 dark:text-slate-200">
+                <p className="whitespace-pre-wrap text-sm text-foreground">
                   {subscription.notes}
                 </p>
               </div>
             )}
           </section>
 
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-xs text-muted-foreground">
             Para alterações na sua assinatura, contate o administrador do sistema.
           </p>
         </div>
@@ -114,8 +114,8 @@ export function UserSubscriptionPageClient() {
 function InfoRow({ label, value }: { readonly label: string; readonly value: string }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="text-xs font-medium text-slate-500 dark:text-slate-400">{label}</span>
-      <span className="text-sm text-slate-900 dark:text-slate-100">{value}</span>
+      <span className="text-xs font-medium text-muted-foreground">{label}</span>
+      <span className="text-sm text-foreground">{value}</span>
     </div>
   );
 }
