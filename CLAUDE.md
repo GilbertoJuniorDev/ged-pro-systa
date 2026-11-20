@@ -18,3 +18,17 @@ Ao editar arquivos nestas pastas, o Claude Code carrega o `CLAUDE.md` correspond
 - **Nunca** commitar ou dar push sem o usuário pedir. Branch `develop` é a de integração; nunca commitar em `main`/`develop` direto.
 - Respeitar o **vocabulário PT/EN** de cada módulo — não traduzir código existente. Copy de UI em PT-BR.
 - **Não confiar** nas seções aspiracionais de `docs/ARCHITECTURE.md` / `.github/instructions/*` (CQRS, storage adapters, Next 16.2 — não existem). A verdade é o código + `AGENTS.md`.
+
+## Agent skills
+
+### Issue tracker
+
+Issues vivem no GitHub Issues (`GilbertoJuniorDev/ged-pro-systa`), via `gh` CLI. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Cinco labels canônicos padrão (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: `GLOSSARY.md` + `docs/adr/` na raiz. See `docs/agents/domain.md`.
