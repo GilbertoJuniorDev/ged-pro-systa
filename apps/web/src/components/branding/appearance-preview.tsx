@@ -65,7 +65,7 @@ export function AppearancePreview({
 
   if (!scales) {
     return (
-      <p className="text-sm text-slate-500 dark:text-slate-400">
+      <p className="text-sm text-muted-foreground">
         Informe cores válidas para ver a pré-visualização.
       </p>
     );

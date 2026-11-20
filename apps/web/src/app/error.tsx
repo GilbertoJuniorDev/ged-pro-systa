@@ -15,17 +15,17 @@ export default function ErrorBoundary({ error, reset }: Props): React.JSX.Elemen
 
   return (
     <main className="flex min-h-[60vh] flex-col items-center justify-center gap-4 p-8 text-center">
-      <h2 className="text-2xl font-bold text-slate-950 dark:text-slate-100">
+      <h2 className="text-2xl font-bold text-foreground">
         Algo deu errado
       </h2>
-      <p className="max-w-md text-slate-600 dark:text-slate-400">
+      <p className="max-w-md text-muted-foreground">
         Ocorreu um erro inesperado. Nossa equipe já foi notificada
         automaticamente.
       </p>
       <button
         type="button"
         onClick={reset}
-        className="mt-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm text-white transition-colors hover:bg-indigo-500"
+        className="mt-2 rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         Tentar novamente
       </button>

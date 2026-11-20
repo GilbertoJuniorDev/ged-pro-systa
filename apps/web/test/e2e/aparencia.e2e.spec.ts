@@ -1,22 +1,84 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
+import {
+  deriveSemanticTokens,
+  SEMANTIC_TOKEN_NAMES,
+  THEME_MODES,
+  type Palette,
+  type ThemeMode,
+} from '@ged/utils';
 
 import { hasAdminCredentials, loginAsAdmin, MISSING_CREDENTIALS_REASON } from './support/login';
 
 /**
- * Cobre exatamente o sintoma que originou a correção: o admin troca a cor, salva, recebe
- * o toast de sucesso e **nada muda na tela**.
+ * ADR 0002: a área autenticada é colorida pelos tokens semânticos `--ged-*`, derivados da
+ * Paleta (Aparência do Sistema) combinada com o Tema do usuário. Estes testes verificam
+ * isso no navegador, usando a derivação de `@ged/utils` como fonte da verdade:
  *
- * A causa tinha duas metades, e cada teste aqui trava uma delas:
- * 1. as CSS variables geradas não eram lidas por ninguém (o app usa `indigo-*`/`slate-*`
- *    fixos em ~3.193 lugares), então a cor só valia no login e no logo;
- * 2. salvar invalidava só o cache client-side do React Query, nunca o `<style>` que o
- *    RootLayout renderiza no servidor.
+ * 1. os tokens do `<html>` são os da Paleta salva, nos dois Temas (somente leitura);
+ * 2. salvar uma nova primária troca os tokens sem recarregar (o `<style>` do RootLayout é
+ *    revalidado) — MUTA o banco de dev e devolve a cor original no `finally`;
+ * 3. o portal continua no tema próprio (rampas retingidas em `.ged-portal`).
  *
  * Requer a stack de dev (`pnpm docker:dev`) e as credenciais de seed em SEED_ADMIN_*.
  */
 
+const SYSTEM_PAGE = '/admin/aparencia-sistema';
+const PORTAL_PAGE = '/admin/aparencia-portal';
+const HEX = /^#[0-9a-f]{6}$/i;
+
 /** Cor inconfundível, para nenhuma asserção passar por acidente. */
 const TEST_PRIMARY = '#16a34a';
+
+const FIELD = {
+  primaryColor: 'Cor primária',
+  secondaryColor: 'Cor secundária',
+  backgroundColor: 'Cor de fundo',
+} as const;
+
+/** O ColorField tem <input type="color"> + <input type="text"> sob o mesmo <label>. */
+function colorInput(page: Page, label: string) {
+  return page.locator('label', { hasText: label }).locator('input[type="text"]');
+}
+
+async function readColor(page: Page, label: string): Promise<string> {
+  const input = colorInput(page, label);
+  await expect(input).toHaveValue(HEX, { timeout: 15_000 });
+  return (await input.inputValue()).toLowerCase();
+}
+
+/** A Paleta salva, como o formulário de Aparência do Sistema a carrega. */
+async function savedSystemPalette(page: Page): Promise<Palette> {
+  await page.goto(SYSTEM_PAGE);
+  return {
+    primaryColor: await readColor(page, FIELD.primaryColor),
+    secondaryColor: await readColor(page, FIELD.secondaryColor),
+    backgroundColor: await readColor(page, FIELD.backgroundColor),
+  };
+}
+
+async function useTheme(page: Page, theme: ThemeMode): Promise<void> {
+  await page.evaluate((t) => window.localStorage.setItem('theme', t), theme);
+  await page.reload();
+  await expect
+    .poll(() => page.evaluate((t) => document.documentElement.classList.contains(t), theme))
+    .toBe(true);
+}
+
+/** Tokens `--ged-*` efetivos no `<html>`. */
+function tokensOnRoot(page: Page): Promise<Record<string, string>> {
+  return page.evaluate((names) => {
+    const root = getComputedStyle(document.documentElement);
+    return Object.fromEntries(
+      names.map((name) => [name, root.getPropertyValue(`--ged-${name}`).trim().toLowerCase()]),
+    );
+  }, [...SEMANTIC_TOKEN_NAMES]);
+}
+
+async function savePrimary(page: Page, color: string): Promise<void> {
+  await colorInput(page, FIELD.primaryColor).fill(color);
+  await page.getByRole('button', { name: /salvar cores/i }).click();
+  await expect(page.getByText(/cores do sistema atualizadas/i).first()).toBeVisible();
+}
 
 test.describe('Aparência do sistema', () => {
   test.skip(!hasAdminCredentials, MISSING_CREDENTIALS_REASON);
@@ -25,62 +87,61 @@ test.describe('Aparência do sistema', () => {
     await loginAsAdmin(page);
   });
 
-  test('a cor primária salva vale nas classes indigo do app inteiro', async ({ page }) => {
-    await page.goto('/admin/aparencia-sistema');
+  test('os tokens semânticos seguem a Paleta salva nos dois Temas', async ({ page }) => {
+    const palette = await savedSystemPalette(page);
 
-    // O ColorField renderiza <input type="color"> + <input type="text"> sob o mesmo
-    // <label>; o de texto é o que aceita o hex digitado.
-    await page
-      .locator('label', { hasText: 'Cor primária' })
-      .locator('input[type="text"]')
-      .fill(TEST_PRIMARY);
-    await page.getByRole('button', { name: /salvar cores/i }).click();
-    await expect(page.getByText(/cores do sistema atualizadas/i)).toBeVisible();
-
-    // Sem recarregar: é este o passo que falhava antes da correção.
-    await expect
-      .poll(
-        () =>
-          page.evaluate(() =>
-            getComputedStyle(document.documentElement).getPropertyValue('--color-indigo-600').trim(),
-          ),
-        { timeout: 15_000 },
-      )
-      .toBe(TEST_PRIMARY);
+    for (const theme of THEME_MODES) {
+      await useTheme(page, theme);
+      expect(await tokensOnRoot(page), `tokens no Tema ${theme}`).toEqual(
+        deriveSemanticTokens(palette, theme).tokens,
+      );
+    }
   });
 
-  test('a rampa inteira é retingida, não só a parada âncora', async ({ page }) => {
-    await page.goto('/admin/aparencia-sistema');
+  test('a primária salva vale nos tokens dos dois Temas sem recarregar', async ({ page }) => {
+    const original = await savedSystemPalette(page);
+    const changed: Palette = { ...original, primaryColor: TEST_PRIMARY };
 
-    const shades = await page.evaluate(() => {
-      const root = getComputedStyle(document.documentElement);
-      return [50, 100, 400, 600, 900, 950].map((s) =>
-        root.getPropertyValue(`--color-indigo-${s}`).trim(),
-      );
-    });
+    try {
+      await savePrimary(page, TEST_PRIMARY);
 
-    expect(shades.every((s) => /^#[0-9a-f]{6}$/i.test(s))).toBe(true);
-    expect(new Set(shades).size).toBe(shades.length);
+      // Sem recarregar: o <style> do RootLayout precisa ter sido revalidado.
+      const current: ThemeMode = (await page.evaluate(() =>
+        document.documentElement.classList.contains('light'),
+      ))
+        ? 'light'
+        : 'dark';
+      await expect
+        .poll(async () => (await tokensOnRoot(page))['primary'], { timeout: 15_000 })
+        .toBe(deriveSemanticTokens(changed, current).tokens.primary);
+
+      for (const theme of THEME_MODES) {
+        await useTheme(page, theme);
+        expect(await tokensOnRoot(page), `tokens no Tema ${theme}`).toEqual(
+          deriveSemanticTokens(changed, theme).tokens,
+        );
+      }
+    } finally {
+      await page.goto(SYSTEM_PAGE);
+      if ((await readColor(page, FIELD.primaryColor)) !== original.primaryColor) {
+        await savePrimary(page, original.primaryColor);
+      }
+    }
   });
 
   test('o portal mantém tema próprio mesmo compartilhando o documento', async ({ page }) => {
-    await page.goto('/portal');
+    await page.goto(PORTAL_PAGE);
+    const portalPrimary = await readColor(page, FIELD.primaryColor);
 
-    const { root, portal } = await page.evaluate(() => {
+    await page.goto('/portal');
+    const anchor = await page.evaluate(() => {
       const wrapper = document.querySelector('.ged-portal');
-      return {
-        root: getComputedStyle(document.documentElement)
-          .getPropertyValue('--color-indigo-600')
-          .trim(),
-        portal:
-          wrapper === null
-            ? null
-            : getComputedStyle(wrapper).getPropertyValue('--color-indigo-600').trim(),
-      };
+      return wrapper === null
+        ? null
+        : getComputedStyle(wrapper).getPropertyValue('--color-indigo-600').trim().toLowerCase();
     });
 
-    expect(portal).not.toBeNull();
-    // O portal é independente: a cor do sistema não pode vazar para dentro dele.
-    expect(portal).not.toBe(root);
+    // A rampa do portal é retingida com a cor do PORTAL, no wrapper — não com a do sistema.
+    expect(anchor).toBe(portalPrimary);
   });
 });

@@ -14,41 +14,24 @@ function portalAppearance(overrides: Partial<PortalAppearanceDto> = {}): PortalA
 }
 
 describe('buildSystemThemeCss', () => {
-  it('reproduz a paleta original do Tailwind quando as cores são as default', () => {
-    const css = buildSystemThemeCss(systemAppearance());
-
-    // Se isto quebrar, manter o default deixa de ser um no-op visual e a aparência do app
-    // inteiro muda sem ninguém ter pedido.
-    expect(css).toContain('--color-indigo-600:#4f46e5;');
-    expect(css).toContain('--color-sky-500:#0ea5e9;');
-    expect(css).toContain('--color-slate-900:#0f172a;');
-    expect(css).toContain('--color-slate-950:#020617;');
-  });
-
-  it('emite as 33 paradas das três rampas', () => {
-    const css = buildSystemThemeCss(systemAppearance());
-
-    for (const family of ['indigo', 'sky', 'slate']) {
-      const declared = css.match(new RegExp(`--color-${family}-\\d+:`, 'g'));
-      expect(declared).toHaveLength(11);
-    }
-  });
-
-  it('retinge a rampa indigo inteira com a cor primária escolhida', () => {
+  // Contract do ADR 0002: fora do portal ninguém usa mais rampa crua do Tailwind (a regra
+  // de lint ged/no-raw-color-classes garante), então o sistema emite só os tokens `--ged-*`.
+  it('não retinge mais as rampas do Tailwind — só tokens semânticos', () => {
     const css = buildSystemThemeCss(systemAppearance({ primaryColor: '#16a34a' }));
 
-    expect(css).toContain('--color-indigo-600:#16a34a;');
-    expect(css).not.toContain('#4f46e5');
+    expect(css).not.toMatch(/--color-(indigo|sky|slate)-\d+:/);
+    expect(css).not.toContain('--color-primary-foreground');
+    expect(css).toContain('--ged-primary:');
   });
 
   // Estes três testes travam o contrato de cascata descrito em theme-style.ts. Sem ele o
   // CSS é gerado corretamente e mesmo assim perde para o Tailwind ou para globals.css.
-  it('usa :root:root para vencer os aliases de globals.css independentemente da ordem', () => {
-    expect(buildSystemThemeCss(systemAppearance())).toContain(':root:root{');
+  it('usa :root:root para vencer regras estáticas de globals.css independentemente da ordem', () => {
+    expect(buildSystemThemeCss(systemAppearance())).toContain(':root:root,');
   });
 
   it('usa :root:root.light no bloco claro, que fica no mesmo elemento que :root', () => {
-    expect(buildSystemThemeCss(systemAppearance())).toContain(':root:root.light{');
+    expect(buildSystemThemeCss(systemAppearance())).toContain(':root:root.light,');
   });
 
   it('nunca envolve o CSS em @layer, que perderia para regras sem layer', () => {
@@ -58,8 +41,10 @@ describe('buildSystemThemeCss', () => {
 
   it('cai nos defaults quando a cor salva está corrompida', () => {
     const css = buildSystemThemeCss(systemAppearance({ primaryColor: 'javascript:alert(1)' }));
+    const fallback = deriveSemanticTokens(DEFAULT_SYSTEM_APPEARANCE, 'light').tokens;
 
-    expect(css).toContain('--color-indigo-600:#4f46e5;');
+    expect(css).toContain(`--ged-primary:${fallback.primary};`);
+    expect(css).not.toContain('javascript');
   });
 
   // O CSS vai para dangerouslySetInnerHTML, então uma cor corrompida no banco não pode
@@ -199,7 +184,7 @@ describe('buildSystemThemeCss — tokens semânticos por Tema', () => {
     expect(css).not.toContain('nao-e-cor');
   });
 
-  it('não mexe nos aliases antigos (--color-primary etc. continuam de globals.css)', () => {
+  it('não declara os aliases antigos (--color-primary etc.)', () => {
     const css = buildSystemThemeCss(systemAppearance(palette));
 
     expect(css).not.toMatch(/--color-(primary|surface|secondary):/);

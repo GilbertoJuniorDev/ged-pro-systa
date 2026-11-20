@@ -13,12 +13,13 @@ import { DEFAULT_PORTAL_APPEARANCE, DEFAULT_SYSTEM_APPEARANCE } from '@ged/types
 import type { PortalAppearanceDto, SystemAppearanceDto } from '@/types';
 
 /**
- * Este módulo é o que faz a cor escolhida pelo admin realmente valer no app inteiro.
+ * CSS de tema injetado em runtime a partir da Aparência salva pelo admin.
  *
- * O Tailwind v4 declara seu tema em `@theme default` (NÃO `inline`), então `bg-indigo-600`
- * compila para `background-color: var(--color-indigo-600)`. Redefinir essas variáveis em
- * runtime retinge as ~3.193 ocorrências de `indigo-*`/`slate-*`/`sky-*` do app sem tocar
- * em nenhum componente — é por isso que a correção não exige um refactor de 94 arquivos.
+ * - **Sistema** (`buildSystemThemeCss`): só os tokens semânticos `--ged-*` (ADR 0002),
+ *   derivados de Paleta × Tema. Nenhuma rampa do Tailwind é retingida: fora do portal a
+ *   regra de lint `ged/no-raw-color-classes` proíbe rampas cruas.
+ * - **Portal** (`buildPortalThemeCss`): ainda no modelo antigo — retinge as rampas
+ *   `indigo`/`sky`/`slate` com escopo em `.ged-portal` até o portal migrar para os tokens.
  *
  * Duas regras de cascata sustentam isso e NÃO podem ser afrouxadas:
  *
@@ -26,10 +27,8 @@ import type { PortalAppearanceDto, SystemAppearanceDto } from '@/types';
  *    `@layer theme`, e em CSS cascade layers qualquer regra SEM layer vence qualquer regra
  *    COM layer, independentemente de ordem e especificidade. É isso que torna irrelevante
  *    a posição em que o React/Next acaba inserindo a `<style>` no documento.
- * 2. **`:root:root` (0-2-0), não `:root`.** Os aliases estáticos de `globals.css` também
- *    são unlayered e usam `:root` (0-1-0); duplicar o seletor garante a vitória sem
- *    depender da ordem dos arquivos. O bloco do tema claro precisa de `:root:root.light`
- *    (0-3-0) porque `.light` fica no MESMO elemento que `:root` (é o `<html>`).
+ * 2. **Especificidade reforçada** (`:root:root`, `.dark.dark`, `.ged-portal.ged-portal`):
+ *    vence regras estáticas unlayered de `globals.css` sem depender da ordem dos arquivos.
  */
 
 /** Classe do wrapper do portal — ver `app/(public)/portal/layout.tsx`. */
@@ -65,30 +64,13 @@ function declareAllRamps(scales: ThemeScales): string {
   );
 }
 
-/**
- * CSS do tema do sistema — as 33 paradas de rampa + o foreground da cor primária.
- *
- * `--color-primary-foreground` é o único valor que NÃO é alias de uma parada de rampa:
- * ele depende de contraste (branco ou escuro, conforme a cor primária), então precisa ser
- * calculado. O tema claro ancora a primária em 700, daí o segundo bloco.
- */
+/** CSS do tema do sistema — os tokens semânticos `--ged-*` por Tema. */
 export function buildSystemThemeCss(appearance: SystemAppearanceDto): string {
   try {
-    return renderSystemCss(appearance);
+    return renderSemanticTokensCss(appearance);
   } catch {
-    return renderSystemCss(DEFAULT_SYSTEM_DTO);
+    return renderSemanticTokensCss(DEFAULT_SYSTEM_DTO);
   }
-}
-
-function renderSystemCss(appearance: SystemAppearanceDto): string {
-  const scales = deriveThemeScales(appearance);
-
-  return (
-    `:root:root{${declareAllRamps(scales)}` +
-    `--color-primary-foreground:${readableForeground(scales.primary[600])};}` +
-    `:root:root.light{--color-primary-foreground:${readableForeground(scales.primary[700])};}` +
-    renderSemanticTokensCss(appearance)
-  );
 }
 
 /** Prefixo das custom properties dos tokens semânticos — `--ged-primary`, `--ged-surface`… */
@@ -109,7 +91,7 @@ function declareSemanticTokens(palette: Palette, mode: ThemeMode): string {
  *
  * Especificidade: `:root:root` (0-2-0) é o padrão escuro (antes do next-themes pôr a
  * classe); `:root:root.light` (0-3-0) vence-o no `<html>`; `.dark.dark`/`.light.light`
- * (0-2-0) marcam trechos. Sem `@layer`, pelos mesmos motivos das rampas acima.
+ * (0-2-0) marcam trechos. Sem `@layer` (ver regras de cascata no topo do arquivo).
  */
 function renderSemanticTokensCss(palette: Palette): string {
   return (
@@ -119,11 +101,11 @@ function renderSemanticTokensCss(palette: Palette): string {
 }
 
 /**
- * CSS do tema do portal — mesmas rampas, mas com escopo no wrapper do portal.
+ * CSS do tema do portal — rampas do Tailwind retingidas, com escopo no wrapper do portal.
  *
  * O portal compartilha o mesmo documento e o mesmo `:root` do sistema (`(public)` é route
- * group, não cria `<html>` próprio). Sem escopo, o remap global tingiria o portal com a
- * cor do SISTEMA. Custom properties herdam, então redefinir as rampas em `.ged-portal`
+ * group, não cria `<html>` próprio), então as rampas retingidas têm escopo no wrapper:
+ * custom properties herdam, então redefinir as rampas em `.ged-portal`
  * sobrescreve só aquela subárvore — sem `!important` e sem guerra de especificidade.
  *
  * Os aliases `--portal-color-*` são declarados AQUI, e não em `:root`, de propósito:
