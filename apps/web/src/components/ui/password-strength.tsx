@@ -28,11 +28,11 @@ interface StrengthLevel {
 }
 
 const LEVELS: readonly StrengthLevel[] = [
-  { label: 'Muito fraca', color: 'bg-rose-500',    textColor: 'text-rose-400',    segments: 1 },
-  { label: 'Fraca',       color: 'bg-orange-500',  textColor: 'text-orange-400',  segments: 1 },
-  { label: 'Razoável',    color: 'bg-amber-400',   textColor: 'text-amber-400',   segments: 2 },
-  { label: 'Boa',         color: 'bg-lime-500',    textColor: 'text-lime-400',    segments: 3 },
-  { label: 'Forte',       color: 'bg-emerald-500', textColor: 'text-emerald-400', segments: 4 },
+  { label: 'Muito fraca', color: 'bg-danger',  textColor: 'text-danger',  segments: 1 },
+  { label: 'Fraca',       color: 'bg-danger',  textColor: 'text-danger',  segments: 1 },
+  { label: 'Razoável',    color: 'bg-warning', textColor: 'text-warning', segments: 2 },
+  { label: 'Boa',         color: 'bg-success', textColor: 'text-success', segments: 3 },
+  { label: 'Forte',       color: 'bg-success', textColor: 'text-success', segments: 4 },
 ];
 
 function getLevel(score: number): StrengthLevel {
@@ -72,7 +72,7 @@ export function PasswordStrengthBar({ password }: PasswordStrengthProps) {
           key={i}
           className={cn(
             'h-1 flex-1 rounded-full transition-all duration-300',
-            i < level.segments ? level.color : 'bg-slate-200 dark:bg-slate-700',
+            i < level.segments ? level.color : 'bg-border',
           )}
         />
       ))}
@@ -98,8 +98,8 @@ export function PasswordStrengthCriteria({ password }: PasswordStrengthProps) {
             className={cn(
               'flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full transition-colors',
               results[i]
-                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400'
-                : 'bg-slate-100 text-slate-400 dark:bg-slate-700/60 dark:text-slate-600',
+                ? 'bg-success/10 text-success'
+                : 'bg-foreground/5 text-muted-foreground',
             )}
           >
             {results[i]
@@ -107,7 +107,7 @@ export function PasswordStrengthCriteria({ password }: PasswordStrengthProps) {
               : <X className="w-2 h-2" strokeWidth={3} />
             }
           </span>
-          <span className={cn('text-xs transition-colors', results[i] ? 'text-slate-600 dark:text-slate-400' : 'text-slate-500 dark:text-slate-600')}>
+          <span className={cn('text-xs transition-colors', results[i] ? 'text-foreground' : 'text-muted-foreground')}>
             {criterion.label}
           </span>
         </li>

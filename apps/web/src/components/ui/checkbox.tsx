@@ -16,7 +16,7 @@ export interface CheckboxProps
 }
 
 /**
- * Checkbox customizado com tema dark (slate/indigo).
+ * Checkbox customizado nos tokens semânticos (ADR 0002).
  * Suporta estados: unchecked · checked · indeterminate · disabled.
  * Compatível com forwardRef para acesso ao elemento nativo.
  */
@@ -69,12 +69,12 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
             'w-[18px] h-[18px] rounded flex items-center justify-center select-none',
             'border-2 transition-all duration-150 ease-in-out',
             isActive
-              ? 'bg-indigo-600 border-indigo-600 shadow-[0_0_0_3px_rgba(99,102,241,0.18)]'
-              : 'border-slate-300 bg-white dark:border-slate-600 dark:bg-slate-800',
+              ? 'bg-primary border-primary shadow-[0_0_0_3px_color-mix(in_oklab,var(--ged-primary)_18%,transparent)]'
+              : 'border-muted-foreground bg-surface',
             !disabled && !isActive
-              ? 'group-hover:border-slate-500 peer-hover:border-slate-500 dark:group-hover:border-slate-400 dark:peer-hover:border-slate-400'
+              ? 'group-hover:border-foreground peer-hover:border-foreground'
               : '',
-            'peer-focus-visible:ring-2 peer-focus-visible:ring-indigo-500 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-white dark:peer-focus-visible:ring-offset-slate-900',
+            'peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-surface',
             disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer',
           ]
             .filter(Boolean)
@@ -83,7 +83,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
           {/* Checkmark */}
           {isChecked && !(indeterminate ?? false) && (
             <svg
-              className="w-[10px] h-[10px] text-white"
+              className="w-[10px] h-[10px] text-primary-foreground"
               viewBox="0 0 12 10"
               fill="none"
               stroke="currentColor"
@@ -97,7 +97,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
 
           {/* Traço de indeterminate */}
           {(indeterminate ?? false) && (
-            <span className="w-[8px] h-[2px] bg-white rounded-full block" />
+            <span className="w-[8px] h-[2px] bg-primary-foreground rounded-full block" />
           )}
         </span>
       </span>
