@@ -149,7 +149,7 @@ export function TemporalidadeList() {
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                             s.destinacaoFinal === 'GUARDA_PERMANENTE'
-                              ? 'bg-success/10 text-success'
+                              ? 'ring-1 ring-inset ring-success/40 text-success'
                               : 'bg-danger/10 text-danger'
                           }`}
                         >

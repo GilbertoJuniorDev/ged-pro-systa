@@ -3,7 +3,7 @@ import type { ArquivoStatus } from '@/types';
 const META: Record<ArquivoStatus, { label: string; cls: string }> = {
   ABERTO: {
     label: 'Aberto',
-    cls: 'bg-success/10 text-success',
+    cls: 'ring-1 ring-inset ring-success/40 text-success',
   },
   FECHADO: {
     label: 'Fechado',

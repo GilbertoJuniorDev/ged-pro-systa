@@ -17,7 +17,7 @@ import { EditConfidentialityDialog } from './edit-confidentiality-dialog';
 
 const CONFIDENCIALIDADE_BADGE: Record<Confidencialidade, string> = {
   PUBLICO: 'bg-foreground/10 text-muted-foreground',
-  RESTRITO: 'bg-warning/10 text-warning',
+  RESTRITO: 'ring-1 ring-inset ring-warning/40 text-warning',
   CONFIDENCIAL: 'bg-danger/10 text-danger',
 };
 
@@ -121,7 +121,7 @@ export function DocumentDetailPageClient({ id }: { id: string }) {
     return (
       <main className="flex-1 overflow-y-auto bg-background p-4 sm:p-6 lg:p-8">
         <div className="mb-6">{backLink}</div>
-        <div className="rounded-2xl border border-border bg-surface-elevated p-6">
+        <div className="rounded-2xl border border-border bg-surface p-6">
           <Skeleton className="h-7 w-64 mb-4" />
           <div className="grid grid-cols-2 gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
@@ -173,7 +173,7 @@ export function DocumentDetailPageClient({ id }: { id: string }) {
     <main className="flex-1 overflow-y-auto bg-background p-4 sm:p-6 lg:p-8">
       <div className="mb-6">{backLink}</div>
 
-      <div className="rounded-2xl border border-border bg-surface-elevated p-6">
+      <div className="rounded-2xl border border-border bg-surface p-6">
         <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
           <div>
             <h1 className="text-xl font-bold text-foreground">{document.nome}</h1>
@@ -192,7 +192,7 @@ export function DocumentDetailPageClient({ id }: { id: string }) {
                 {FASE_LABEL[document.fase]}
               </span>
               {document.elegivelTransferencia && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-success/10 text-success">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ring-1 ring-inset ring-success/40 text-success">
                   Elegível para transferência
                 </span>
               )}

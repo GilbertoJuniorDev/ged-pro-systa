@@ -90,7 +90,7 @@ export function DossiesDataTable({
                   <span
                     className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
                       d.isActive
-                        ? 'bg-success/10 text-success'
+                        ? 'ring-1 ring-inset ring-success/40 text-success'
                         : 'bg-foreground/5 text-muted-foreground'
                     }`}
                   >

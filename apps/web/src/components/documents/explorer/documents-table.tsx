@@ -23,7 +23,7 @@ import { formatBytes } from '@/lib/utils';
 
 const CONFIDENCIALIDADE_BADGE: Record<Confidencialidade, string> = {
   PUBLICO: 'bg-foreground/5 text-muted-foreground',
-  RESTRITO: 'bg-warning/10 text-warning',
+  RESTRITO: 'ring-1 ring-inset ring-warning/40 text-warning',
   CONFIDENCIAL: 'bg-danger/10 text-danger',
 };
 

@@ -21,7 +21,7 @@ export function UploadPageClient() {
         </p>
       </div>
 
-      <div className="rounded-2xl border border-border bg-surface-elevated p-6 shadow-sm">
+      <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
         <UploadDocumentForm />
       </div>
     </main>

@@ -254,7 +254,7 @@ export function DocumentSeriesList() {
                       <span
                         className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                           series.isActive
-                            ? 'bg-success/10 text-success'
+                            ? 'ring-1 ring-inset ring-success/40 text-success'
                             : 'bg-foreground/10 text-muted-foreground'
                         }`}
                       >

@@ -87,7 +87,7 @@ export function ArquivoDetailPageClient({ id }: { id: string }) {
     return (
       <main className="flex-1 overflow-y-auto bg-background p-4 sm:p-6 lg:p-8">
         <div className="mb-6">{backLink}</div>
-        <div className="rounded-2xl border border-border bg-surface-elevated p-6">
+        <div className="rounded-2xl border border-border bg-surface p-6">
           <Skeleton className="mb-4 h-7 w-64" />
           <div className="grid grid-cols-2 gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
@@ -125,7 +125,7 @@ export function ArquivoDetailPageClient({ id }: { id: string }) {
         ]}
       />
 
-      <div className="rounded-2xl border border-border bg-surface-elevated p-6">
+      <div className="rounded-2xl border border-border bg-surface p-6">
         <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
           <div>
             <h1 className="text-xl font-bold text-foreground">
