@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
 
+import { hasAdminCredentials, loginAsAdmin, MISSING_CREDENTIALS_REASON } from './support/login';
+
 /**
  * Cobre exatamente o sintoma que originou a correção: o admin troca a cor, salva, recebe
  * o toast de sucesso e **nada muda na tela**.
@@ -13,35 +15,14 @@ import { expect, test } from '@playwright/test';
  * Requer a stack de dev (`pnpm docker:dev`) e as credenciais de seed em SEED_ADMIN_*.
  */
 
-const ADMIN_EMAIL = process.env['SEED_ADMIN_EMAIL'] ?? '';
-const ADMIN_PASSWORD = process.env['SEED_ADMIN_PASSWORD'] ?? '';
-
 /** Cor inconfundível, para nenhuma asserção passar por acidente. */
 const TEST_PRIMARY = '#16a34a';
 
 test.describe('Aparência do sistema', () => {
-  test.skip(
-    ADMIN_EMAIL === '' || ADMIN_PASSWORD === '',
-    'Requer SEED_ADMIN_EMAIL/SEED_ADMIN_PASSWORD no ambiente',
-  );
+  test.skip(!hasAdminCredentials, MISSING_CREDENTIALS_REASON);
 
   test.beforeEach(async ({ page }) => {
-    // Mesmos data-testid que auth.e2e.spec.ts já documenta como contrato da página.
-    await page.goto('/login');
-    await page.fill('[data-testid="email"]', ADMIN_EMAIL);
-    await page.fill('[data-testid="password"]', ADMIN_PASSWORD);
-    await page.click('[data-testid="submit"]');
-    await page.waitForURL((url) => !url.pathname.startsWith('/login'), { timeout: 30_000 });
-
-    // Admin cai em /selecionar-departamento antes do dashboard; "Visualização Admin"
-    // é o atalho que ignora o escopo de departamento.
-    const adminView = page.getByRole('button', { name: /visualização admin/i });
-    if (await adminView.isVisible().catch(() => false)) {
-      await adminView.click();
-      await page.waitForURL((url) => !url.pathname.includes('selecionar-departamento'), {
-        timeout: 30_000,
-      });
-    }
+    await loginAsAdmin(page);
   });
 
   test('a cor primária salva vale nas classes indigo do app inteiro', async ({ page }) => {

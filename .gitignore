@@ -44,4 +44,5 @@ uploads/
 # Playwright (relatórios e artefatos de falha)
 test-results/
 playwright-report/
+visual-results/
 playwright/.cache/
